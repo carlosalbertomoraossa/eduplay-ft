@@ -116,6 +116,9 @@ class G4AdventureGame extends FlameGame
       _player.stopMoving();
       if (overlays.isActive(overlayQuestion)) overlays.remove(overlayQuestion);
       overlays.add(overlayGameComplete);
+    } else if (state is GameInitial) {
+      // Estado inicial: asegurar que el jugador esté listo para moverse
+      _player.startMoving();
     }
   }
 
