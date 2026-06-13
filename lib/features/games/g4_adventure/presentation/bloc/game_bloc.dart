@@ -7,7 +7,7 @@ import 'game_event.dart';
 import 'game_state.dart';
 
 const int _questionsPerLevel = 10;
-const int _maxLevel = 8;
+const int _maxLevel = 1;
 const int _initialLives = 3;
 const int _maxLives = 5;
 const int _baseScore = 100;

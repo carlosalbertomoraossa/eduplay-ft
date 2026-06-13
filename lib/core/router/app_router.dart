@@ -15,7 +15,6 @@ import '../../features/lesson/presentation/screens/lesson_screen.dart';
 import '../../features/onboarding/presentation/screens/onboarding_screen.dart';
 import '../../features/parent_dashboard/presentation/screens/child_progress_screen.dart';
 import '../../features/parent_dashboard/presentation/screens/parent_dashboard_screen.dart';
-import '../../features/games/g4_adventure/presentation/screens/game_level_select_screen.dart';
 import '../../features/games/g4_adventure/presentation/screens/game_play_screen.dart';
 import '../../features/games/g4_adventure/presentation/screens/game_result_screen.dart';
 import '../../features/games/g4_adventure/domain/entities/game_result.dart';
@@ -98,7 +97,7 @@ final appRouterProvider = Provider<GoRouter>((ref) {
       // ── Juegos ────────────────────────────────────────────────────────────
       GoRoute(
         path: '/games/g4-adventure',
-        builder: (_, __) => const GameLevelSelectScreen(),
+        builder: (_, __) => const GamePlayScreen(level: 1),
       ),
       GoRoute(
         path: '/games/g4-adventure/play/:level',

@@ -8,8 +8,8 @@ import '../bloc/game_bloc.dart';
 import '../bloc/game_event.dart';
 import '../bloc/game_state.dart';
 
-/// Overlay Flutter para mostrar la pregunta activa y recibir la respuesta.
-/// Reemplaza los componentes Flame de burbuja + bloques de respuesta.
+/// Overlay de pregunta que "florece" desde donde está el bloque V.
+/// Animación: escala de 0→1 + fade + sube ligeramente desde el centro de la pantalla.
 class QuestionOverlay extends StatelessWidget {
   final GameBloc gameBloc;
   const QuestionOverlay({super.key, required this.gameBloc});
@@ -53,8 +53,10 @@ class _QuestionCardState extends State<_QuestionCard>
   int? _selected;
   bool _submitted = false;
 
-  late final AnimationController _slideCtrl;
-  late final Animation<Offset> _slideAnim;
+  late final AnimationController _ctrl;
+  late final Animation<double> _scale;
+  late final Animation<double> _fade;
+  late final Animation<Offset> _slide;
 
   static const _optionColors = [
     Color(0xFF1565C0),
@@ -65,92 +67,119 @@ class _QuestionCardState extends State<_QuestionCard>
   @override
   void initState() {
     super.initState();
-    _slideCtrl = AnimationController(
+    _ctrl = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 320),
+      duration: const Duration(milliseconds: 380),
     );
-    _slideAnim = Tween<Offset>(
-      begin: const Offset(0, 1),
+    // Escala: empieza pequeño (desde el bloque) y crece a tamaño real
+    _scale = CurvedAnimation(parent: _ctrl, curve: Curves.elasticOut);
+    // Fade: aparece con la escala
+    _fade = CurvedAnimation(parent: _ctrl, curve: Curves.easeIn);
+    // Sube ligeramente al aparecer (efecto "brotar")
+    _slide = Tween<Offset>(
+      begin: const Offset(0, 0.08),
       end: Offset.zero,
-    ).animate(CurvedAnimation(parent: _slideCtrl, curve: Curves.easeOutCubic));
-    _slideCtrl.forward();
+    ).animate(CurvedAnimation(parent: _ctrl, curve: Curves.easeOutCubic));
+    _ctrl.forward();
   }
 
   @override
   void dispose() {
-    _slideCtrl.dispose();
+    _ctrl.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
-      onTap: () {}, // bloquear taps en el fondo
+      onTap: () {},
       child: Container(
-        color: Colors.black.withValues(alpha: 0.52),
-        alignment: Alignment.bottomCenter,
-        child: SlideTransition(
-          position: _slideAnim,
-          child: Container(
-            margin: const EdgeInsets.fromLTRB(16, 0, 16, 28),
-            padding: const EdgeInsets.fromLTRB(20, 24, 20, 20),
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(28),
-              boxShadow: const [
-                BoxShadow(
-                  color: Colors.black38,
-                  blurRadius: 28,
-                  offset: Offset(0, -6),
-                ),
-              ],
-            ),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                // Indicador visual
-                Container(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
-                  decoration: BoxDecoration(
-                    color: const Color(0xFF1A237E),
-                    borderRadius: BorderRadius.circular(20),
+        color: Colors.black.withValues(alpha: 0.48),
+        // La tarjeta aparece centrada en pantalla (donde está el bloque)
+        alignment: const Alignment(0, -0.1),
+        child: FadeTransition(
+          opacity: _fade,
+          child: SlideTransition(
+            position: _slide,
+            child: ScaleTransition(
+              scale: _scale,
+              child: Container(
+                margin: const EdgeInsets.symmetric(horizontal: 20),
+                padding: const EdgeInsets.fromLTRB(22, 20, 22, 18),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(28),
+                  border: Border.all(
+                    color: const Color(0xFF6A1B9A),
+                    width: 3,
                   ),
-                  child: const Text(
-                    '¿Sabes la respuesta?',
-                    style: TextStyle(
-                      fontFamily: 'Nunito',
-                      fontSize: 12,
-                      fontWeight: FontWeight.w700,
-                      color: Colors.white,
+                  boxShadow: const [
+                    BoxShadow(
+                      color: Color(0x556A1B9A),
+                      blurRadius: 30,
+                      spreadRadius: 2,
+                      offset: Offset(0, 6),
                     ),
-                  ),
+                  ],
                 ),
-                const SizedBox(height: 14),
-                // Pregunta
-                Text(
-                  widget.question.question,
-                  style: const TextStyle(
-                    fontFamily: 'Nunito',
-                    fontSize: 20,
-                    fontWeight: FontWeight.w800,
-                    color: Color(0xFF1A237E),
-                  ),
-                  textAlign: TextAlign.center,
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    // Indicador temático: fracciones
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 14, vertical: 7),
+                      decoration: BoxDecoration(
+                        gradient: const LinearGradient(
+                          colors: [Color(0xFF6A1B9A), Color(0xFF1565C0)],
+                        ),
+                        borderRadius: BorderRadius.circular(20),
+                      ),
+                      child: const Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Text('🔢', style: TextStyle(fontSize: 16)),
+                          SizedBox(width: 6),
+                          Text(
+                            'Fracciones Básicas',
+                            style: TextStyle(
+                              fontFamily: 'Nunito',
+                              fontSize: 13,
+                              fontWeight: FontWeight.w800,
+                              color: Colors.white,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    // Pregunta
+                    Text(
+                      widget.question.question,
+                      style: const TextStyle(
+                        fontFamily: 'Nunito',
+                        fontSize: 20,
+                        fontWeight: FontWeight.w800,
+                        color: Color(0xFF1A237E),
+                        height: 1.3,
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
+                    const SizedBox(height: 18),
+                    // Opciones
+                    ...List.generate(widget.question.options.length, (i) {
+                      return _OptionButton(
+                        text: widget.question.options[i],
+                        baseColor: _optionColors[i % _optionColors.length],
+                        selected: _selected == i,
+                        submitted: _submitted,
+                        isCorrect: i == widget.question.correctIndex,
+                        onTap: _submitted ? null : () => _onTap(i),
+                      );
+                    }),
+                  ],
                 ),
-                const SizedBox(height: 20),
-                // Opciones
-                ...List.generate(widget.question.options.length, (i) {
-                  return _OptionButton(
-                    text: widget.question.options[i],
-                    baseColor: _optionColors[i % _optionColors.length],
-                    selected: _selected == i,
-                    submitted: _submitted,
-                    isCorrect: i == widget.question.correctIndex,
-                    onTap: _submitted ? null : () => _onTap(i),
-                  );
-                }),
-              ],
+              ),
             ),
           ),
         ),
@@ -164,7 +193,6 @@ class _QuestionCardState extends State<_QuestionCard>
       _selected = index;
       _submitted = true;
     });
-    // Mostrar feedback brevemente antes de enviar al bloc
     Future.delayed(const Duration(milliseconds: 750), () {
       if (mounted) widget.gameBloc.add(AnswerBlockHit(index));
     });
@@ -203,8 +231,7 @@ class _OptionButton extends StatelessWidget {
         child: AnimatedContainer(
           duration: const Duration(milliseconds: 220),
           width: double.infinity,
-          padding:
-              const EdgeInsets.symmetric(vertical: 15, horizontal: 16),
+          padding: const EdgeInsets.symmetric(vertical: 15, horizontal: 16),
           decoration: BoxDecoration(
             color: bgColor,
             borderRadius: BorderRadius.circular(16),

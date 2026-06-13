@@ -60,6 +60,11 @@
 **Por qué**: `addPostFrameCallback` en `GamePlayScreen` puede disparar `GameStarted` antes de que `onLoad` termine de attachar el listener. Procesar el estado actual cubre ambos casos de timing.
 **Alternativa descartada**: Solo stream.listen — perdía el estado emitido durante el gap de carga.
 
+### GameInitial activa movimiento del jugador
+**Qué**: `G4AdventureGame._onStateChange()` ahora maneja el estado `GameInitial` llamando a `_player.startMoving()`.
+**Por qué**: Cuando el juego se carga, el estado inicial es `GameInitial`. Sin este manejo, el jugador nunca recibía la instrucción de moverse hasta que el estado cambiara a `GameInProgress`. Esto causaba que el jugador permaneciera estático al inicio del juego.
+**Alternativa descartada**: Inicializar `_moving = true` en PlayerComponent — no era suficiente porque `_onStateChange(gameBloc.state)` en `onLoad` procesaba `GameInitial` sin activar el movimiento.
+
 <!-- Agregar nuevas decisiones aquí, nunca borrar las existentes -->
 
 ---

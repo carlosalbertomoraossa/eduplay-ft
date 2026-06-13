@@ -19,6 +19,7 @@ class BackgroundComponent extends PositionComponent with HasGameReference {
   double get groundY => size.y * _groundFraction;
 
   double _scrollOffset = 0;
+  bool scrolling = true;
 
   @override
   Future<void> onLoad() async {
@@ -32,7 +33,7 @@ class BackgroundComponent extends PositionComponent with HasGameReference {
   @override
   void update(double dt) {
     super.update(dt);
-    _scrollOffset += 100 * dt;
+    if (scrolling) _scrollOffset += 100 * dt;
   }
 
   @override

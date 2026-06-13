@@ -4,26 +4,11 @@ import '../../../lesson/data/curriculum_data.dart';
 import '../../../lesson/domain/entities/lesson.dart';
 import '../domain/entities/game_question.dart';
 
-// Exercise IDs de tipo multipleChoice de Grado 4°, agrupados por nivel (1–8).
-// Progresión: fracciones (1–2) → multiplicación/división (3–4) →
-//             decimales (5–6) → mixto avanzado (7–8 boss).
+// Exercise IDs de tipo multipleChoice de Grado 4°.
+// MVP: solo nivel 1 — Fracciones Básicas (lecciones 401–405).
 const Map<int, List<String>> _levelExerciseIds = {
   1: ['l401-e1', 'l401-e2', 'l402-e1', 'l402-e3', 'l403-e1',
       'l403-e3', 'l404-e1', 'l404-e3', 'l405-e1', 'l405-e4'],
-  2: ['l402-e1', 'l402-e3', 'l403-e1', 'l403-e3', 'l404-e1',
-      'l404-e3', 'l405-e1', 'l405-e4', 'l405-e6', 'l406-e1'],
-  3: ['l405-e6', 'l406-e1', 'l406-e3', 'l407-e1', 'l407-e3',
-      'l408-e1', 'l408-e3', 'l409-e1', 'l409-e3', 'l410-e1'],
-  4: ['l407-e1', 'l407-e3', 'l408-e1', 'l408-e3', 'l409-e1',
-      'l409-e3', 'l410-e1', 'l410-e3', 'l410-e5', 'l411-e1'],
-  5: ['l409-e3', 'l410-e1', 'l410-e3', 'l410-e5', 'l411-e1',
-      'l411-e2', 'l412-e1', 'l412-e3', 'l413-e1', 'l413-e3'],
-  6: ['l411-e1', 'l411-e2', 'l412-e1', 'l412-e3', 'l413-e1',
-      'l413-e3', 'l414-e1', 'l414-e3', 'l415-e1', 'l415-e4'],
-  7: ['l412-e3', 'l413-e1', 'l413-e3', 'l414-e1', 'l414-e3',
-      'l415-e1', 'l415-e4', 'l415-e6', 'l401-e1', 'l402-e1'],
-  8: ['l415-e1', 'l415-e4', 'l415-e6', 'l413-e1', 'l414-e3',
-      'l410-e5', 'l408-e1', 'l406-e3', 'l404-e1', 'l401-e1'],
 };
 
 Difficulty _difficultyForLevel(int level) {
@@ -42,6 +27,7 @@ class GameQuestionsProvider {
   // Devuelve las preguntas del juego para el nivel indicado (1–8).
   // Mapea ejercicios multipleChoice de CurriculumData a GameQuestion,
   // adaptando las 4 opciones del currículo a las 3 que necesita el juego.
+  // Devuelve las preguntas del juego para el nivel indicado (actualmente solo 1).
   static List<GameQuestion> getQuestionsForLevel(int level) {
     final ids = _levelExerciseIds[level];
     if (ids == null) return [];
@@ -62,10 +48,10 @@ class GameQuestionsProvider {
     Difficulty difficulty,
     int xpReward,
   ) {
-    // exerciseId format: 'l401-e1' → lessonId prefix before last '-eN'
-    final dashIndex = exerciseId.lastIndexOf('-');
-    if (dashIndex < 0) return null;
-    final lessonId = exerciseId.substring(0, dashIndex);
+    // exerciseId format: 'l401-e1' → lección 'lesson-401'
+    final match = RegExp(r'^l(\d+)-').firstMatch(exerciseId);
+    if (match == null) return null;
+    final lessonId = 'lesson-${match.group(1)}';
 
     final lesson = CurriculumData.getLesson(lessonId);
     if (lesson == null) return null;
