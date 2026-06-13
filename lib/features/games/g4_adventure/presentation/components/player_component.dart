@@ -17,7 +17,7 @@ class PlayerComponent extends PositionComponent
     with CollisionCallbacks, HasGameReference {
   static const double _gravity = 900;
   static const double _jumpVelocity = -460;
-  static const double _walkSpeed = 100.0;
+  static const double walkSpeed = 80.0;
 
   final double groundY;
 
@@ -37,14 +37,11 @@ class PlayerComponent extends PositionComponent
   }
 
   bool get isMoving => _moving;
+  bool get isOnGround => _isOnGround;
   bool get isRising => !_isOnGround && _vy < 0;
 
   void stopMoving() => _moving = false;
   void startMoving() => _moving = true;
-
-  void resetX() {
-    position.x = 80;
-  }
 
   void jump() {
     if (!_isOnGround) return;
@@ -65,9 +62,9 @@ class PlayerComponent extends PositionComponent
   @override
   void update(double dt) {
     super.update(dt);
-    _animTime += dt;
     if (_moving) {
-      position.x += _walkSpeed * dt;
+      _animTime += dt;
+      position.x += walkSpeed * dt;
     }
     if (!_isOnGround) {
       _vy += _gravity * dt;
