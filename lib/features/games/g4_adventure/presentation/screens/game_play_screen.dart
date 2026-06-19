@@ -5,12 +5,14 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../../../core/di/injection.dart';
 import '../../../../../core/theme/app_theme.dart';
 import '../../data/game_questions_provider.dart';
 import '../../g4_adventure_game.dart';
 import '../bloc/game_bloc.dart';
 import '../bloc/game_event.dart';
 import '../bloc/game_state.dart';
+import '../overlays/game_complete_overlay.dart';
 import '../overlays/game_over_overlay.dart';
 import '../overlays/hud_overlay.dart';
 import '../overlays/level_complete_overlay.dart';
@@ -40,7 +42,7 @@ class _GamePlayScreenState extends State<GamePlayScreen> {
   @override
   void initState() {
     super.initState();
-    _gameBloc = GameBloc();
+    _gameBloc = getIt<GameBloc>();
     _game = G4AdventureGame(gameBloc: _gameBloc);
 
     // Esperar primer frame para que el GameWidget monte el canvas antes de
@@ -107,7 +109,7 @@ class _GamePlayScreenState extends State<GamePlayScreen> {
                       onExit: _onExit,
                     ),
                 G4AdventureGame.overlayGameComplete: (context, _) =>
-                    LevelCompleteOverlay(
+                    GameCompleteOverlay(
                       gameBloc: _gameBloc,
                       onExit: _onExit,
                     ),

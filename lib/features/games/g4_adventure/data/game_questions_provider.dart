@@ -4,11 +4,27 @@ import '../../../lesson/data/curriculum_data.dart';
 import '../../../lesson/domain/entities/lesson.dart';
 import '../domain/entities/game_question.dart';
 
-// Exercise IDs de tipo multipleChoice de Grado 4°.
-// MVP: solo nivel 1 — Fracciones Básicas (lecciones 401–405).
+// Exercise IDs de tipo multipleChoice de Grados 4° y 5°.
+// 8 niveles × 10 preguntas = 80 ejercicios mapeados del currículo.
+// Niveles 1–6: ejercicios únicos por unidad temática.
+// Niveles 7–8: repaso mixto y boss con ejercicios de todas las unidades.
 const Map<int, List<String>> _levelExerciseIds = {
   1: ['l401-e1', 'l401-e2', 'l402-e1', 'l402-e3', 'l403-e1',
       'l403-e3', 'l404-e1', 'l404-e3', 'l405-e1', 'l405-e4'],
+  2: ['l405-e6', 'l406-e1', 'l406-e3', 'l407-e1', 'l407-e3',
+      'l408-e1', 'l408-e3', 'l409-e1', 'l409-e3', 'l410-e1'],
+  3: ['l410-e3', 'l410-e5', 'l411-e1', 'l411-e2', 'l412-e1',
+      'l412-e3', 'l413-e1', 'l413-e3', 'l414-e1', 'l414-e3'],
+  4: ['l415-e1', 'l415-e4', 'l415-e6', 'l501-e1', 'l501-e2',
+      'l502-e1', 'l502-e3', 'l503-e1', 'l503-e3', 'l504-e1'],
+  5: ['l504-e5', 'l505-e1', 'l505-e3', 'l505-e6', 'l506-e1',
+      'l506-e2', 'l507-e1', 'l507-e3', 'l508-e1', 'l508-e3'],
+  6: ['l509-e1', 'l509-e3', 'l510-e1', 'l510-e4', 'l510-e6',
+      'l511-e1', 'l511-e2', 'l512-e1', 'l512-e3', 'l513-e1'],
+  7: ['l513-e3', 'l514-e1', 'l514-e3', 'l515-e1', 'l515-e3',
+      'l515-e6', 'l501-e1', 'l410-e5', 'l406-e1', 'l401-e1'],
+  8: ['l415-e6', 'l505-e6', 'l510-e6', 'l515-e6', 'l410-e5',
+      'l510-e4', 'l514-e3', 'l415-e4', 'l505-e3', 'l405-e6'],
 };
 
 Difficulty _difficultyForLevel(int level) {

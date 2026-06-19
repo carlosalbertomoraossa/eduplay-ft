@@ -17,6 +17,7 @@ class GameInProgress extends GameState {
   final int lives;
   final int currentLevel;
   final int questionsAnswered;
+  final int correctAnswersCount;
   final int streakCount;
   final int scoreMultiplier;
   final List<GameQuestion> questions;
@@ -29,6 +30,7 @@ class GameInProgress extends GameState {
     required this.lives,
     required this.currentLevel,
     required this.questionsAnswered,
+    required this.correctAnswersCount,
     required this.streakCount,
     required this.scoreMultiplier,
     required this.questions,
@@ -45,6 +47,7 @@ class GameInProgress extends GameState {
     int? lives,
     int? currentLevel,
     int? questionsAnswered,
+    int? correctAnswersCount,
     int? streakCount,
     int? scoreMultiplier,
     List<GameQuestion>? questions,
@@ -59,6 +62,7 @@ class GameInProgress extends GameState {
         lives: lives ?? this.lives,
         currentLevel: currentLevel ?? this.currentLevel,
         questionsAnswered: questionsAnswered ?? this.questionsAnswered,
+        correctAnswersCount: correctAnswersCount ?? this.correctAnswersCount,
         streakCount: streakCount ?? this.streakCount,
         scoreMultiplier: scoreMultiplier ?? this.scoreMultiplier,
         questions: questions ?? this.questions,
@@ -71,7 +75,7 @@ class GameInProgress extends GameState {
 
   @override
   List<Object?> get props => [
-        score, lives, questionsAnswered,
+        score, lives, questionsAnswered, correctAnswersCount,
         waitingForAnswer, lastAnswerCorrect, streakCount, scoreMultiplier,
       ];
 }
