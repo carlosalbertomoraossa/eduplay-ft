@@ -105,6 +105,8 @@ class HomeScreen extends ConsumerWidget {
 
             SliverToBoxAdapter(child: _StreakBanner()),
 
+            const SliverToBoxAdapter(child: _GamificationLinksRow()),
+
             // Juegos — visible solo para Grado 4
             const SliverToBoxAdapter(child: _GamesBanner()),
 
@@ -341,6 +343,98 @@ class _StreakBanner extends StatelessWidget {
         .animate(delay: 150.ms)
         .fadeIn(duration: 350.ms)
         .slideX(begin: -0.08, end: 0);
+  }
+}
+
+// ─── Accesos a Logros y Ranking ────────────────────────────────────
+class _GamificationLinksRow extends StatelessWidget {
+  const _GamificationLinksRow();
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(16, 12, 16, 0),
+      child: Row(
+        children: [
+          Expanded(
+            child: _GamificationLinkCard(
+              emoji: '🏆',
+              label: 'Logros',
+              color: EduPlayColors.adventurePurple,
+              onTap: () => context.push('/achievements'),
+            ),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: _GamificationLinkCard(
+              emoji: '🥇',
+              label: 'Ranking',
+              color: EduPlayColors.primaryBlue,
+              onTap: () => context.push('/leaderboard'),
+            ),
+          ),
+        ],
+      ),
+    )
+        .animate(delay: 180.ms)
+        .fadeIn(duration: 350.ms)
+        .slideY(begin: 0.05, end: 0);
+  }
+}
+
+class _GamificationLinkCard extends StatelessWidget {
+  final String emoji;
+  final String label;
+  final Color color;
+  final VoidCallback onTap;
+
+  const _GamificationLinkCard({
+    required this.emoji,
+    required this.label,
+    required this.color,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Semantics(
+      button: true,
+      label: label,
+      child: GestureDetector(
+        onTap: onTap,
+        child: Container(
+          padding: const EdgeInsets.symmetric(vertical: 14),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(color: color.withValues(alpha: 0.25), width: 1.5),
+            boxShadow: [
+              BoxShadow(
+                color: color.withValues(alpha: 0.1),
+                blurRadius: 10,
+                offset: const Offset(0, 3),
+              ),
+            ],
+          ),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Text(emoji, style: const TextStyle(fontSize: 22)),
+              const SizedBox(width: 8),
+              Text(
+                label,
+                style: TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w800,
+                  fontFamily: 'Nunito',
+                  color: color,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
   }
 }
 

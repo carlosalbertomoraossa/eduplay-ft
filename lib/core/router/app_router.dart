@@ -1,7 +1,6 @@
 // EduPlay — Navegación
 // Spec: /specs/frontend/flutter-arch.md — sección Navegación
 
-import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -10,6 +9,8 @@ import '../../features/auth/presentation/bloc/auth_cubit.dart';
 import '../../features/auth/presentation/screens/child_selector_screen.dart';
 import '../../features/auth/presentation/screens/parent_login_screen.dart';
 import '../../features/auth/presentation/screens/splash_screen.dart';
+import '../../features/gamification/presentation/screens/achievements_screen.dart';
+import '../../features/gamification/presentation/screens/leaderboard_screen.dart';
 import '../../features/home/presentation/screens/home_screen.dart';
 import '../../features/lesson/domain/entities/lesson.dart';
 import '../../features/lesson/presentation/screens/lesson_result_screen.dart';
@@ -20,11 +21,13 @@ import '../../features/parent_dashboard/presentation/screens/parent_dashboard_sc
 import '../../features/games/g4_adventure/presentation/screens/game_play_screen.dart';
 import '../../features/games/g4_adventure/presentation/screens/game_result_screen.dart';
 import '../../features/games/g4_adventure/domain/entities/game_result.dart';
+import '../../features/settings/presentation/screens/parent_settings_screen.dart';
+import '../../features/settings/presentation/screens/settings_screen.dart';
 import '../../features/subjects/presentation/screens/lessons_screen.dart';
 import '../../features/subjects/presentation/screens/units_screen.dart';
 
 const _publicRoutes = {'/', '/onboarding', '/auth/login', '/auth/select-child'};
-const _parentRoutes = {'/parent/dashboard'};
+const _parentRoutes = {'/parent/dashboard', '/parent/settings'};
 const _childRoutes = {'/home', '/achievements', '/leaderboard', '/settings'};
 
 bool _isPublic(String location) => _publicRoutes.contains(location);
@@ -114,11 +117,11 @@ final appRouterProvider = Provider<GoRouter>((ref) {
       ),
       GoRoute(
         path: '/achievements',
-        builder: (_, __) => const _ScreenPlaceholder('Logros'),
+        builder: (_, __) => const AchievementsScreen(),
       ),
       GoRoute(
         path: '/leaderboard',
-        builder: (_, __) => const _ScreenPlaceholder('Ranking'),
+        builder: (_, __) => const LeaderboardScreen(),
       ),
       GoRoute(
         path: '/parent/dashboard',
@@ -131,8 +134,12 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         ),
       ),
       GoRoute(
+        path: '/parent/settings',
+        builder: (_, __) => const ParentSettingsScreen(),
+      ),
+      GoRoute(
         path: '/settings',
-        builder: (_, __) => const _ScreenPlaceholder('Configuración'),
+        builder: (_, __) => const SettingsScreen(),
       ),
       // ── Juegos ────────────────────────────────────────────────────────────
       GoRoute(
@@ -155,16 +162,3 @@ final appRouterProvider = Provider<GoRouter>((ref) {
     ],
   );
 });
-
-class _ScreenPlaceholder extends StatelessWidget {
-  final String name;
-  const _ScreenPlaceholder(this.name);
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: Text(name)),
-      body: Center(child: Text(name)),
-    );
-  }
-}

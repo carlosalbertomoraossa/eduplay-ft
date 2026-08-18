@@ -44,8 +44,8 @@ class ParentDashboardScreen extends StatelessWidget {
         actions: [
           IconButton(
             icon: const Icon(Icons.settings_outlined),
-            tooltip: 'Configuración',
-            onPressed: () => context.push('/settings'),
+            tooltip: 'Controles parentales',
+            onPressed: () => context.push('/parent/settings'),
           ),
         ],
       ),
