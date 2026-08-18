@@ -45,7 +45,7 @@
 - **Widgets compartidos**: ep_button (con Semantics), ep_card, xp_bar, streak_badge, heart_indicator, confetti_overlay
 - **Strings centralizados**: EduPlayStrings en core/l10n/app_strings.dart (preparación para .arb)
 - **AuthCubit completo**: login padre, login niño, registro, logout, `checkStoredSession` — 11 tests
-- **Tests unitarios y de widgets**: 70+ tests pasando (bloc de lección/juego/auth + widgets de las 4 pantallas de auth + gamificación/settings)
+- **Tests unitarios y de widgets**: 86 tests pasando (bloc de lección/juego/auth + widgets de las 4 pantallas de auth + gamificación/settings)
 - **Assets duplicados eliminados**: solo quedan assets/images/games/g4/ y assets/audio/games/g4/
 - **Dependencias fantasma removidas**: `drift`, `drift_dev`, `lottie`, `sqlite3_flutter_libs`, `path_provider`, `path` quitadas de `pubspec.yaml` — estaban declaradas sin código real usándolas
 
@@ -64,7 +64,7 @@
 
 - **Build**: ✅ Compila (web + APK debug)
 - **Linter**: ✅ 0 errores, 0 warnings/infos
-- **Tests**: ✅ 70+ tests, todos pasando
+- **Tests**: ✅ 86 tests, todos pasando
 - **Cobertura**: lesson_bloc, game_bloc, game_questions_provider, auth_cubit, 4 pantallas de auth, gamificación, settings
 - **Último deploy**: nunca
 - **Errores conocidos**: ninguno

@@ -41,7 +41,7 @@ flutter devices
 ## Tests y análisis
 
 ```bash
-flutter test       # 70 tests unitarios y de widgets
+flutter test       # 86 tests unitarios y de widgets
 flutter analyze    # 0 errores, 0 warnings/infos
 ```
 
@@ -88,7 +88,7 @@ flutter run --dart-define=API_BASE_URL=http://localhost:8000
 | Guards de ruta (GoRouter redirect) | ✅ Por rol |
 | Widgets compartidos (6) | ✅ ep_button, ep_card, xp_bar, streak_badge, heart_indicator, confetti_overlay |
 | Strings centralizados (l10n) | ✅ EduPlayStrings |
-| Tests unitarios y de widgets | ✅ 70+ tests |
+| Tests unitarios y de widgets | ✅ 86 tests |
 | Conexión con backend real | ⏳ Pendiente (bloqueado por backend, ver `SPEC_BACKLOG.md`) |
 | Offline support (Drift) | ⏳ Diferido a propósito — dependencia removida de pubspec.yaml |
 | Mascota Lumi (Lottie) | ⏳ Diferido a propósito — solo texto en copy por ahora |

@@ -129,6 +129,28 @@
 **Por qué importa**: un agente (F5) reaccionó recreando su propia versión de `SPEC_BACKLOG.md` desde cero, divergente de la real — hubo que descartarla y reaplicar el estado a mano sobre el archivo autoritativo.
 **Cómo aplicarlo la próxima vez**: si vas a lanzar agentes en worktree que dependen de archivos de contexto (specs, backlogs, docs de estado), comitealos primero (aunque sea con un commit provisional) — o pégalos directo en el prompt del agente en vez de asumir que puede leerlos del disco.
 
+**Estado al cerrar**: `flutter analyze` 0 errores/0 warnings. `flutter test` 86/86 pasando.
+
+**Archivos modificados/creados**:
+- `lib/core/router/app_router.dart` — rutas `/auth/register`, `/achievements`, `/leaderboard`, `/settings`, `/parent/settings`; quitada la clase `_ScreenPlaceholder`
+- `lib/features/auth/domain/repositories/auth_repository.dart` — `register()` con `consentGiven`
+- `lib/features/auth/data/repositories/mock_auth_repository.dart` — valida `consentGiven`
+- `lib/features/auth/presentation/bloc/auth_cubit.dart` — estado `AuthRegistered`, método `register()`
+- `lib/features/auth/presentation/screens/parent_register_screen.dart` — NUEVO
+- `lib/features/auth/presentation/screens/{splash,child_selector}_screen.dart` — sin cambio funcional, solo limpieza de lints
+- `lib/features/home/presentation/screens/home_screen.dart` — fix `setGrade()`, accesos a Logros/Ranking
+- `lib/features/parent_dashboard/presentation/screens/parent_dashboard_screen.dart` — botón de configuración apunta a `/parent/settings`
+- `lib/features/gamification/` — NUEVO (`domain/entities/gamification_entities.dart`, `presentation/screens/achievements_screen.dart`, `leaderboard_screen.dart`)
+- `lib/features/settings/` — NUEVO (`presentation/screens/settings_screen.dart`, `parent_settings_screen.dart`)
+- `lib/shared/widgets/ep_card.dart` — `Matrix4.scale()` deprecado → `scaleByDouble()`
+- `lib/features/games/g4_adventure/presentation/overlays/game_complete_overlay.dart` — 3 `const` faltantes
+- `pubspec.yaml` / `pubspec.lock` — quitadas `drift`, `drift_dev`, `lottie`, `sqlite3_flutter_libs`, `path_provider`, `path`
+- `test/features/auth/` — NUEVO (`bloc/auth_cubit_test.dart`, `screens/{splash,parent_login,parent_register,child_selector}_screen_test.dart`)
+- `test/features/gamification/`, `test/features/settings/` — NUEVO (18 tests)
+- `test/features/games/g4_adventure/bloc/game_bloc_test.dart`, `test/features/lesson/bloc/lesson_bloc_test.dart` — fix cascade `..having` → `.having`
+- `SPEC_BACKLOG.md`, `specs/frontend-status.md` — NUEVO (backlog propio del frontend + estado para el backend)
+- `CLAUDE.md`, `README.md`, `STATUS.md` — actualizados con el estado real post-sesión
+
 ## Semana anterior (2026-06-19)
 
 **Trabajo realizado** — Refactor arquitectónico completo en 3 sesiones:

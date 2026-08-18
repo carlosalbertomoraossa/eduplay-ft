@@ -25,7 +25,7 @@
 Código real auditado (ver detalle completo en `../SPEC_BACKLOG.md`):
 
 - `flutter analyze`: 0 errores, 159 warnings/infos (APIs deprecadas `withOpacity`/`scale`, `prefer_const_constructors`, 1 import sin usar). **Resuelto en `F3` (2026-08-17) → ahora 0 issues.**
-- `flutter test`: 33/33 tests verdes (`lesson_bloc`, `game_bloc`, `game_questions_provider`). **`F3` encontró que buena parte de las aserciones de `game_bloc_test`/`lesson_bloc_test` eran no-ops (bug de cascade `..having`) — corregido, los 33 tests siguen verdes pero ahora verifican de verdad.**
+- `flutter test`: 33/33 tests verdes originalmente (`lesson_bloc`, `game_bloc`, `game_questions_provider`). **`F3` encontró que buena parte de las aserciones de `game_bloc_test`/`lesson_bloc_test` eran no-ops (bug de cascade `..having`) — corregido.** Tras sumar `F2` (tests de auth) y `F5` (tests de gamificación/settings), el proyecto quedó en **86 tests, todos verdes**.
 - Dependencias "fantasma" en `pubspec.yaml`: `drift`/`drift_dev` (11.15, offline) y `lottie` (11.3, Lumi) declaradas sin una sola línea de código que las use. **Resuelto en `F4` (2026-08-17)** — se quitaron, junto con `sqlite3_flutter_libs`/`path_provider`/`path` (soporte exclusivo de Drift, también sin uso real). Carpetas vacías que dan falsa sensación de avance: `lib/core/storage/`, `lib/features/gamification/`, `lib/features/settings/`, `integration_test/`.
 - Todo el frontend corre sobre mocks: `ApiClient` (Dio real, con interceptores) registrado en DI pero nunca conectado. Detalle completo de qué simula cada mock y qué contrato asume en `specs/frontend-status.md`.
 - El backend está funcionalmente en cero — ningún servicio arranca hoy. Antes de conectar cualquier feature a datos reales, confirmar en `../eduplay/specs/backend-status.md` que el servicio correspondiente ya está 🟢.
@@ -89,13 +89,13 @@ Código real auditado (ver detalle completo en `../SPEC_BACKLOG.md`):
 
 | # | Spec / Tarea | Archivo | Estado | Dependencia |
 |---|-------------|---------|--------|--------------|
-| 12.1 | Pantalla: Logros (achievements grid) | `lib/features/gamification/` | ⏳ PENDIENTE | 🔓 INDEPENDIENTE para UI con datos mock; 🔗 DEPENDE DE: `5.10` (backend, routers gamification) para datos reales |
-| 12.2 | Pantalla: Ranking (leaderboard) | `lib/features/gamification/` | ⏳ PENDIENTE | 🔓 INDEPENDIENTE para UI con datos mock; 🔗 DEPENDE DE: `5.11` (backend, rankings Redis) para datos reales |
+| 12.1 | Pantalla: Logros (achievements grid) | `lib/features/gamification/presentation/screens/achievements_screen.dart` | ✅ IMPLEMENTADO (2026-08-17, mock) — grid con el catálogo real de 10 logros MVP (`specs/domains/gamification/spec.md`), 4/10 desbloqueados. Accesible desde Home | 🔗 DEPENDE DE: `5.10` (backend, routers gamification) para datos reales |
+| 12.2 | Pantalla: Ranking (leaderboard) | `lib/features/gamification/presentation/screens/leaderboard_screen.dart` | ✅ IMPLEMENTADO (2026-08-17, mock) — leaderboard semanal, 8 niños, medallas top 3. Accesible desde Home | 🔗 DEPENDE DE: `5.11` (backend, rankings Redis) para datos reales |
 | 12.3 | Animación: Level Up (Lottie) | `assets/animations/level_up.json` | ⏳ PENDIENTE | 🔓 INDEPENDIENTE |
 | 12.4 | Animación: Streak milestone | `assets/animations/streak_fire.json` | ⏳ PENDIENTE | 🔓 INDEPENDIENTE |
 | 12.5 | Pantalla: Dashboard parental | `lib/features/parent_dashboard/` | ✅ IMPLEMENTADO (mock) | 🔗 DEPENDE DE: `4.7` (backend, routers progress-service) para datos reales — la UI ya está lista |
 | 12.6 | Pantalla: Progreso detallado del niño | `lib/features/parent_dashboard/` | ✅ IMPLEMENTADO (mock) | 🔗 DEPENDE DE: `4.7` (backend) para datos reales — la UI ya está lista |
-| 12.7 | Pantalla: Configuración y controles parentales | `lib/features/settings/` | ⏳ PENDIENTE | 🔓 INDEPENDIENTE para UI local; 🔗 DEPENDE DE: `9.5` (backend, parent-service) para persistir controles reales |
+| 12.7 | Pantalla: Configuración y controles parentales | `lib/features/settings/presentation/screens/settings_screen.dart` (niño, ruta `/settings`) y `parent_settings_screen.dart` (padre, ruta nueva `/parent/settings`) | ✅ IMPLEMENTADO (2026-08-17, mock) — se separó en dos rutas porque `/settings` solo estaba en `_childRoutes` y el botón del dashboard parental redirigía de vuelta al dashboard (bug real, corregido). Controles: límite de lecciones/día, horario permitido, ranking público, notificaciones, bloqueo temporal | 🔓 INDEPENDIENTE para UI local; 🔗 DEPENDE DE: `9.5` (backend, parent-service) para persistir controles reales |
 | 12.8 | Tests de integración: flujo onboarding → primera lección | `integration_test/` | ⏳ PENDIENTE | 🔓 INDEPENDIENTE (puede correr contra mocks) |
 | 12.9 | Juego: "La Aventura del Cuarto Grado" (plataformas 2D Flame) | `lib/features/games/g4_adventure/` | ✅ IMPLEMENTADO | 🔓 INDEPENDIENTE |
 
@@ -130,9 +130,9 @@ Ver contexto completo en `../SPEC_BACKLOG.md` y `../specs/adrs/ADR-006-vertical-
 | F2 | ✅ HECHO (2026-08-17) — ver 10.14. `AuthCubit` no tenía ningún test (bloc puro, ahora 9 tests, luego 11 con `register`). Route `/auth/register` referenciada por el link "Regístrate" en `parent_login_screen.dart` **no existía** en `app_router.dart` — hallazgo del testing. Resuelto por separado, ver nueva fila `10.15`. | — | 🔓 INDEPENDIENTE |
 | F3 | ✅ HECHO (2026-08-17) — `flutter analyze` en 0 issues (era 159). Además corrigió 2 bugs reales encontrados en el camino: `home_screen.dart` pisaba `.state` en vez de llamar `setGrade()` (el grado seleccionado no se persistía); los tests de `game_bloc`/`lesson_bloc` usaban `..having(...)` (cascade) en vez de `.having(...)` (chaining) — como `having()` retorna un matcher nuevo en vez de mutar, el cascade descartaba cada condición y los tests solo verificaban el tipo del estado, nunca los valores de los campos. Corregido en ambos archivos + 1 caso de test con datos matemáticamente imposibles (2/3 no puede ser ≥70%). | — | 🔓 INDEPENDIENTE |
 | F4 | ✅ HECHO (2026-08-17) — se quitaron `drift`, `drift_dev`, `lottie` de `pubspec.yaml`, y de paso `sqlite3_flutter_libs`/`path_provider`/`path` (soporte exclusivo de Drift, también sin uso real — `shared_preferences` se mantuvo, sí está en uso). `flutter pub get`/`analyze`/`test` verificados: 0 issues, 70/70 tests. Ambas features quedan como pendientes genuinas (11.3, 11.15), no como dependencias fantasma. | Decisión de Producto (P1 en `../SPEC_BACKLOG.md`) | 🔓 INDEPENDIENTE |
-| F5 | Pantallas de Logros/Ranking (12.1-12.2) y Settings/controles parentales (12.7) — empezar en modo UI-only con mock | Decisión de alcance (P3 en `../SPEC_BACKLOG.md`) | 🔓 INDEPENDIENTE para UI; 🔗 DEPENDE DE: `5.10`/`9.5` (backend) solo para datos reales |
+| F5 | ✅ HECHO (2026-08-17) — ver 12.1, 12.2, 12.7. 18 tests de widget nuevos en `test/features/gamification/` y `test/features/settings/`. Agregó accesos de navegación reales a Logros/Ranking desde `home_screen.dart` (antes ninguna pantalla los enlazaba). Resolvió el bug de `/settings` (ver 12.7). | Decisión de alcance (P3 en `../SPEC_BACKLOG.md`) | 🔓 INDEPENDIENTE para UI; 🔗 DEPENDE DE: `5.10`/`9.5` (backend) solo para datos reales |
 
-*Siguiente ítem a iniciar: **F2 o F3** (ninguno bloqueado); **F1** queda en espera de que `eduplay/specs/backend-status.md` marque `auth-service` 🟢.*
+*Siguiente ítem a iniciar: **F1** — depende de que `eduplay/specs/backend-status.md` marque `auth-service` 🟢. El resto de tareas independientes (F2-F5) ya están hechas.*
 
 ---
 
@@ -143,6 +143,6 @@ Ver contexto completo en `../SPEC_BACKLOG.md` y `../specs/adrs/ADR-006-vertical-
 | 1.4 CI Flutter | 1 | 0 | 0 | 1 |
 | 10. Flutter Core + Auth | 15 | 0 | 1 | 13 |
 | 11. Flutter Lección | 16 | 0 | 1 | 13 |
-| 12. Flutter Gamif. + Padres | 9 | 0 | 0 | 3 |
+| 12. Flutter Gamif. + Padres | 9 | 0 | 0 | 6 |
 | 13. Contenido MEN | 10 | 0 | 0 | 6 |
-| **TOTAL FRONTEND** | **51** | **0** | **2** | **36** |
+| **TOTAL FRONTEND** | **51** | **0** | **2** | **39** |

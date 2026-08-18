@@ -82,7 +82,7 @@ flutter run -d chrome  # web (para desarrollo rápido)
 
 ## Tests
 ```bash
-flutter test                     # 70 tests (lesson_bloc, game_bloc, game_questions_provider, auth: cubit + 4 pantallas)
+flutter test                     # 86 tests (lesson_bloc, game_bloc, game_questions_provider, auth: cubit + 4 pantallas, gamificación, settings)
 flutter analyze                  # 0 errores, 0 warnings/infos
 ```
 
@@ -98,6 +98,7 @@ flutter analyze                  # 0 errores, 0 warnings/infos
 9. `lib/features/games/g4_adventure/g4_adventure_game.dart` — FlameGame ensamblador (sin hacks)
 10. `lib/features/games/g4_adventure/data/game_questions_provider.dart` — 80 ejercicios MC × 8 niveles
 11. `lib/core/theme/app_theme.dart` — sistema de colores EduPlayColors
+12. `lib/features/auth/presentation/bloc/auth_cubit.dart` — login/registro/logout, único origen de verdad de `AuthState` para los guards de ruta
 
 ## Reglas del dominio importantes
 - Todo dato de lección viene de `CurriculumData` (no hardcoded en widgets)
