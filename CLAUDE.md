@@ -4,16 +4,18 @@
 App móvil de EduPlay para niños colombianos de primaria (6-12 años). Gamificada estilo Duolingo, enfocada en el currículo del MEN Colombia. Target principal: Android.
 
 ## Specs de referencia
-- Arquitectura Flutter: `specs/flutter-arch.md`
-- Plan contenido matemáticas 2°–5°: `specs/math-content-plan.md`
-- UX niños: `../specs/product/ux-children.md`
-- Dominio learning: `../specs/domains/learning/spec.md`
-- Currículo MEN grados 1°–5°: `../specs/domains/learning/curriculum-men.md`
-- Dominio gamificación: `../specs/domains/gamification/spec.md`
-- MVP: `../specs/product/mvp.md`
-- **Juego G4**: `specs/games/g4-adventure-platformer.md`, `specs/games/g4-adventure-plan.md`, `specs/games/g4-adventure-tasks.md`
-- **Backlog de tareas del frontend** (privado de este repo, no mezclar con el del backend): `SPEC_BACKLOG.md`
-- **Estado para el backend** (qué contrato asumen los mocks, qué se desbloquea por servicio): `specs/frontend-status.md` — actualizar cuando un mock cambie de forma
+Gestionadas con la skill `sddwork` en `.sdd/` (ver también `.sdd/README.md` y `../.sdd/README.md` para el índice completo de specs compartidas).
+
+- Arquitectura Flutter: `.sdd/implemented/features/flutter-architecture/technical-specs.md`
+- Plan contenido matemáticas 2°–5°: `.sdd/implemented/features/math-content-plan/technical-specs.md`
+- UX niños: `../.sdd/implemented/features/ux-children/technical-specs.md`
+- Dominio learning: `../.sdd/implemented/features/domain-learning/technical-specs.md`
+- Currículo MEN grados 1°–5°: `../.sdd/implemented/features/domain-learning/curriculum-men.md`
+- Dominio gamificación: `../.sdd/implemented/features/domain-gamification/technical-specs.md`
+- MVP: `../.sdd/implemented/features/product-mvp/technical-specs.md`
+- **Juego G4**: `.sdd/implemented/features/g4-adventure/technical-specs.md` (spec central), `g4-adventure-plan.md`, `g4-adventure-tasks.md` (mismo folder)
+- **Backlog de tareas del frontend** (privado de este repo, no mezclar con el del backend): `.sdd/SPEC_BACKLOG.md`
+- **Estado para el backend** (qué contrato asumen los mocks, qué se desbloquea por servicio): `.sdd/frontend-status.md` — actualizar cuando un mock cambie de forma
 
 ## Stack
 - **Flutter** 3.x / Dart SDK ≥ 3.4.0

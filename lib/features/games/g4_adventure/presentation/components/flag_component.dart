@@ -1,4 +1,4 @@
-// Spec: specs/games/g4-adventure-plan.md Fase 4
+// Spec: .sdd/implemented/features/g4-adventure/g4-adventure-plan.md Fase 4
 
 import 'dart:math' as math;
 

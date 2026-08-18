@@ -1,4 +1,4 @@
-// Spec: specs/games/g4-adventure-platformer.md §4
+// Spec: .sdd/implemented/features/g4-adventure/technical-specs.md §4
 
 import '../../../lesson/data/curriculum_data.dart';
 import '../../../lesson/domain/entities/lesson.dart';

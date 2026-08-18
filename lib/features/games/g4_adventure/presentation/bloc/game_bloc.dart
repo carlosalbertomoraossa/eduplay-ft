@@ -1,4 +1,4 @@
-// Spec: specs/games/g4-adventure-plan.md Fase 1 §1.5
+// Spec: .sdd/implemented/features/g4-adventure/g4-adventure-plan.md Fase 1 §1.5
 
 import 'package:bloc/bloc.dart';
 

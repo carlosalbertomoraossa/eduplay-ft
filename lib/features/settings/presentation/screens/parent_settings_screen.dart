@@ -1,5 +1,5 @@
 // Controles parentales — límite de tiempo, horario permitido, privacidad
-// Spec: /specs/domains/parents/spec.md — sección "Controles parentales"
+// Spec: ../.sdd/implemented/features/domain-parents/technical-specs.md — sección "Controles parentales"
 // Ruta: /parent/settings. UI-only, sin persistencia real todavía
 // (12.7 depende de 9.5 — backend parent-service — para persistir).
 
@@ -17,7 +17,7 @@ class ParentSettingsScreen extends StatefulWidget {
 }
 
 class _ParentSettingsScreenState extends State<ParentSettingsScreen> {
-  // Estado local — controles parentales UI-only (spec: /specs/domains/parents/spec.md).
+  // Estado local — controles parentales UI-only (spec: ../.sdd/implemented/features/domain-parents/technical-specs.md).
   // Valores por defecto coherentes con la tabla "Controles parentales" de la spec.
   int _dailyLessonLimit = 0; // 0 = sin límite
   RangeValues _allowedHours = const RangeValues(7, 20); // sin restricción real

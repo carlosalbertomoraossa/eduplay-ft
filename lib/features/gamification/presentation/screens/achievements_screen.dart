@@ -1,5 +1,5 @@
 // Pantalla de Logros — grid de los 10 logros del catálogo MVP
-// Spec: /specs/domains/gamification/spec.md — sección "Catálogo de logros (MVP)"
+// Spec: ../.sdd/implemented/features/domain-gamification/technical-specs.md — sección "Catálogo de logros (MVP)"
 
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';

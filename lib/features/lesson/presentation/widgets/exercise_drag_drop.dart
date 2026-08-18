@@ -1,5 +1,5 @@
 // Widget de ejercicio arrastrar y soltar
-// Spec: /specs/domains/learning/spec.md — ExerciseType.dragDrop
+// Spec: ../.sdd/implemented/features/domain-learning/technical-specs.md — ExerciseType.dragDrop
 // content schema: { "instruction": str, "items": [str], "targets": [str], "correct_mapping": {item: target} }
 
 import 'package:flutter/material.dart';

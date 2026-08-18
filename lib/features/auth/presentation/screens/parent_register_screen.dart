@@ -1,5 +1,5 @@
 // Registro del padre/tutor
-// Spec: /specs/domains/auth/spec.md, /specs/apis/auth-service.openapi.yaml
+// Spec: ../.sdd/implemented/features/domain-auth/technical-specs.md, ../.sdd/implemented/features/domain-auth/auth-service.openapi.yaml
 // Consentimiento parental obligatorio (regla COPPA-like del proyecto — ver CLAUDE.md raíz)
 
 import 'package:flutter/material.dart';

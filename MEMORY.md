@@ -112,7 +112,7 @@
 
 ### `register()` ahora exige `consentGiven: bool`
 **Qué**: `AuthRepository.register()` pasó de `{email, password}` a `{email, password, consentGiven}`; `AuthCubit` gana estado `AuthRegistered` y método `register()`.
-**Por qué**: el OpenAPI de auth-service (`specs/apis/auth-service.openapi.yaml`) ya marcaba `consent_given` como `required` (regla COPPA-like del proyecto). Se detectó como gap en una auditoría de estado cruzado backend↔frontend y se cerró al construir `ParentRegisterScreen` (antes el link "Regístrate" navegaba a una ruta que no existía).
+**Por qué**: el OpenAPI de auth-service (`../.sdd/implemented/features/domain-auth/auth-service.openapi.yaml`, entonces `specs/apis/auth-service.openapi.yaml` — ver migración a `.sdd/` del 2026-08-17 más abajo) ya marcaba `consent_given` como `required` (regla COPPA-like del proyecto). Se detectó como gap en una auditoría de estado cruzado backend↔frontend y se cerró al construir `ParentRegisterScreen` (antes el link "Regístrate" navegaba a una ruta que no existía).
 **Nota para cuando se conecte el backend real**: el campo es `consentGiven` en Dart (camelCase) pero `consent_given` en el JSON del OpenAPI (snake_case) — el datasource remoto deberá mapear el nombre al serializar.
 
 ### Dependencias fantasma: `drift`/`lottie` y su soporte (`sqlite3_flutter_libs`, `path_provider`, `path`) removidas de pubspec.yaml
@@ -148,8 +148,13 @@
 - `test/features/auth/` — NUEVO (`bloc/auth_cubit_test.dart`, `screens/{splash,parent_login,parent_register,child_selector}_screen_test.dart`)
 - `test/features/gamification/`, `test/features/settings/` — NUEVO (18 tests)
 - `test/features/games/g4_adventure/bloc/game_bloc_test.dart`, `test/features/lesson/bloc/lesson_bloc_test.dart` — fix cascade `..having` → `.having`
-- `SPEC_BACKLOG.md`, `specs/frontend-status.md` — NUEVO (backlog propio del frontend + estado para el backend)
+- `SPEC_BACKLOG.md`, `specs/frontend-status.md` — NUEVO (backlog propio del frontend + estado para el backend; ambos movidos a `.sdd/` en la migración descrita abajo)
 - `CLAUDE.md`, `README.md`, `STATUS.md` — actualizados con el estado real post-sesión
+
+### Migración de `specs/` a `.sdd/` (metodología sddwork)
+**Qué**: Toda la documentación de specs pasó de `specs/` (por repo) a una estructura `.sdd/` (`work/current/`, `implemented/features/<slug>/`, `implemented/decisions/`, `templates/`) en tres raíces independientes: `EdTech/.sdd/` (specs compartidas: dominios, contratos OpenAPI/AsyncAPI, DB, seguridad, infra, producto, ADRs), `eduplay-ft/.sdd/` (arquitectura Flutter, plan de contenido, juego G4, `frontend-status.md`, `SPEC_BACKLOG.md`), `eduplay/.sdd/` (`backend-status.md`, `SPEC_BACKLOG.md`; sin specs backend-específicas todavía, `implemented/features/` arranca vacío). Se actualizaron los 3 `CLAUDE.md` (se creó uno nuevo para `eduplay`, no existía), los workflows de CI, las 57 cabeceras `// Spec:` en `eduplay-ft/lib/**/*.dart`, y las referencias en `README.md`/`STATUS.md`/`docker-compose.yml`.
+**Por qué**: se va a usar la skill `sddwork` para gestionar specs de aquí en adelante, y esa skill exige/crea justo esta estructura `.sdd/`. Se migró el historial completo (no solo un esqueleto vacío) porque las specs ya existentes debían quedar accesibles bajo el nuevo esquema, con `technical-specs.md` conteniendo el documento original verbatim (sin inventar `user-stories.md`/`acceptance-criteria.md`/`test-plan.md` donde no existía un equivalente separable).
+**Nota para lecturas futuras de este archivo**: cualquier ruta `specs/...` mencionada en entradas de MEMORY.md **anteriores** a esta fecha (2026-08-17) es histórica — describe dónde vivía el archivo en el momento de esa decisión, no su ubicación actual. La ubicación actual de todo lo que antes vivía en `specs/` está bajo `.sdd/` (ver `../CLAUDE.md` para el mapa completo, o `../.sdd/README.md` para el índice de specs compartidas).
 
 ## Semana anterior (2026-06-19)
 

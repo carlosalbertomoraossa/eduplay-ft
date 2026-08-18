@@ -1,5 +1,5 @@
 // Entidades del dominio Auth — Flutter
-// Spec: /specs/domains/auth/spec.md
+// Spec: ../.sdd/implemented/features/domain-auth/technical-specs.md
 
 import 'package:equatable/equatable.dart';
 

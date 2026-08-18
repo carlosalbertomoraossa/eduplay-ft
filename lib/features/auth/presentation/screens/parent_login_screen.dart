@@ -1,5 +1,5 @@
 // Login del padre/tutor
-// Spec: /specs/domains/auth/spec.md
+// Spec: ../.sdd/implemented/features/domain-auth/technical-specs.md
 
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';

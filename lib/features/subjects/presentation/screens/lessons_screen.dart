@@ -1,5 +1,5 @@
 // Pantalla de camino de lecciones — estilo Duolingo
-// Spec: /specs/domains/learning/spec.md
+// Spec: ../.sdd/implemented/features/domain-learning/technical-specs.md
 
 import 'dart:math' as math;
 

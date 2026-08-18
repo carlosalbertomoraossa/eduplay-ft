@@ -1,5 +1,5 @@
 // Indicador de corazones (vidas) en lección
-// Spec UX: /specs/product/ux-children.md — "corazón se rompe suavemente"
+// Spec UX: ../.sdd/implemented/features/ux-children/technical-specs.md — "corazón se rompe suavemente"
 
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';

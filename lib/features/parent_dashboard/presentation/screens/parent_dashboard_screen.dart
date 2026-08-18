@@ -1,5 +1,5 @@
 // Dashboard parental — vista del padre sobre sus hijos
-// Spec: /specs/domains/parents/spec.md
+// Spec: ../.sdd/implemented/features/domain-parents/technical-specs.md
 
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';

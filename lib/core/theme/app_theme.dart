@@ -1,5 +1,5 @@
 // EduPlay Design System
-// Spec: /specs/product/ux-children.md — sección de colores y tipografía
+// Spec: ../.sdd/implemented/features/ux-children/technical-specs.md — sección de colores y tipografía
 
 import 'package:flutter/material.dart';
 

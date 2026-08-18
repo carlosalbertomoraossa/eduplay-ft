@@ -1,5 +1,5 @@
 // Onboarding Screen — 3 pasos para nuevos usuarios
-// UX Spec: /specs/product/ux-children.md — "Duración total esperada: < 90 segundos"
+// UX Spec: ../.sdd/implemented/features/ux-children/technical-specs.md — "Duración total esperada: < 90 segundos"
 
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';

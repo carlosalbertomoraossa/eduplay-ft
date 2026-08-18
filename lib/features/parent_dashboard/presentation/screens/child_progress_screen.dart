@@ -1,5 +1,5 @@
 // Progreso detallado del niño — vista para el padre
-// Spec: /specs/domains/parents/spec.md + /specs/domains/progress/spec.md
+// Spec: ../.sdd/implemented/features/domain-parents/technical-specs.md + ../.sdd/implemented/features/domain-progress/technical-specs.md
 
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';

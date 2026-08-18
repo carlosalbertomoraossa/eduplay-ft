@@ -1,5 +1,5 @@
 // Interfaz del repositorio Auth
-// Spec: /specs/domains/auth/spec.md
+// Spec: ../.sdd/implemented/features/domain-auth/technical-specs.md
 
 import '../entities/auth_entities.dart';
 

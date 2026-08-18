@@ -1,5 +1,5 @@
 // StreakBadge — insignia de racha con animación de fuego
-// UX Spec: /specs/product/ux-children.md — "visual llamativo para motivar rachas"
+// UX Spec: ../.sdd/implemented/features/ux-children/technical-specs.md — "visual llamativo para motivar rachas"
 
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';

@@ -1,4 +1,4 @@
-// Spec: specs/games/g4-adventure-platformer.md §5.2
+// Spec: .sdd/implemented/features/g4-adventure/technical-specs.md §5.2
 
 import 'package:equatable/equatable.dart';
 

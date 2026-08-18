@@ -1,6 +1,6 @@
 // Home del niño — selección de grado
-// UX Spec: /specs/product/ux-children.md
-// Currículo: /specs/domains/learning/curriculum-men.md
+// UX Spec: ../.sdd/implemented/features/ux-children/technical-specs.md
+// Currículo: ../.sdd/implemented/features/domain-learning/curriculum-men.md
 
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';

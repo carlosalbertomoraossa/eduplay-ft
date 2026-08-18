@@ -1,5 +1,5 @@
 // Inyección de dependencias — GetIt + Injectable
-// Spec: /specs/frontend/flutter-arch.md
+// Spec: .sdd/implemented/features/flutter-architecture/technical-specs.md
 // MVP: registro manual hasta que build_runner genere injection.config.dart
 
 import 'package:get_it/get_it.dart';

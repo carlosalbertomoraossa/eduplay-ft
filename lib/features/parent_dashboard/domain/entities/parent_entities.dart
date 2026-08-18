@@ -1,5 +1,5 @@
 // Entidades del dashboard parental
-// Spec: /specs/domains/parents/spec.md
+// Spec: ../.sdd/implemented/features/domain-parents/technical-specs.md
 
 import 'package:equatable/equatable.dart';
 

@@ -1,5 +1,5 @@
 // EduPlay Button — componente primario
-// Spec UX: /specs/product/ux-children.md — tamaño mínimo tap 48dp
+// Spec UX: ../.sdd/implemented/features/ux-children/technical-specs.md — tamaño mínimo tap 48dp
 
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';

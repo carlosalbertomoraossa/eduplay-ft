@@ -1,5 +1,5 @@
 // API Client centralizado con Dio
-// Spec: /specs/frontend/flutter-arch.md
+// Spec: .sdd/implemented/features/flutter-architecture/technical-specs.md
 
 import 'package:dio/dio.dart';
 import 'package:injectable/injectable.dart';

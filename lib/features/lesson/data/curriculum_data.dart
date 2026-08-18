@@ -1,5 +1,5 @@
 // Currículo de Matemáticas MVP — contenido de las 75 lecciones
-// Spec: /specs/domains/learning/spec.md
+// Spec: ../.sdd/implemented/features/domain-learning/technical-specs.md
 // Alineado con DBA versión 2 — MEN 2016, Estándares Básicos de Competencias
 // Contenido distribuido en curriculum_grade1.dart … curriculum_grade5.dart
 

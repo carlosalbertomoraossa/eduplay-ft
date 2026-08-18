@@ -1,5 +1,5 @@
 // Pantalla de Ranking — leaderboard semanal de amigos
-// Spec: /specs/domains/gamification/spec.md — regla 7: "ranking de amigos
+// Spec: ../.sdd/implemented/features/domain-gamification/technical-specs.md — regla 7: "ranking de amigos
 // solo muestra XP semanal (no histórico total) para mayor competitividad"
 
 import 'package:flutter/material.dart';

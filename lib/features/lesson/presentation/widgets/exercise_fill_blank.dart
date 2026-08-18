@@ -1,5 +1,5 @@
 // Widget de ejercicio completar el espacio en blanco
-// Spec: /specs/domains/learning/spec.md — ExerciseType.fillBlank
+// Spec: ../.sdd/implemented/features/domain-learning/technical-specs.md — ExerciseType.fillBlank
 // content schema: { "sentence": str, "blank_placeholder": str, "options": [str], "correct_answer": str }
 
 import 'package:flutter/material.dart';

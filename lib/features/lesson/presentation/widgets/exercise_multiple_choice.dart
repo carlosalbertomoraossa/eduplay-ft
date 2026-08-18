@@ -1,5 +1,5 @@
 // Widget de ejercicio opción múltiple
-// Spec: /specs/domains/learning/spec.md — ExerciseType.multipleChoice
+// Spec: ../.sdd/implemented/features/domain-learning/technical-specs.md — ExerciseType.multipleChoice
 // content schema: { "question": str, "options": [str], "correct_index": int }
 
 import 'package:flutter/material.dart';

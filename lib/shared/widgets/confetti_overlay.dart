@@ -1,5 +1,5 @@
 // ConfettiOverlay — animación de celebración con partículas
-// UX Spec: /specs/product/ux-children.md — "celebración al completar nivel/lección"
+// UX Spec: ../.sdd/implemented/features/ux-children/technical-specs.md — "celebración al completar nivel/lección"
 
 import 'dart:math';
 

@@ -1,4 +1,4 @@
-// Spec: specs/games/g4-adventure-plan.md Fase 4 §4.2
+// Spec: .sdd/implemented/features/g4-adventure/g4-adventure-plan.md Fase 4 §4.2
 
 import 'package:flame/game.dart';
 import 'package:flutter/material.dart';

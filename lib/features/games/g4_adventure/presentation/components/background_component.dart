@@ -1,4 +1,4 @@
-// Spec: specs/games/g4-adventure-plan.md Fase 3 §3.1
+// Spec: .sdd/implemented/features/g4-adventure/g4-adventure-plan.md Fase 3 §3.1
 
 import 'package:flame/collisions.dart';
 import 'package:flame/components.dart';

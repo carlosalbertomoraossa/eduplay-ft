@@ -3,10 +3,10 @@
 App educativa gamificada para niños colombianos de primaria. Similar a Duolingo pero alineada con el currículo del MEN (Ministerio de Educación Nacional de Colombia).
 
 ## Specs
-- [Arquitectura Flutter](specs/flutter-arch.md)
-- [UX para niños](../specs/product/ux-children.md)
-- [Dominio Learning](../specs/domains/learning/spec.md)
-- [MVP](../specs/product/mvp.md)
+- [Arquitectura Flutter](.sdd/implemented/features/flutter-architecture/technical-specs.md)
+- [UX para niños](../.sdd/implemented/features/ux-children/technical-specs.md)
+- [Dominio Learning](../.sdd/implemented/features/domain-learning/technical-specs.md)
+- [MVP](../.sdd/implemented/features/product-mvp/technical-specs.md)
 
 ## Requisitos
 
@@ -132,5 +132,5 @@ lib/
 
 ## Contribuir
 
-Seguir la metodología SDD: toda feature nueva necesita su spec en `/specs` antes de implementar.
+Seguir la metodología SDD: toda feature nueva necesita su spec en `.sdd/work/current/` (skill `sddwork`) antes de implementar.
 Ver [STATUS.md](STATUS.md) para el estado detallado.

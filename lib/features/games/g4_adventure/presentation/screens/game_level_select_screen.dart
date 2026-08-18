@@ -1,4 +1,4 @@
-// Spec: specs/games/g4-adventure-plan.md Fase 4 §4.1
+// Spec: .sdd/implemented/features/g4-adventure/g4-adventure-plan.md Fase 4 §4.1
 
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';

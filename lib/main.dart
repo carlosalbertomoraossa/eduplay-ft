@@ -1,6 +1,6 @@
 // EduPlay Flutter App
-// Spec: /specs/frontend/flutter-arch.md
-// UX Spec: /specs/product/ux-children.md
+// Spec: .sdd/implemented/features/flutter-architecture/technical-specs.md
+// UX Spec: ../.sdd/implemented/features/ux-children/technical-specs.md
 
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';

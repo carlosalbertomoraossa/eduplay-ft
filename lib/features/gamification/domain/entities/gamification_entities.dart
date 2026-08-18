@@ -1,5 +1,5 @@
 // Entidades de gamificación — logros y ranking
-// Spec: /specs/domains/gamification/spec.md
+// Spec: ../.sdd/implemented/features/domain-gamification/technical-specs.md
 
 import 'package:equatable/equatable.dart';
 

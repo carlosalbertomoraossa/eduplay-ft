@@ -1,5 +1,5 @@
 // EduPlay — Navegación
-// Spec: /specs/frontend/flutter-arch.md — sección Navegación
+// Spec: .sdd/implemented/features/flutter-architecture/technical-specs.md — sección Navegación
 
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';

@@ -1,5 +1,5 @@
 // Pantalla de unidades de una materia
-// Spec: /specs/domains/learning/spec.md
+// Spec: ../.sdd/implemented/features/domain-learning/technical-specs.md
 
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';

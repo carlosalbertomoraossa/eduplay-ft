@@ -6,10 +6,10 @@ owner: equipo-frontend
 last-updated: 2026-08-17
 consumed-by: eduplay (backend)
 related-specs:
-  - flutter-arch.md
-  - ../../specs/domains/auth/spec.md
-  - ../../specs/domains/learning/spec.md
-  - ../SPEC_BACKLOG.md
+  - implemented/features/flutter-architecture/technical-specs.md
+  - ../../.sdd/implemented/features/domain-auth/technical-specs.md
+  - ../../.sdd/implemented/features/domain-learning/technical-specs.md
+  - SPEC_BACKLOG.md
 ---
 
 # Frontend — Estado real para el Backend
@@ -28,7 +28,7 @@ related-specs:
 | Lecciones | `CurriculumData` (`lib/features/lesson/data/curriculum_data.dart` — 75 lecciones hardcoded) | Ver sección "Contrato de learning" abajo |
 | Dashboard parental | Datos hardcoded en `parent_dashboard_screen.dart` / `child_progress_screen.dart` | Agregado de progress + gamification por hijo |
 
-Antes de que el backend declare un servicio 🟢 en `../eduplay/specs/backend-status.md`, el frontend seguirá con estos mocks — no tiene sentido que el backend intente coordinar timing con el frontend para esto, es una migración explícita por tarea (`F1`, `11.8`, etc. en `SPEC_BACKLOG.md`).
+Antes de que el backend declare un servicio 🟢 en `../eduplay/.sdd/backend-status.md`, el frontend seguirá con estos mocks — no tiene sentido que el backend intente coordinar timing con el frontend para esto, es una migración explícita por tarea (`F1`, `11.8`, etc. en `SPEC_BACKLOG.md`).
 
 ## Contrato de auth (lo que `AuthRepository` espera)
 
@@ -56,7 +56,7 @@ class ParentAccount {
 }
 ```
 
-### ✅ Gap cerrado (2026-08-17) — antes avisado también en `eduplay/specs/backend-status.md`
+### ✅ Gap cerrado (2026-08-17) — antes avisado también en `eduplay/.sdd/backend-status.md`
 
 `register()` ya recibe `consentGiven: bool` (antes solo `email`/`password`). Se agregó junto con la pantalla `ParentRegisterScreen` (`10.15` en `SPEC_BACKLOG.md`), que antes no existía — el link "Regístrate" navegaba a una ruta rota. El formulario exige el checkbox de consentimiento parental marcado antes de poder enviar, alineado con el `enum: [true]` que el OpenAPI exige en `consent_given`.
 
@@ -87,7 +87,7 @@ class LessonResult {
 }
 ```
 
-Las 75 lecciones reales (grados 1°-5°, alineadas a DBA MEN) están en `lib/features/lesson/data/curriculum_grade1-5.dart` — son el dataset candidato para portar directo a los seeds de `learning-service` (tareas `3.8-3.10` en `eduplay/SPEC_BACKLOG.md`), evita rehacer el contenido en Python.
+Las 75 lecciones reales (grados 1°-5°, alineadas a DBA MEN) están en `lib/features/lesson/data/curriculum_grade1-5.dart` — son el dataset candidato para portar directo a los seeds de `learning-service` (tareas `3.8-3.10` en `../eduplay/.sdd/SPEC_BACKLOG.md`), evita rehacer el contenido en Python.
 
 ## Qué queda desbloqueado en el frontend por cada servicio backend
 

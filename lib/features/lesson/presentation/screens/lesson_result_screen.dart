@@ -1,6 +1,6 @@
 // Pantalla de resultado de lección
-// UX Spec: /specs/product/ux-children.md — post-lesson result screen
-// Spec: /specs/domains/learning/spec.md — LessonResult, score >= 0.70 = completed
+// UX Spec: ../.sdd/implemented/features/ux-children/technical-specs.md — post-lesson result screen
+// Spec: ../.sdd/implemented/features/domain-learning/technical-specs.md — LessonResult, score >= 0.70 = completed
 
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';

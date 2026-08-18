@@ -1,5 +1,5 @@
 // Splash Screen — primera pantalla de EduPlay
-// UX Spec: /specs/product/ux-children.md
+// UX Spec: ../.sdd/implemented/features/ux-children/technical-specs.md
 
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';

@@ -26,7 +26,7 @@
 - Progreso de lecciones por sesión (Riverpod)
 - **Grado seleccionado persistente** en SharedPreferences (sobrevive reinicios)
 - Dashboard parental: resumen por hijo, actividad semanal, avance por unidad
-- **Pantalla de Logros** (`AchievementsScreen`): grid con el catálogo real de 10 logros MVP (`specs/domains/gamification/spec.md`), mock con 4/10 desbloqueados
+- **Pantalla de Logros** (`AchievementsScreen`): grid con el catálogo real de 10 logros MVP (`../.sdd/implemented/features/domain-gamification/technical-specs.md`), mock con 4/10 desbloqueados
 - **Pantalla de Ranking** (`LeaderboardScreen`): leaderboard semanal mock, 8 niños, medallas top 3
 - **Settings del niño** (`SettingsScreen`, ruta `/settings`): sonido, ayuda, salir con confirmación
 - **Controles parentales** (`ParentSettingsScreen`, ruta nueva `/parent/settings`): límite de lecciones/día, horario permitido, ranking público, notificaciones, bloqueo temporal — corrige un bug real donde el botón de configuración del dashboard parental redirigía de vuelta al dashboard (`/settings` solo estaba en rutas de niño)
@@ -56,7 +56,7 @@
 - Decidir si se retoma Lumi (mascota Lottie) o cache offline (Drift) — quedaron deliberadamente pendientes, no fantasma
 
 ### Blockers
-- Backend sin implementar → todo el frontend corre con datos mock (ver `eduplay/specs/backend-status.md`)
+- Backend sin implementar → todo el frontend corre con datos mock (ver `../eduplay/.sdd/backend-status.md`)
 - Assets de sprites placeholder (64×64 color sólido) — requieren pixel-art final
 - MP3 de audio vacíos (0 bytes) — requieren SFX reales
 
@@ -71,6 +71,6 @@
 - **Deuda técnica**:
   - `lessonProgressProvider` solo persiste en memoria (no SharedPreferences)
   - Game progress (niveles completados) no persiste entre sesiones
-  - Datos mock en `home_screen.dart`, `auth_cubit.dart`, gamificación y settings — reemplazar cuando el backend correspondiente esté 🟢 (ver `specs/frontend-status.md`)
+  - Datos mock en `home_screen.dart`, `auth_cubit.dart`, gamificación y settings — reemplazar cuando el backend correspondiente esté 🟢 (ver `.sdd/frontend-status.md`)
   - `api_client.dart` existe pero no se usa (bloqueado por backend)
   - Feature `profile/` sin implementar (no estaba en el alcance de esta sesión)

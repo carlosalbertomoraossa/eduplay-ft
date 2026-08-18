@@ -1,6 +1,6 @@
 // Lesson Bloc — maneja el flujo de una lección completa
-// Spec: /specs/domains/learning/spec.md
-// UX Spec: /specs/product/ux-children.md
+// Spec: ../.sdd/implemented/features/domain-learning/technical-specs.md
+// UX Spec: ../.sdd/implemented/features/ux-children/technical-specs.md
 
 import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';

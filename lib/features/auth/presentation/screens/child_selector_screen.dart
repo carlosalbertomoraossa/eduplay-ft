@@ -1,6 +1,6 @@
 // Selector de niño con PIN de 4 dígitos
-// UX Spec: /specs/product/ux-children.md
-// Spec auth: /specs/domains/auth/spec.md — "PIN de 4 dígitos numéricos"
+// UX Spec: ../.sdd/implemented/features/ux-children/technical-specs.md
+// Spec auth: ../.sdd/implemented/features/domain-auth/technical-specs.md — "PIN de 4 dígitos numéricos"
 
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';

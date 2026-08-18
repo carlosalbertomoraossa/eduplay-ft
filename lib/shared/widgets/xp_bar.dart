@@ -1,5 +1,5 @@
 // XP Bar animada — muestra progreso de nivel
-// Spec: /specs/domains/gamification/spec.md
+// Spec: ../.sdd/implemented/features/domain-gamification/technical-specs.md
 
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';

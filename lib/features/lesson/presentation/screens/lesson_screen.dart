@@ -1,6 +1,6 @@
 // Pantalla de lección — flujo completo de ejercicios
-// UX Spec: /specs/product/ux-children.md
-// Spec: /specs/domains/learning/spec.md
+// UX Spec: ../.sdd/implemented/features/ux-children/technical-specs.md
+// Spec: ../.sdd/implemented/features/domain-learning/technical-specs.md
 
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
