@@ -7,7 +7,7 @@ import 'game_event.dart';
 import 'game_state.dart';
 
 const int _questionsPerLevel = 10;
-const int _maxLevel = 1;
+const int _maxLevel = 8;
 const int _initialLives = 3;
 const int _maxLives = 5;
 const int _baseScore = 100;
@@ -33,6 +33,7 @@ class GameBloc extends Bloc<GameEvent, GameState> {
       lives: _initialLives,
       currentLevel: event.level,
       questionsAnswered: 0,
+      correctAnswersCount: 0,
       streakCount: 0,
       scoreMultiplier: 1,
       questions: event.questions,
@@ -84,12 +85,14 @@ class GameBloc extends Bloc<GameEvent, GameState> {
 
     final newScore = current.score + _baseScore * newMultiplier;
     final newAnswered = current.questionsAnswered + 1;
+    final newCorrect = current.correctAnswersCount + 1;
     final newLives = current.lives + bonusLife;
 
     final updated = current.copyWith(
       score: newScore,
       lives: newLives,
       questionsAnswered: newAnswered,
+      correctAnswersCount: newCorrect,
       streakCount: newStreak,
       scoreMultiplier: newMultiplier,
       waitingForAnswer: false,
@@ -158,16 +161,12 @@ class GameBloc extends Bloc<GameEvent, GameState> {
       );
 
   GameResult _buildResult(GameInProgress state) {
-    // Aproximar correctas desde el score acumulado y el multiplicador actual
-    final realCorrect = state.score ~/ (_baseScore * state.scoreMultiplier)
-        .clamp(1, 3);
-
     return GameResult(
       finalScore: state.score,
       levelsCompleted: state.currentLevel,
-      questionsCorrect: realCorrect.clamp(0, state.questionsAnswered),
+      questionsCorrect: state.correctAnswersCount,
       questionsTotal: state.questionsAnswered,
-      xpEarned: realCorrect * _xpPerCorrect,
+      xpEarned: state.correctAnswersCount * _xpPerCorrect,
       coinsEarned: state.currentLevel * _coinsPerLevel,
     );
   }

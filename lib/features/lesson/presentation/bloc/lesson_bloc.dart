@@ -5,6 +5,7 @@
 import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
 
+import '../../../../core/l10n/app_strings.dart';
 import '../../data/curriculum_data.dart';
 import '../../domain/entities/lesson.dart';
 
@@ -123,19 +124,22 @@ class LessonBloc extends Bloc<LessonEvent, LessonState> {
     Emitter<LessonState> emit,
   ) async {
     emit(LessonLoading());
-    await Future.delayed(const Duration(milliseconds: 400));
-    final lesson = CurriculumData.getLesson(event.lessonId);
-    if (lesson == null) {
-      emit(LessonError('Lección no encontrada: ${event.lessonId}'));
-      return;
+    try {
+      final lesson = CurriculumData.getLesson(event.lessonId);
+      if (lesson == null) {
+        emit(LessonError(EduPlayStrings.lessonNotFound));
+        return;
+      }
+      emit(LessonInProgress(
+        lesson: lesson,
+        currentExerciseIndex: 0,
+        heartsRemaining: maxHearts,
+        answers: const {},
+        correctness: const {},
+      ));
+    } catch (e) {
+      emit(LessonError(EduPlayStrings.errorGeneric));
     }
-    emit(LessonInProgress(
-      lesson: lesson,
-      currentExerciseIndex: 0,
-      heartsRemaining: maxHearts,
-      answers: const {},
-      correctness: const {},
-    ));
   }
 
   void _onAnswered(
@@ -215,32 +219,36 @@ class LessonBloc extends Bloc<LessonEvent, LessonState> {
     LessonSubmitted event,
     Emitter<LessonState> emit,
   ) async {
-    // Accept either LessonInProgress or ExerciseFeedback as source of truth
-    final LessonInProgress progress;
-    if (state is LessonInProgress) {
-      progress = state as LessonInProgress;
-    } else if (state is ExerciseFeedback) {
-      progress = (state as ExerciseFeedback).previousState;
-    } else {
-      return;
+    try {
+      // Accept either LessonInProgress or ExerciseFeedback as source of truth
+      final LessonInProgress progress;
+      if (state is LessonInProgress) {
+        progress = state as LessonInProgress;
+      } else if (state is ExerciseFeedback) {
+        progress = (state as ExerciseFeedback).previousState;
+      } else {
+        return;
+      }
+
+      final correctCount =
+          progress.correctness.values.where((v) => v).length;
+      final total = progress.lesson.exercises.length;
+      final score = total == 0 ? 0.0 : correctCount / total;
+
+      emit(LessonCompleted(
+        LessonResult(
+          lessonId: progress.lesson.id,
+          score: score,
+          isCompleted: score >= 0.70,
+          exercisesCorrect: correctCount,
+          exercisesTotal: total,
+          xpEarned: score >= 0.70 ? progress.lesson.xpReward : 0,
+          coinsEarned: score >= 0.70 ? progress.lesson.coinReward : 0,
+        ),
+      ));
+    } catch (e) {
+      emit(LessonError(EduPlayStrings.errorGeneric));
     }
-
-    final correctCount =
-        progress.correctness.values.where((v) => v).length;
-    final total = progress.lesson.exercises.length;
-    final score = total == 0 ? 0.0 : correctCount / total;
-
-    emit(LessonCompleted(
-      LessonResult(
-        lessonId: progress.lesson.id,
-        score: score,
-        isCompleted: score >= 0.70,
-        exercisesCorrect: correctCount,
-        exercisesTotal: total,
-        xpEarned: score >= 0.70 ? progress.lesson.xpReward : 0,
-        coinsEarned: score >= 0.70 ? progress.lesson.coinReward : 0,
-      ),
-    ));
   }
 }
 

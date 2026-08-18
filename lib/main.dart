@@ -5,17 +5,28 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import 'core/di/injection.dart';
+import 'core/providers/selected_grade_provider.dart';
 import 'core/router/app_router.dart';
 import 'core/theme/app_theme.dart';
-import 'features/auth/data/repositories/mock_auth_repository.dart';
 import 'features/auth/presentation/bloc/auth_cubit.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await configureDependencies();
-  runApp(const ProviderScope(child: EduPlayApp()));
+  final prefs = await SharedPreferences.getInstance();
+  runApp(
+    ProviderScope(
+      overrides: [
+        selectedGradeProvider.overrideWith(
+          (_) => SelectedGradeNotifier(prefs),
+        ),
+      ],
+      child: const EduPlayApp(),
+    ),
+  );
 }
 
 class EduPlayApp extends ConsumerWidget {
@@ -24,9 +35,8 @@ class EduPlayApp extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final router = ref.watch(appRouterProvider);
-    // AuthCubit al nivel raíz para que persista en toda la navegación
     return BlocProvider(
-      create: (_) => AuthCubit(MockAuthRepository()),
+      create: (_) => getIt<AuthCubit>(),
       child: MaterialApp.router(
         title: 'EduPlay',
         theme: EduPlayTheme.light,

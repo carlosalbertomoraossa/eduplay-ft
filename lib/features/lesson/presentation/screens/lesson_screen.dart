@@ -7,6 +7,7 @@ import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../../../core/di/injection.dart';
 import '../../../../../core/theme/app_theme.dart';
 import '../../../../../shared/widgets/ep_button.dart';
 import '../../../../../shared/widgets/heart_indicator.dart';
@@ -23,7 +24,7 @@ class LessonScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return BlocProvider(
-      create: (_) => LessonBloc()..add(LessonStarted(lessonId)),
+      create: (_) => getIt<LessonBloc>()..add(LessonStarted(lessonId)),
       child: const _LessonView(),
     );
   }

@@ -2,9 +2,11 @@
 // Spec: /specs/frontend/flutter-arch.md — sección Navegación
 
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../features/auth/presentation/bloc/auth_cubit.dart';
 import '../../features/auth/presentation/screens/child_selector_screen.dart';
 import '../../features/auth/presentation/screens/parent_login_screen.dart';
 import '../../features/auth/presentation/screens/splash_screen.dart';
@@ -21,11 +23,49 @@ import '../../features/games/g4_adventure/domain/entities/game_result.dart';
 import '../../features/subjects/presentation/screens/lessons_screen.dart';
 import '../../features/subjects/presentation/screens/units_screen.dart';
 
+const _publicRoutes = {'/', '/onboarding', '/auth/login', '/auth/select-child'};
+const _parentRoutes = {'/parent/dashboard'};
+const _childRoutes = {'/home', '/achievements', '/leaderboard', '/settings'};
+
+bool _isPublic(String location) => _publicRoutes.contains(location);
+bool _isParent(String location) =>
+    _parentRoutes.contains(location) || location.startsWith('/parent/');
+bool _isChild(String location) =>
+    _childRoutes.contains(location) ||
+    location.startsWith('/subjects/') ||
+    location.startsWith('/lessons/') ||
+    location.startsWith('/lesson-result') ||
+    location.startsWith('/games/');
+
 // AuthCubit vive en main.dart (BlocProvider raíz) y es accesible desde todos los routes
 final appRouterProvider = Provider<GoRouter>((ref) {
   return GoRouter(
     initialLocation: '/',
     debugLogDiagnostics: false,
+    redirect: (context, state) {
+      final auth = context.read<AuthCubit>().state;
+      final location = state.uri.toString();
+
+      // Rutas públicas siempre accesibles
+      if (_isPublic(location)) return null;
+
+      // Si no está autenticado, redirigir a onboarding
+      if (auth is AuthInitial || auth is AuthUnauthenticated) {
+        return '/onboarding';
+      }
+
+      // Padre autenticado solo puede ver rutas de padre
+      if (auth is AuthParentLoggedIn && !_isParent(location)) {
+        return '/parent/dashboard';
+      }
+
+      // Niño autenticado solo puede ver rutas de niño
+      if (auth is AuthChildLoggedIn && !_isChild(location)) {
+        return '/home';
+      }
+
+      return null;
+    },
     routes: [
       GoRoute(
         path: '/',

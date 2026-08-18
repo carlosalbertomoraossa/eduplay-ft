@@ -37,7 +37,11 @@ class EpButton extends StatelessWidget {
       _ => EduPlayColors.surfaceWhite,
     };
 
-    return SizedBox(
+    return Semantics(
+      button: true,
+      enabled: !isLoading && onPressed != null,
+      label: label,
+      child: SizedBox(
       height: 56,
       child: ElevatedButton(
         onPressed: isLoading ? null : onPressed,
@@ -81,6 +85,7 @@ class EpButton extends StatelessWidget {
       ),
     )
         .animate(target: onPressed == null ? 0 : 1)
-        .scaleXY(begin: 0.98, end: 1.0, duration: 100.ms);
+        .scaleXY(begin: 0.98, end: 1.0, duration: 100.ms),
+    );
   }
 }

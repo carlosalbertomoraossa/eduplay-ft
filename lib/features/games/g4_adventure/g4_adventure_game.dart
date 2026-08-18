@@ -128,17 +128,6 @@ class G4AdventureGame extends FlameGame
       _player.stopMoving();
       _valueBlock.triggerBump();
       gameBloc.add(ValueBlockHit());
-      // Respaldo: si el stream no lo muestra, lo mostramos en el próximo event loop
-      Future.delayed(Duration.zero, _ensureQuestionOverlay);
-    }
-  }
-
-  void _ensureQuestionOverlay() {
-    final s = gameBloc.state;
-    if (s is GameInProgress && s.waitingForAnswer) {
-      if (!overlays.isActive(overlayQuestion)) {
-        overlays.add(overlayQuestion);
-      }
     }
   }
 
