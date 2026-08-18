@@ -39,6 +39,13 @@ class AuthError extends AuthState {
   List<Object?> get props => [message];
 }
 
+class AuthRegistered extends AuthState {
+  final String email;
+  AuthRegistered(this.email);
+  @override
+  List<Object?> get props => [email];
+}
+
 class AuthUnauthenticated extends AuthState {}
 
 // ─── Cubit ─────────────────────────────────────────────────────────
@@ -74,6 +81,24 @@ class AuthCubit extends Cubit<AuthState> {
       await _repository.saveTokens(tokens);
       final children = await _repository.getChildren();
       emit(AuthParentLoggedIn(tokens: tokens, children: children));
+    } catch (e) {
+      emit(AuthError(_friendlyError(e)));
+    }
+  }
+
+  Future<void> register({
+    required String email,
+    required String password,
+    required bool consentGiven,
+  }) async {
+    emit(AuthLoading());
+    try {
+      await _repository.register(
+        email: email,
+        password: password,
+        consentGiven: consentGiven,
+      );
+      emit(AuthRegistered(email));
     } catch (e) {
       emit(AuthError(_friendlyError(e)));
     }

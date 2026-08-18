@@ -6,7 +6,7 @@ import '../domain/entities/lesson.dart';
 const Map<String, Lesson> grade1Lessons = {
     // ── UNIDAD 1: Números del 1 al 100 ── DBA #1 Grado 1°
     // "Cuenta, lee y escribe números hasta 100 en contextos de juego"
-    'lesson-001': const Lesson(
+    'lesson-001': Lesson(
       id: 'lesson-001', unitId: 'unit-001', orderNum: 1,
       title: 'Números del 1 al 10',
       type: LessonType.standard, estimatedMinutes: 5,
@@ -58,7 +58,7 @@ const Map<String, Lesson> grade1Lessons = {
       ],
     ),
 
-    'lesson-002': const Lesson(
+    'lesson-002': Lesson(
       id: 'lesson-002', unitId: 'unit-001', orderNum: 2,
       title: 'Contar hasta 20',
       type: LessonType.standard, estimatedMinutes: 6,
@@ -108,7 +108,7 @@ const Map<String, Lesson> grade1Lessons = {
       ],
     ),
 
-    'lesson-003': const Lesson(
+    'lesson-003': Lesson(
       id: 'lesson-003', unitId: 'unit-001', orderNum: 3,
       title: 'Antes y después',
       type: LessonType.standard, estimatedMinutes: 7,
@@ -158,7 +158,7 @@ const Map<String, Lesson> grade1Lessons = {
       ],
     ),
 
-    'lesson-004': const Lesson(
+    'lesson-004': Lesson(
       id: 'lesson-004', unitId: 'unit-001', orderNum: 4,
       title: 'Comparar números',
       type: LessonType.standard, estimatedMinutes: 7,
@@ -209,7 +209,7 @@ const Map<String, Lesson> grade1Lessons = {
       ],
     ),
 
-    'lesson-005': const Lesson(
+    'lesson-005': Lesson(
       id: 'lesson-005', unitId: 'unit-001', orderNum: 5,
       title: '¡Desafío de números!',
       type: LessonType.boss, estimatedMinutes: 10,
@@ -261,7 +261,7 @@ const Map<String, Lesson> grade1Lessons = {
 
     // ── UNIDAD 2: Suma hasta 20 ── DBA #2 Grado 1°
     // "Reconoce la adición como acción de agregar y la representa"
-    'lesson-006': const Lesson(
+    'lesson-006': Lesson(
       id: 'lesson-006', unitId: 'unit-002', orderNum: 1,
       title: '¿Qué es sumar?',
       type: LessonType.intro, estimatedMinutes: 5,
@@ -312,7 +312,7 @@ const Map<String, Lesson> grade1Lessons = {
       ],
     ),
 
-    'lesson-007': const Lesson(
+    'lesson-007': Lesson(
       id: 'lesson-007', unitId: 'unit-002', orderNum: 2,
       title: 'Sumar hasta 5',
       type: LessonType.standard, estimatedMinutes: 5,
@@ -364,7 +364,7 @@ const Map<String, Lesson> grade1Lessons = {
       ],
     ),
 
-    'lesson-008': const Lesson(
+    'lesson-008': Lesson(
       id: 'lesson-008', unitId: 'unit-002', orderNum: 3,
       title: 'Sumar hasta 10',
       type: LessonType.standard, estimatedMinutes: 6,
@@ -415,7 +415,7 @@ const Map<String, Lesson> grade1Lessons = {
       ],
     ),
 
-    'lesson-009': const Lesson(
+    'lesson-009': Lesson(
       id: 'lesson-009', unitId: 'unit-002', orderNum: 4,
       title: 'Sumar hasta 20',
       type: LessonType.standard, estimatedMinutes: 7,
@@ -466,7 +466,7 @@ const Map<String, Lesson> grade1Lessons = {
       ],
     ),
 
-    'lesson-010': const Lesson(
+    'lesson-010': Lesson(
       id: 'lesson-010', unitId: 'unit-002', orderNum: 5,
       title: '¡Campeón de la suma!',
       type: LessonType.boss, estimatedMinutes: 10,
@@ -527,7 +527,7 @@ const Map<String, Lesson> grade1Lessons = {
 
     // ── UNIDAD 3: Resta hasta 20 ── DBA #3 Grado 1°
     // "Reconoce la sustracción como acción de quitar y la representa"
-    'lesson-011': const Lesson(
+    'lesson-011': Lesson(
       id: 'lesson-011', unitId: 'unit-003', orderNum: 1,
       title: '¿Qué es restar?',
       type: LessonType.intro, estimatedMinutes: 5,
@@ -578,7 +578,7 @@ const Map<String, Lesson> grade1Lessons = {
       ],
     ),
 
-    'lesson-012': const Lesson(
+    'lesson-012': Lesson(
       id: 'lesson-012', unitId: 'unit-003', orderNum: 2,
       title: 'Restar hasta 5',
       type: LessonType.standard, estimatedMinutes: 5,
@@ -629,7 +629,7 @@ const Map<String, Lesson> grade1Lessons = {
       ],
     ),
 
-    'lesson-013': const Lesson(
+    'lesson-013': Lesson(
       id: 'lesson-013', unitId: 'unit-003', orderNum: 3,
       title: 'Restar hasta 10',
       type: LessonType.standard, estimatedMinutes: 6,
@@ -680,7 +680,7 @@ const Map<String, Lesson> grade1Lessons = {
       ],
     ),
 
-    'lesson-014': const Lesson(
+    'lesson-014': Lesson(
       id: 'lesson-014', unitId: 'unit-003', orderNum: 4,
       title: 'Restar hasta 20',
       type: LessonType.standard, estimatedMinutes: 7,
@@ -731,7 +731,7 @@ const Map<String, Lesson> grade1Lessons = {
       ],
     ),
 
-    'lesson-015': const Lesson(
+    'lesson-015': Lesson(
       id: 'lesson-015', unitId: 'unit-003', orderNum: 5,
       title: '¡Campeón de la resta!',
       type: LessonType.boss, estimatedMinutes: 10,

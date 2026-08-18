@@ -6,7 +6,7 @@ import '../domain/entities/lesson.dart';
 const Map<String, Lesson> grade2Lessons = {
     // ── UNIDAD 201: Números hasta 1.000 ── DBA #1 Grado 2°
     // "Lee, escribe y ordena números hasta 1.000. Reconoce el valor posicional."
-    'lesson-201': const Lesson(
+    'lesson-201': Lesson(
       id: 'lesson-201', unitId: 'unit-201', orderNum: 1,
       title: 'Las centenas',
       type: LessonType.intro, estimatedMinutes: 5,
@@ -57,7 +57,7 @@ const Map<String, Lesson> grade2Lessons = {
       ],
     ),
 
-    'lesson-202': const Lesson(
+    'lesson-202': Lesson(
       id: 'lesson-202', unitId: 'unit-201', orderNum: 2,
       title: 'Leer y escribir hasta 1.000',
       type: LessonType.standard, estimatedMinutes: 6,
@@ -111,7 +111,7 @@ const Map<String, Lesson> grade2Lessons = {
       ],
     ),
 
-    'lesson-203': const Lesson(
+    'lesson-203': Lesson(
       id: 'lesson-203', unitId: 'unit-201', orderNum: 3,
       title: 'Valor posicional',
       type: LessonType.standard, estimatedMinutes: 7,
@@ -163,7 +163,7 @@ const Map<String, Lesson> grade2Lessons = {
       ],
     ),
 
-    'lesson-204': const Lesson(
+    'lesson-204': Lesson(
       id: 'lesson-204', unitId: 'unit-201', orderNum: 4,
       title: 'Ordenar números hasta 1.000',
       type: LessonType.standard, estimatedMinutes: 7,
@@ -214,7 +214,7 @@ const Map<String, Lesson> grade2Lessons = {
       ],
     ),
 
-    'lesson-205': const Lesson(
+    'lesson-205': Lesson(
       id: 'lesson-205', unitId: 'unit-201', orderNum: 5,
       title: '¡Desafío numérico!',
       type: LessonType.boss, estimatedMinutes: 10,
@@ -274,7 +274,7 @@ const Map<String, Lesson> grade2Lessons = {
 
     // ── UNIDAD 202: Suma y resta hasta 100 ── DBA #2 Grado 2°
     // "Resuelve y formula problemas de adición y sustracción hasta 100."
-    'lesson-206': const Lesson(
+    'lesson-206': Lesson(
       id: 'lesson-206', unitId: 'unit-202', orderNum: 1,
       title: 'Sumar decenas',
       type: LessonType.intro, estimatedMinutes: 5,
@@ -326,7 +326,7 @@ const Map<String, Lesson> grade2Lessons = {
       ],
     ),
 
-    'lesson-207': const Lesson(
+    'lesson-207': Lesson(
       id: 'lesson-207', unitId: 'unit-202', orderNum: 2,
       title: 'Sumar con llevada',
       type: LessonType.standard, estimatedMinutes: 6,
@@ -377,7 +377,7 @@ const Map<String, Lesson> grade2Lessons = {
       ],
     ),
 
-    'lesson-208': const Lesson(
+    'lesson-208': Lesson(
       id: 'lesson-208', unitId: 'unit-202', orderNum: 3,
       title: 'Restar decenas',
       type: LessonType.standard, estimatedMinutes: 6,
@@ -429,7 +429,7 @@ const Map<String, Lesson> grade2Lessons = {
       ],
     ),
 
-    'lesson-209': const Lesson(
+    'lesson-209': Lesson(
       id: 'lesson-209', unitId: 'unit-202', orderNum: 4,
       title: 'Restar con préstamo',
       type: LessonType.standard, estimatedMinutes: 7,
@@ -480,7 +480,7 @@ const Map<String, Lesson> grade2Lessons = {
       ],
     ),
 
-    'lesson-210': const Lesson(
+    'lesson-210': Lesson(
       id: 'lesson-210', unitId: 'unit-202', orderNum: 5,
       title: '¡Campeón de operaciones!',
       type: LessonType.boss, estimatedMinutes: 10,
@@ -541,7 +541,7 @@ const Map<String, Lesson> grade2Lessons = {
 
     // ── UNIDAD 203: Tablas × 2, × 3, × 5 ── DBA #3 Grado 2°
     // "Comprende la multiplicación como adición repetida. Tablas del 2, 3 y 5."
-    'lesson-211': const Lesson(
+    'lesson-211': Lesson(
       id: 'lesson-211', unitId: 'unit-203', orderNum: 1,
       title: 'Grupos iguales',
       type: LessonType.intro, estimatedMinutes: 5,
@@ -596,7 +596,7 @@ const Map<String, Lesson> grade2Lessons = {
       ],
     ),
 
-    'lesson-212': const Lesson(
+    'lesson-212': Lesson(
       id: 'lesson-212', unitId: 'unit-203', orderNum: 2,
       title: 'Tabla del 2',
       type: LessonType.standard, estimatedMinutes: 6,
@@ -646,7 +646,7 @@ const Map<String, Lesson> grade2Lessons = {
       ],
     ),
 
-    'lesson-213': const Lesson(
+    'lesson-213': Lesson(
       id: 'lesson-213', unitId: 'unit-203', orderNum: 3,
       title: 'Tabla del 3',
       type: LessonType.standard, estimatedMinutes: 6,
@@ -696,7 +696,7 @@ const Map<String, Lesson> grade2Lessons = {
       ],
     ),
 
-    'lesson-214': const Lesson(
+    'lesson-214': Lesson(
       id: 'lesson-214', unitId: 'unit-203', orderNum: 4,
       title: 'Tabla del 5',
       type: LessonType.standard, estimatedMinutes: 7,
@@ -746,7 +746,7 @@ const Map<String, Lesson> grade2Lessons = {
       ],
     ),
 
-    'lesson-215': const Lesson(
+    'lesson-215': Lesson(
       id: 'lesson-215', unitId: 'unit-203', orderNum: 5,
       title: '¡Desafío de tablas!',
       type: LessonType.boss, estimatedMinutes: 10,

@@ -51,7 +51,7 @@ class EpButton extends StatelessWidget {
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(16),
             side: variant == EpButtonVariant.secondary
-                ? BorderSide(color: EduPlayColors.primaryBlue, width: 2)
+                ? const BorderSide(color: EduPlayColors.primaryBlue, width: 2)
                 : BorderSide.none,
           ),
           minimumSize: const Size(double.infinity, 56),

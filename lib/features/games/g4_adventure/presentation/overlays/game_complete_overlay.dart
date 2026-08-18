@@ -71,7 +71,7 @@ class GameCompleteOverlay extends StatelessWidget {
                     ),
                   ),
                   const SizedBox(height: 8),
-                  Text(
+                  const Text(
                     '¡Eres un campeón de las matemáticas!',
                     textAlign: TextAlign.center,
                     style: TextStyle(
@@ -150,7 +150,7 @@ class _FinalStats extends StatelessWidget {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceAround,
             children: [
-              _StatItem(
+              const _StatItem(
                 icon: '🏆',
                 value: '8/8',
                 label: 'niveles',

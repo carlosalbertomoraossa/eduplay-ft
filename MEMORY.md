@@ -97,7 +97,39 @@
 
 ---
 
-## Semana actual (2026-06-19)
+## Semana actual (2026-08-17)
+
+**Trabajo realizado**: limpieza de deuda técnica (F2-F4 del backlog frontend) + gap de registro + F5 (Logros/Ranking/Settings) vía agentes en git worktree paralelos.
+
+### Cascade `..having()` en bloc_test rompía las aserciones silenciosamente
+**Qué**: `game_bloc_test.dart` y `lesson_bloc_test.dart` usaban `isA<X>()..having(...)..having(...)` (cascade `..`) en vez de `.having(...).having(...)` (chaining `.`).
+**Por qué importa**: `having()` de `package:matcher` retorna un matcher **nuevo** que agrega la condición — no muta el receptor. El cascade descarta cada valor de retorno, así que el matcher final era solo `isA<X>()`: los tests pasaban sin verificar de verdad `score`, `lives`, `level`, etc. `flutter analyze` lo señalaba como `unused_result`, no como error — fácil de ignorar.
+**Alternativa descartada**: ninguna, es un bug puro. Al corregirlo con `.` chaining, un test ("score ≥ 70%") falló de verdad porque sus datos mock (2/3 correctas) daban 66.7%, matemáticamente por debajo del 70% que decía probar — se ajustó a 3/3.
+
+### `home_screen.dart` pisaba `.state` del notifier en vez de llamar `setGrade()`
+**Qué**: `ref.read(selectedGradeProvider.notifier).state = cfg.grade` en vez de `.setGrade(cfg.grade)`.
+**Por qué**: `setGrade()` además persiste en SharedPreferences; asignar `.state` directo lo saltaba — el grado seleccionado no sobrevivía un reinicio de la app, aunque `selectedGradeProvider` estaba documentado como "persistente".
+
+### `register()` ahora exige `consentGiven: bool`
+**Qué**: `AuthRepository.register()` pasó de `{email, password}` a `{email, password, consentGiven}`; `AuthCubit` gana estado `AuthRegistered` y método `register()`.
+**Por qué**: el OpenAPI de auth-service (`specs/apis/auth-service.openapi.yaml`) ya marcaba `consent_given` como `required` (regla COPPA-like del proyecto). Se detectó como gap en una auditoría de estado cruzado backend↔frontend y se cerró al construir `ParentRegisterScreen` (antes el link "Regístrate" navegaba a una ruta que no existía).
+**Nota para cuando se conecte el backend real**: el campo es `consentGiven` en Dart (camelCase) pero `consent_given` en el JSON del OpenAPI (snake_case) — el datasource remoto deberá mapear el nombre al serializar.
+
+### Dependencias fantasma: `drift`/`lottie` y su soporte (`sqlite3_flutter_libs`, `path_provider`, `path`) removidas de pubspec.yaml
+**Qué**: ninguna tenía una sola línea de código usándola. Se quitaron en vez de dejarlas fingiendo progreso.
+**Por qué**: Lumi (Lottie) es personalización que el roadmap ya pone en Fase 2; el cache offline (Drift) depende del "bundle manifest" de `content-service` en el backend, que no existe — construirlo ahora se habría rehecho después. Decisión del usuario, no arbitraria.
+**Cuidado real que costó un bug**: un primer intento (agente en worktree) borró también `shared_preferences` por estar en la línea de al lado en el pubspec — sí está en uso real (`main.dart`, `selected_grade_provider.dart`). Se corrigió a mano verificando con `grep -rln "shared_preferences" lib/` antes de dar por buena cualquier remoción de dependencia.
+
+### `/settings` estaba roto para el rol padre — separado en `/settings` (niño) y `/parent/settings` (padre)
+**Qué**: `_childRoutes` en `app_router.dart` solo incluía `/settings`, pero `parent_dashboard_screen.dart` también navegaba ahí. Con el guard de rol, un padre logueado visitando `/settings` era redirigido de vuelta a `/parent/dashboard` — el botón de configuración del dashboard parental estaba roto sin que ningún test lo hubiera notado (no había pantalla real detrás, solo un placeholder).
+**Alternativa descartada**: una sola pantalla `/settings` que cambia de contenido según el rol — separar en dos rutas es más simple y explícito dado que ya existe el patrón `_parentRoutes`/`_childRoutes`.
+
+### Los agentes en git worktree NO ven archivos sin comitear (untracked) del checkout principal
+**Qué**: al lanzar dos agentes en paralelo con `isolation: "worktree"` para trabajar en F4 y F5, ninguno pudo leer `SPEC_BACKLOG.md` ni `specs/frontend-status.md` porque esos archivos existían solo como *untracked* en el checkout principal — nunca se habían comiteado. Cada worktree es un checkout separado que solo ve el historial **comiteado**, no el working tree de otra sesión.
+**Por qué importa**: un agente (F5) reaccionó recreando su propia versión de `SPEC_BACKLOG.md` desde cero, divergente de la real — hubo que descartarla y reaplicar el estado a mano sobre el archivo autoritativo.
+**Cómo aplicarlo la próxima vez**: si vas a lanzar agentes en worktree que dependen de archivos de contexto (specs, backlogs, docs de estado), comitealos primero (aunque sea con un commit provisional) — o pégalos directo en el prompt del agente en vez de asumir que puede leerlos del disco.
+
+## Semana anterior (2026-06-19)
 
 **Trabajo realizado** — Refactor arquitectónico completo en 3 sesiones:
 

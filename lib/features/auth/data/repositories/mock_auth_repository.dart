@@ -53,8 +53,15 @@ class MockAuthRepository implements AuthRepository {
   }
 
   @override
-  Future<void> register({required String email, required String password}) async {
+  Future<void> register({
+    required String email,
+    required String password,
+    required bool consentGiven,
+  }) async {
     await Future.delayed(const Duration(milliseconds: 1000));
+    if (!consentGiven) {
+      throw Exception('Se requiere el consentimiento parental para registrarte');
+    }
   }
 
   @override

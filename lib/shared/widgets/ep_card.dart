@@ -38,7 +38,7 @@ class EpCard extends StatelessWidget {
           duration: 200.ms,
           curve: Curves.easeOut,
           transform: isLocked
-              ? (Matrix4.identity()..scale(0.97))
+              ? (Matrix4.identity()..scaleByDouble(0.97, 0.97, 0.97, 1))
               : Matrix4.identity(),
           decoration: BoxDecoration(
             gradient: LinearGradient(

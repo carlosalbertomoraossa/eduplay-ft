@@ -48,7 +48,7 @@ class _ExerciseMultipleChoiceState extends State<ExerciseMultipleChoice> {
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
             decoration: BoxDecoration(
-              color: EduPlayColors.primaryBlue.withOpacity(0.1),
+              color: EduPlayColors.primaryBlue.withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(12),
             ),
             child: const Text(
@@ -130,7 +130,7 @@ class _OptionTile extends StatelessWidget {
             : const Color(0xFFCBD5E1);
 
     final Color bgColor = isSelected
-        ? EduPlayColors.primaryBlue.withOpacity(0.08)
+        ? EduPlayColors.primaryBlue.withValues(alpha: 0.08)
         : Colors.white;
 
     return GestureDetector(

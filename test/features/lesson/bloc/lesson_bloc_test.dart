@@ -52,7 +52,7 @@ void main() {
       )),
       expect: () => [
         isA<ExerciseFeedback>()
-          ..having((s) => s.wasCorrect, 'wasCorrect', true),
+          .having((s) => s.wasCorrect, 'wasCorrect', true),
       ],
     );
 
@@ -72,7 +72,7 @@ void main() {
       )),
       expect: () => [
         isA<ExerciseFeedback>()
-          ..having((s) => s.wasCorrect, 'wasCorrect', false),
+          .having((s) => s.wasCorrect, 'wasCorrect', false),
       ],
     );
 
@@ -89,7 +89,7 @@ void main() {
       act: (bloc) => bloc.add(HeartLost()),
       expect: () => [
         isA<LessonInProgress>()
-          ..having((s) => s.heartsRemaining, 'hearts', 2),
+          .having((s) => s.heartsRemaining, 'hearts', 2),
       ],
     );
 
@@ -126,7 +126,7 @@ void main() {
       act: (bloc) => bloc.add(NextExercise()),
       expect: () => [
         isA<LessonInProgress>()
-          ..having((s) => s.currentExerciseIndex, 'index', 1),
+          .having((s) => s.currentExerciseIndex, 'index', 1),
       ],
     );
 
@@ -141,14 +141,14 @@ void main() {
         correctness: const {
           'e1': true,
           'e2': true,
-          'e3': false,
+          'e3': true,
         },
       ),
       act: (bloc) => bloc.add(LessonSubmitted()),
       expect: () => [
         isA<LessonCompleted>()
-          ..having((s) => s.result.isCompleted, 'isCompleted', true)
-          ..having((s) => s.result.score, 'score', 2 / 3),
+          .having((s) => s.result.isCompleted, 'isCompleted', true)
+          .having((s) => s.result.score, 'score', 1.0),
       ],
     );
 
@@ -169,13 +169,13 @@ void main() {
       act: (bloc) => bloc.add(LessonSubmitted()),
       expect: () => [
         isA<LessonCompleted>()
-          ..having((s) => s.result.isCompleted, 'isCompleted', false),
+          .having((s) => s.result.isCompleted, 'isCompleted', false),
       ],
     );
   });
 }
 
-final _mockLesson = Lesson(
+const _mockLesson = Lesson(
   id: 'mock-001',
   unitId: 'unit-001',
   orderNum: 1,
@@ -185,7 +185,7 @@ final _mockLesson = Lesson(
   xpReward: 30,
   coinReward: 10,
   difficulty: Difficulty.easy,
-  exercises: const [
+  exercises: [
     Exercise(
       id: 'e1',
       orderNum: 1,

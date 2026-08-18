@@ -135,7 +135,7 @@ class HomeScreen extends ConsumerWidget {
                       completedLessons: completed,
                       delay: i * 80,
                       onTap: () {
-                        ref.read(selectedGradeProvider.notifier).state = cfg.grade;
+                        ref.read(selectedGradeProvider.notifier).setGrade(cfg.grade);
                         context.push('/subjects/math/units');
                       },
                     );

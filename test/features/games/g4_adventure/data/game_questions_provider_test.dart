@@ -1,7 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
 
 import 'package:edplay_ft/features/games/g4_adventure/data/game_questions_provider.dart';
-import 'package:edplay_ft/features/games/g4_adventure/domain/entities/game_question.dart';
 
 void main() {
   group('GameQuestionsProvider', () {

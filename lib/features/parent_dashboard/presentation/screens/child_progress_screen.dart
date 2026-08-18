@@ -10,7 +10,6 @@ import '../../domain/entities/parent_entities.dart';
 
 // Mock — reemplazar con progress-service + gamification-service cuando existan
 class _MockChildProgress {
-  static const childId = 'child-001';
   static const displayName = 'Sofía';
   static const grade = 2;
   static const avatarEmoji = '👧';
@@ -109,9 +108,9 @@ class _ProfileHeader extends StatelessWidget {
         icon: const Icon(Icons.arrow_back_ios_rounded, color: Colors.white),
         onPressed: onBack,
       ),
-      title: Text(
+      title: const Text(
         'Progreso de ${_MockChildProgress.displayName}',
-        style: const TextStyle(
+        style: TextStyle(
           fontFamily: 'Nunito',
           fontWeight: FontWeight.w800,
           fontSize: 18,
@@ -149,14 +148,14 @@ class _ProfileHeader extends StatelessWidget {
                     ),
                   ),
                   const SizedBox(width: 16),
-                  Expanded(
+                  const Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       mainAxisSize: MainAxisSize.min,
                       children: [
                         Text(
                           _MockChildProgress.displayName,
-                          style: const TextStyle(
+                          style: TextStyle(
                             fontSize: 22,
                             fontWeight: FontWeight.w900,
                             color: Colors.white,
@@ -165,26 +164,26 @@ class _ProfileHeader extends StatelessWidget {
                         ),
                         Text(
                           'Grado ${_MockChildProgress.grade}° · Nivel ${_MockChildProgress.level}',
-                          style: const TextStyle(
+                          style: TextStyle(
                             fontSize: 13,
                             color: Colors.white70,
                             fontFamily: 'Nunito',
                             fontWeight: FontWeight.w600,
                           ),
                         ),
-                        const SizedBox(height: 8),
+                        SizedBox(height: 8),
                         Row(
                           children: [
                             _HeaderBadge(
                                 emoji: '🔥',
                                 text:
                                     '${_MockChildProgress.streakCurrent} días'),
-                            const SizedBox(width: 8),
+                            SizedBox(width: 8),
                             _HeaderBadge(
                                 emoji: '⭐',
                                 text:
                                     '${_MockChildProgress.totalXp} XP total'),
-                            const SizedBox(width: 8),
+                            SizedBox(width: 8),
                             _HeaderBadge(
                                 emoji: '💰',
                                 text: '${_MockChildProgress.coins} monedas'),
@@ -462,7 +461,7 @@ class _UnitProgressRow extends StatelessWidget {
                   ? const Icon(Icons.lock_rounded,
                       size: 16, color: Color(0xFFCBD5E1))
                   : unit.isComplete
-                      ? Icon(Icons.check_circle_rounded,
+                      ? const Icon(Icons.check_circle_rounded,
                           size: 20, color: EduPlayColors.successGreen)
                       : const Icon(Icons.play_circle_rounded,
                           size: 20, color: EduPlayColors.primaryBlue),

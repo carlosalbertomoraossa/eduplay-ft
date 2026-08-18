@@ -110,7 +110,7 @@ class _ExerciseDragDropState extends State<ExerciseDragDrop> {
                 Container(
                   padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
                   decoration: BoxDecoration(
-                    color: EduPlayColors.adventurePurple.withOpacity(0.1),
+                    color: EduPlayColors.adventurePurple.withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: const Text(
@@ -334,8 +334,8 @@ class _DropTarget extends StatelessWidget {
   }
 
   Color get _bgColor {
-    if (correctState == true) return EduPlayColors.successGreen.withOpacity(0.07);
-    if (correctState == false) return EduPlayColors.softRed.withOpacity(0.07);
+    if (correctState == true) return EduPlayColors.successGreen.withValues(alpha: 0.07);
+    if (correctState == false) return EduPlayColors.softRed.withValues(alpha: 0.07);
     return EduPlayColors.backgroundLight;
   }
 
@@ -350,7 +350,7 @@ class _DropTarget extends StatelessWidget {
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
           decoration: BoxDecoration(
             color: isHovering
-                ? EduPlayColors.adventurePurple.withOpacity(0.06)
+                ? EduPlayColors.adventurePurple.withValues(alpha: 0.06)
                 : _bgColor,
             borderRadius: BorderRadius.circular(16),
             border: Border.all(
@@ -431,9 +431,9 @@ class _PlacedChip extends StatelessWidget {
   });
 
   Color get _chipBg {
-    if (correctState == true) return EduPlayColors.successGreen.withOpacity(0.15);
-    if (correctState == false) return EduPlayColors.softRed.withOpacity(0.15);
-    return EduPlayColors.successGreen.withOpacity(0.15);
+    if (correctState == true) return EduPlayColors.successGreen.withValues(alpha: 0.15);
+    if (correctState == false) return EduPlayColors.softRed.withValues(alpha: 0.15);
+    return EduPlayColors.successGreen.withValues(alpha: 0.15);
   }
 
   Color get _chipBorder {
@@ -536,7 +536,7 @@ class _DragChip extends StatelessWidget {
           color: ghost
               ? EduPlayColors.backgroundLight
               : isDragging
-                  ? EduPlayColors.adventurePurple.withOpacity(0.9)
+                  ? EduPlayColors.adventurePurple.withValues(alpha: 0.9)
                   : Colors.white,
           borderRadius: BorderRadius.circular(12),
           border: Border.all(
@@ -548,7 +548,7 @@ class _DragChip extends StatelessWidget {
           boxShadow: isDragging
               ? [
                   BoxShadow(
-                    color: EduPlayColors.adventurePurple.withOpacity(0.3),
+                    color: EduPlayColors.adventurePurple.withValues(alpha: 0.3),
                     blurRadius: 8,
                     offset: const Offset(0, 4),
                   ),

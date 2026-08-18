@@ -52,7 +52,7 @@ class ParentDashboardScreen extends StatelessWidget {
       body: ListView(
         padding: const EdgeInsets.all(20),
         children: [
-          _GreetingCard(parentName: _MockParentData.parentName)
+          const _GreetingCard(parentName: _MockParentData.parentName)
               .animate()
               .fadeIn(duration: 350.ms),
 
@@ -180,7 +180,7 @@ class _ChildCard extends StatelessWidget {
                 Container(
                   width: 52,
                   height: 52,
-                  decoration: BoxDecoration(
+                  decoration: const BoxDecoration(
                     color: EduPlayColors.backgroundLight,
                     shape: BoxShape.circle,
                   ),
@@ -382,11 +382,11 @@ class _TipsBanner extends StatelessWidget {
         border: Border.all(color: EduPlayColors.successGreen.withValues(alpha: 0.3)),
         borderRadius: BorderRadius.circular(16),
       ),
-      child: Row(
+      child: const Row(
         children: [
-          const Text('💡', style: TextStyle(fontSize: 28)),
-          const SizedBox(width: 12),
-          const Expanded(
+          Text('💡', style: TextStyle(fontSize: 28)),
+          SizedBox(width: 12),
+          Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [

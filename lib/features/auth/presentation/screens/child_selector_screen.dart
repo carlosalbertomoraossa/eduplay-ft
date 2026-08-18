@@ -124,7 +124,7 @@ class _ChildCard extends StatelessWidget {
           borderRadius: BorderRadius.circular(24),
           boxShadow: [
             BoxShadow(
-              color: EduPlayColors.primaryBlue.withOpacity(0.08),
+              color: EduPlayColors.primaryBlue.withValues(alpha: 0.08),
               blurRadius: 16,
               offset: const Offset(0, 4),
             ),
@@ -137,7 +137,7 @@ class _ChildCard extends StatelessWidget {
             Container(
               width: 80,
               height: 80,
-              decoration: BoxDecoration(
+              decoration: const BoxDecoration(
                 color: EduPlayColors.backgroundLight,
                 shape: BoxShape.circle,
               ),

@@ -41,8 +41,8 @@ flutter devices
 ## Tests y análisis
 
 ```bash
-flutter test       # 33 tests unitarios
-flutter analyze    # 0 errores de compilación
+flutter test       # 70 tests unitarios y de widgets
+flutter analyze    # 0 errores, 0 warnings/infos
 ```
 
 ## Build
@@ -72,6 +72,7 @@ flutter run --dart-define=API_BASE_URL=http://localhost:8000
 |---------|--------|
 | Splash + Onboarding | ✅ Implementado |
 | Login padre (mock) | ✅ Implementado |
+| Registro padre (mock, con consentimiento parental) | ✅ Implementado |
 | Selector de niño (mock) | ✅ Implementado |
 | Home del niño | ✅ Implementado |
 | Camino de lecciones (Duolingo) | ✅ Implementado |
@@ -81,15 +82,16 @@ flutter run --dart-define=API_BASE_URL=http://localhost:8000
 | Sistema de vidas (3 corazones) | ✅ Implementado |
 | Juego G4 — Aventura del Cuarto Grado (Flame) | ✅ 8 niveles funcionales |
 | Dashboard parental | ✅ Implementado |
+| Pantallas Logros/Ranking (mock) | ✅ Implementado |
+| Settings niño / Controles parentales (mock) | ✅ Implementado |
 | DI con get_it | ✅ 6 registros |
 | Guards de ruta (GoRouter redirect) | ✅ Por rol |
 | Widgets compartidos (6) | ✅ ep_button, ep_card, xp_bar, streak_badge, heart_indicator, confetti_overlay |
 | Strings centralizados (l10n) | ✅ EduPlayStrings |
-| Tests unitarios | ✅ 33 tests |
-| Conexión con backend real | ⏳ Pendiente |
-| Offline support (Drift) | ⏳ Pendiente |
-| Pantallas Logros/Ranking/Configuración | ⏳ Placeholder |
-| Features profile/ y gamification/ | ⏳ Pendiente |
+| Tests unitarios y de widgets | ✅ 70+ tests |
+| Conexión con backend real | ⏳ Pendiente (bloqueado por backend, ver `SPEC_BACKLOG.md`) |
+| Offline support (Drift) | ⏳ Diferido a propósito — dependencia removida de pubspec.yaml |
+| Mascota Lumi (Lottie) | ⏳ Diferido a propósito — solo texto en copy por ahora |
 
 ## Estructura del proyecto
 
@@ -122,6 +124,8 @@ lib/
         g4_adventure_game.dart → FlameGame principal
     onboarding/   → onboarding_screen
     parent_dashboard/ → dashboard + child_progress
+    gamification/ → achievements_screen, leaderboard_screen (mock)
+    settings/     → settings_screen (niño), parent_settings_screen (controles parentales)
   shared/
     widgets/      → ep_button, ep_card, xp_bar, streak_badge, heart_indicator, confetti_overlay
 ```

@@ -9,6 +9,7 @@ import 'package:go_router/go_router.dart';
 import '../../features/auth/presentation/bloc/auth_cubit.dart';
 import '../../features/auth/presentation/screens/child_selector_screen.dart';
 import '../../features/auth/presentation/screens/parent_login_screen.dart';
+import '../../features/auth/presentation/screens/parent_register_screen.dart';
 import '../../features/auth/presentation/screens/splash_screen.dart';
 import '../../features/home/presentation/screens/home_screen.dart';
 import '../../features/lesson/domain/entities/lesson.dart';
@@ -23,7 +24,13 @@ import '../../features/games/g4_adventure/domain/entities/game_result.dart';
 import '../../features/subjects/presentation/screens/lessons_screen.dart';
 import '../../features/subjects/presentation/screens/units_screen.dart';
 
-const _publicRoutes = {'/', '/onboarding', '/auth/login', '/auth/select-child'};
+const _publicRoutes = {
+  '/',
+  '/onboarding',
+  '/auth/login',
+  '/auth/register',
+  '/auth/select-child',
+};
 const _parentRoutes = {'/parent/dashboard'};
 const _childRoutes = {'/home', '/achievements', '/leaderboard', '/settings'};
 
@@ -78,6 +85,10 @@ final appRouterProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: '/auth/login',
         builder: (_, __) => const ParentLoginScreen(),
+      ),
+      GoRoute(
+        path: '/auth/register',
+        builder: (_, __) => const ParentRegisterScreen(),
       ),
       GoRoute(
         path: '/auth/select-child',

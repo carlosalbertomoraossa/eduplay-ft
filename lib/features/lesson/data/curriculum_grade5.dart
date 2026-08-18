@@ -7,7 +7,7 @@ const Map<String, Lesson> grade5Lessons = {
 
     // ── UNIDAD 501: Números enteros ── DBA #1 Grado 5°
     // "Opera con números enteros negativos en contextos reales."
-    'lesson-501': const Lesson(
+    'lesson-501': Lesson(
       id: 'lesson-501', unitId: 'unit-501', orderNum: 1,
       title: 'Números negativos',
       type: LessonType.intro, estimatedMinutes: 5,
@@ -58,7 +58,7 @@ const Map<String, Lesson> grade5Lessons = {
       ],
     ),
 
-    'lesson-502': const Lesson(
+    'lesson-502': Lesson(
       id: 'lesson-502', unitId: 'unit-501', orderNum: 2,
       title: 'La recta numérica entera',
       type: LessonType.standard, estimatedMinutes: 6,
@@ -108,7 +108,7 @@ const Map<String, Lesson> grade5Lessons = {
       ],
     ),
 
-    'lesson-503': const Lesson(
+    'lesson-503': Lesson(
       id: 'lesson-503', unitId: 'unit-501', orderNum: 3,
       title: 'Comparar enteros',
       type: LessonType.standard, estimatedMinutes: 6,
@@ -158,7 +158,7 @@ const Map<String, Lesson> grade5Lessons = {
       ],
     ),
 
-    'lesson-504': const Lesson(
+    'lesson-504': Lesson(
       id: 'lesson-504', unitId: 'unit-501', orderNum: 4,
       title: 'Sumar y restar enteros',
       type: LessonType.standard, estimatedMinutes: 7,
@@ -209,7 +209,7 @@ const Map<String, Lesson> grade5Lessons = {
       ],
     ),
 
-    'lesson-505': const Lesson(
+    'lesson-505': Lesson(
       id: 'lesson-505', unitId: 'unit-501', orderNum: 5,
       title: '¡Desafío de enteros!',
       type: LessonType.boss, estimatedMinutes: 10,
@@ -269,7 +269,7 @@ const Map<String, Lesson> grade5Lessons = {
 
     // ── UNIDAD 502: Porcentajes ── DBA #3 Grado 5°
     // "Resuelve problemas con porcentajes (descuentos, propinas, IVA)."
-    'lesson-506': const Lesson(
+    'lesson-506': Lesson(
       id: 'lesson-506', unitId: 'unit-502', orderNum: 1,
       title: '¿Qué es un porcentaje?',
       type: LessonType.intro, estimatedMinutes: 5,
@@ -320,7 +320,7 @@ const Map<String, Lesson> grade5Lessons = {
       ],
     ),
 
-    'lesson-507': const Lesson(
+    'lesson-507': Lesson(
       id: 'lesson-507', unitId: 'unit-502', orderNum: 2,
       title: 'El 50%, 25% y 10%',
       type: LessonType.standard, estimatedMinutes: 6,
@@ -370,7 +370,7 @@ const Map<String, Lesson> grade5Lessons = {
       ],
     ),
 
-    'lesson-508': const Lesson(
+    'lesson-508': Lesson(
       id: 'lesson-508', unitId: 'unit-502', orderNum: 3,
       title: 'Calcular el porcentaje',
       type: LessonType.standard, estimatedMinutes: 6,
@@ -421,7 +421,7 @@ const Map<String, Lesson> grade5Lessons = {
       ],
     ),
 
-    'lesson-509': const Lesson(
+    'lesson-509': Lesson(
       id: 'lesson-509', unitId: 'unit-502', orderNum: 4,
       title: 'Descuentos y ofertas',
       type: LessonType.standard, estimatedMinutes: 7,
@@ -476,7 +476,7 @@ const Map<String, Lesson> grade5Lessons = {
       ],
     ),
 
-    'lesson-510': const Lesson(
+    'lesson-510': Lesson(
       id: 'lesson-510', unitId: 'unit-502', orderNum: 5,
       title: '¡Desafío de porcentajes!',
       type: LessonType.boss, estimatedMinutes: 10,
@@ -536,7 +536,7 @@ const Map<String, Lesson> grade5Lessons = {
 
     // ── UNIDAD 503: Razones y proporciones ── DBA #4 Grado 5°
     // "Comprende razones y proporciones. Resuelve regla de tres simple."
-    'lesson-511': const Lesson(
+    'lesson-511': Lesson(
       id: 'lesson-511', unitId: 'unit-503', orderNum: 1,
       title: '¿Qué es una razón?',
       type: LessonType.intro, estimatedMinutes: 5,
@@ -591,7 +591,7 @@ const Map<String, Lesson> grade5Lessons = {
       ],
     ),
 
-    'lesson-512': const Lesson(
+    'lesson-512': Lesson(
       id: 'lesson-512', unitId: 'unit-503', orderNum: 2,
       title: 'Proporciones directas',
       type: LessonType.standard, estimatedMinutes: 6,
@@ -645,7 +645,7 @@ const Map<String, Lesson> grade5Lessons = {
       ],
     ),
 
-    'lesson-513': const Lesson(
+    'lesson-513': Lesson(
       id: 'lesson-513', unitId: 'unit-503', orderNum: 3,
       title: 'Regla de tres simple',
       type: LessonType.standard, estimatedMinutes: 7,
@@ -700,7 +700,7 @@ const Map<String, Lesson> grade5Lessons = {
       ],
     ),
 
-    'lesson-514': const Lesson(
+    'lesson-514': Lesson(
       id: 'lesson-514', unitId: 'unit-503', orderNum: 4,
       title: 'Aplicaciones reales',
       type: LessonType.standard, estimatedMinutes: 7,
@@ -754,7 +754,7 @@ const Map<String, Lesson> grade5Lessons = {
       ],
     ),
 
-    'lesson-515': const Lesson(
+    'lesson-515': Lesson(
       id: 'lesson-515', unitId: 'unit-503', orderNum: 5,
       title: '¡Desafío final!',
       type: LessonType.boss, estimatedMinutes: 10,

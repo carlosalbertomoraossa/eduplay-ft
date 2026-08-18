@@ -7,7 +7,7 @@ const Map<String, Lesson> grade4Lessons = {
 
     // ── UNIDAD 401: Fracciones ── DBA #3 Grado 4°
     // "Comprende fracciones equivalentes, propias e impropias."
-    'lesson-401': const Lesson(
+    'lesson-401': Lesson(
       id: 'lesson-401', unitId: 'unit-401', orderNum: 1,
       title: '¿Qué es una fracción?',
       type: LessonType.intro, estimatedMinutes: 5,
@@ -58,7 +58,7 @@ const Map<String, Lesson> grade4Lessons = {
       ],
     ),
 
-    'lesson-402': const Lesson(
+    'lesson-402': Lesson(
       id: 'lesson-402', unitId: 'unit-401', orderNum: 2,
       title: 'Mitad y cuarto',
       type: LessonType.standard, estimatedMinutes: 6,
@@ -108,7 +108,7 @@ const Map<String, Lesson> grade4Lessons = {
       ],
     ),
 
-    'lesson-403': const Lesson(
+    'lesson-403': Lesson(
       id: 'lesson-403', unitId: 'unit-401', orderNum: 3,
       title: 'Tercios y quintos',
       type: LessonType.standard, estimatedMinutes: 6,
@@ -158,7 +158,7 @@ const Map<String, Lesson> grade4Lessons = {
       ],
     ),
 
-    'lesson-404': const Lesson(
+    'lesson-404': Lesson(
       id: 'lesson-404', unitId: 'unit-401', orderNum: 4,
       title: 'Fracciones equivalentes',
       type: LessonType.standard, estimatedMinutes: 7,
@@ -208,7 +208,7 @@ const Map<String, Lesson> grade4Lessons = {
       ],
     ),
 
-    'lesson-405': const Lesson(
+    'lesson-405': Lesson(
       id: 'lesson-405', unitId: 'unit-401', orderNum: 5,
       title: '¡Desafío de fracciones!',
       type: LessonType.boss, estimatedMinutes: 10,
@@ -268,7 +268,7 @@ const Map<String, Lesson> grade4Lessons = {
 
     // ── UNIDAD 402: Multiplicación y división ── DBA #2 Grado 4°
     // "Resuelve problemas de multiplicación y división con hasta 3 cifras."
-    'lesson-406': const Lesson(
+    'lesson-406': Lesson(
       id: 'lesson-406', unitId: 'unit-402', orderNum: 1,
       title: 'Multiplicar por decenas',
       type: LessonType.intro, estimatedMinutes: 5,
@@ -319,7 +319,7 @@ const Map<String, Lesson> grade4Lessons = {
       ],
     ),
 
-    'lesson-407': const Lesson(
+    'lesson-407': Lesson(
       id: 'lesson-407', unitId: 'unit-402', orderNum: 2,
       title: 'Multiplicar 2×2 cifras',
       type: LessonType.standard, estimatedMinutes: 7,
@@ -369,7 +369,7 @@ const Map<String, Lesson> grade4Lessons = {
       ],
     ),
 
-    'lesson-408': const Lesson(
+    'lesson-408': Lesson(
       id: 'lesson-408', unitId: 'unit-402', orderNum: 3,
       title: 'Dividir con residuo',
       type: LessonType.standard, estimatedMinutes: 7,
@@ -420,7 +420,7 @@ const Map<String, Lesson> grade4Lessons = {
       ],
     ),
 
-    'lesson-409': const Lesson(
+    'lesson-409': Lesson(
       id: 'lesson-409', unitId: 'unit-402', orderNum: 4,
       title: 'División de 2 cifras',
       type: LessonType.standard, estimatedMinutes: 7,
@@ -470,7 +470,7 @@ const Map<String, Lesson> grade4Lessons = {
       ],
     ),
 
-    'lesson-410': const Lesson(
+    'lesson-410': Lesson(
       id: 'lesson-410', unitId: 'unit-402', orderNum: 5,
       title: '¡Campeón de operaciones!',
       type: LessonType.boss, estimatedMinutes: 10,
@@ -530,7 +530,7 @@ const Map<String, Lesson> grade4Lessons = {
 
     // ── UNIDAD 403: Decimales y dinero ── DBA #4 Grado 4°
     // "Reconoce y usa decimales en contextos de medida y dinero (pesos colombianos)."
-    'lesson-411': const Lesson(
+    'lesson-411': Lesson(
       id: 'lesson-411', unitId: 'unit-403', orderNum: 1,
       title: '¿Qué son los decimales?',
       type: LessonType.intro, estimatedMinutes: 5,
@@ -585,7 +585,7 @@ const Map<String, Lesson> grade4Lessons = {
       ],
     ),
 
-    'lesson-412': const Lesson(
+    'lesson-412': Lesson(
       id: 'lesson-412', unitId: 'unit-403', orderNum: 2,
       title: 'Décimas y centésimas',
       type: LessonType.standard, estimatedMinutes: 6,
@@ -639,7 +639,7 @@ const Map<String, Lesson> grade4Lessons = {
       ],
     ),
 
-    'lesson-413': const Lesson(
+    'lesson-413': Lesson(
       id: 'lesson-413', unitId: 'unit-403', orderNum: 3,
       title: 'Sumar decimales',
       type: LessonType.standard, estimatedMinutes: 6,
@@ -690,7 +690,7 @@ const Map<String, Lesson> grade4Lessons = {
       ],
     ),
 
-    'lesson-414': const Lesson(
+    'lesson-414': Lesson(
       id: 'lesson-414', unitId: 'unit-403', orderNum: 4,
       title: 'Precios en pesos colombianos',
       type: LessonType.standard, estimatedMinutes: 7,
@@ -744,7 +744,7 @@ const Map<String, Lesson> grade4Lessons = {
       ],
     ),
 
-    'lesson-415': const Lesson(
+    'lesson-415': Lesson(
       id: 'lesson-415', unitId: 'unit-403', orderNum: 5,
       title: '¡Desafío de decimales!',
       type: LessonType.boss, estimatedMinutes: 10,

@@ -13,7 +13,7 @@ List<GameQuestion> _mockQuestions(int count) => List.generate(
       (i) => GameQuestion(
         id: 'q$i',
         question: 'Pregunta $i',
-        options: ['A', 'B', 'C'],
+        options: const ['A', 'B', 'C'],
         correctIndex: 0,
         xpReward: 10,
         difficulty: Difficulty.easy,
@@ -41,11 +41,11 @@ void main() {
       )),
       expect: () => [
         isA<GameInProgress>()
-          ..having((s) => s.currentLevel, 'level', 1)
-          ..having((s) => s.score, 'score', 0)
-          ..having((s) => s.lives, 'lives', 3)
-          ..having((s) => s.correctAnswersCount, 'correct', 0)
-          ..having((s) => s.waitingForAnswer, 'waiting', false),
+          .having((s) => s.currentLevel, 'level', 1)
+          .having((s) => s.score, 'score', 0)
+          .having((s) => s.lives, 'lives', 3)
+          .having((s) => s.correctAnswersCount, 'correct', 0)
+          .having((s) => s.waitingForAnswer, 'waiting', false),
       ],
     );
 
@@ -65,8 +65,8 @@ void main() {
       act: (bloc) => bloc.add(ValueBlockHit()),
       expect: () => [
         isA<GameInProgress>()
-          ..having((s) => s.waitingForAnswer, 'waiting', true)
-          ..having((s) => s.activeQuestion, 'question', isNotNull),
+          .having((s) => s.waitingForAnswer, 'waiting', true)
+          .having((s) => s.activeQuestion, 'question', isNotNull),
       ],
     );
 
@@ -88,11 +88,11 @@ void main() {
       act: (bloc) => bloc.add(AnswerBlockHit(0)),
       expect: () => [
         isA<GameInProgress>()
-          ..having((s) => s.score, 'score', greaterThan(0))
-          ..having((s) => s.correctAnswersCount, 'correct', 1)
-          ..having((s) => s.questionsAnswered, 'answered', 1)
-          ..having((s) => s.waitingForAnswer, 'waiting', false)
-          ..having((s) => s.lastAnswerCorrect, 'lastCorrect', true),
+          .having((s) => s.score, 'score', greaterThan(0))
+          .having((s) => s.correctAnswersCount, 'correct', 1)
+          .having((s) => s.questionsAnswered, 'answered', 1)
+          .having((s) => s.waitingForAnswer, 'waiting', false)
+          .having((s) => s.lastAnswerCorrect, 'lastCorrect', true),
       ],
     );
 
@@ -114,10 +114,10 @@ void main() {
       act: (bloc) => bloc.add(AnswerBlockHit(1)),
       expect: () => [
         isA<GameInProgress>()
-          ..having((s) => s.lives, 'lives', 2)
-          ..having((s) => s.streakCount, 'streak', 0)
-          ..having((s) => s.scoreMultiplier, 'multiplier', 1)
-          ..having((s) => s.lastAnswerCorrect, 'lastCorrect', false),
+          .having((s) => s.lives, 'lives', 2)
+          .having((s) => s.streakCount, 'streak', 0)
+          .having((s) => s.scoreMultiplier, 'multiplier', 1)
+          .having((s) => s.lastAnswerCorrect, 'lastCorrect', false),
       ],
     );
 
@@ -139,8 +139,8 @@ void main() {
       act: (bloc) => bloc.add(AnswerBlockHit(0)),
       expect: () => [
         isA<GameInProgress>()
-          ..having((s) => s.streakCount, 'streak', 3)
-          ..having((s) => s.scoreMultiplier, 'multiplier', 2),
+          .having((s) => s.streakCount, 'streak', 3)
+          .having((s) => s.scoreMultiplier, 'multiplier', 2),
       ],
     );
 
@@ -162,9 +162,9 @@ void main() {
       act: (bloc) => bloc.add(AnswerBlockHit(0)),
       expect: () => [
         isA<GameInProgress>()
-          ..having((s) => s.streakCount, 'streak', 5)
-          ..having((s) => s.scoreMultiplier, 'multiplier', 3)
-          ..having((s) => s.lives, 'lives', 4),
+          .having((s) => s.streakCount, 'streak', 5)
+          .having((s) => s.scoreMultiplier, 'multiplier', 3)
+          .having((s) => s.lives, 'lives', 4),
       ],
     );
 
@@ -207,7 +207,7 @@ void main() {
       act: (bloc) => bloc.add(AnswerBlockHit(0)),
       expect: () => [
         isA<LevelComplete>()
-          ..having((s) => s.level, 'level', 1),
+          .having((s) => s.level, 'level', 1),
       ],
     );
 
@@ -217,7 +217,7 @@ void main() {
       seed: () => LevelComplete(
         level: 1,
         score: 1000,
-        partialResult: GameResult(
+        partialResult: const GameResult(
           finalScore: 1000,
           levelsCompleted: 1,
           questionsCorrect: 10,
@@ -238,7 +238,7 @@ void main() {
       seed: () => LevelComplete(
         level: 8,
         score: 2000,
-        partialResult: GameResult(
+        partialResult: const GameResult(
           finalScore: 2000,
           levelsCompleted: 8,
           questionsCorrect: 8,

@@ -188,7 +188,7 @@ class _UnitInfoBar extends StatelessWidget {
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
             decoration: BoxDecoration(
-              color: Colors.white.withOpacity(0.22),
+              color: Colors.white.withValues(alpha: 0.22),
               borderRadius: BorderRadius.circular(20),
             ),
             child: Text(
@@ -227,7 +227,7 @@ class _PathPainter extends CustomPainter {
       final isActive = completed.contains(lessons[i].id);
 
       if (isActive) {
-        _drawSolid(canvas, from, to, EduPlayColors.successGreen.withOpacity(0.75), 7);
+        _drawSolid(canvas, from, to, EduPlayColors.successGreen.withValues(alpha: 0.75), 7);
       } else {
         _drawDashed(canvas, from, to, const Color(0xFFCBD5E1), 6);
       }
@@ -318,7 +318,7 @@ class _LessonNode extends StatelessWidget {
                   height: _nodeR * 2 + 18,
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
-                    color: EduPlayColors.primaryBlue.withOpacity(0.18),
+                    color: EduPlayColors.primaryBlue.withValues(alpha: 0.18),
                   ),
                 )
                     .animate(onPlay: (c) => c.repeat(reverse: true))
@@ -342,7 +342,7 @@ class _LessonNode extends StatelessWidget {
                           ? null
                           : [
                               BoxShadow(
-                                color: _circleColor.withOpacity(0.5),
+                                color: _circleColor.withValues(alpha: 0.5),
                                 blurRadius: 10,
                                 offset: const Offset(0, 5),
                               ),
@@ -432,7 +432,7 @@ class _BouncingBadge extends StatelessWidget {
             borderRadius: BorderRadius.circular(10),
             boxShadow: [
               BoxShadow(
-                color: EduPlayColors.energyYellow.withOpacity(0.5),
+                color: EduPlayColors.energyYellow.withValues(alpha: 0.5),
                 blurRadius: 8,
                 offset: const Offset(0, 3),
               ),
@@ -449,9 +449,9 @@ class _BouncingBadge extends StatelessWidget {
             ),
           ),
         ),
-        CustomPaint(
+        const CustomPaint(
           painter: _TrianglePainter(EduPlayColors.energyYellow),
-          size: const Size(12, 6),
+          size: Size(12, 6),
         ),
         const SizedBox(height: 2),
       ],
@@ -509,7 +509,7 @@ class _UnitCompleteBanner extends StatelessWidget {
             width: 40, height: 4,
             margin: const EdgeInsets.only(bottom: 16),
             decoration: BoxDecoration(
-              color: Colors.white.withOpacity(0.4),
+              color: Colors.white.withValues(alpha: 0.4),
               borderRadius: BorderRadius.circular(2),
             ),
           ),

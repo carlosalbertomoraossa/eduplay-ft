@@ -12,6 +12,8 @@ App móvil de EduPlay para niños colombianos de primaria (6-12 años). Gamifica
 - Dominio gamificación: `../specs/domains/gamification/spec.md`
 - MVP: `../specs/product/mvp.md`
 - **Juego G4**: `specs/games/g4-adventure-platformer.md`, `specs/games/g4-adventure-plan.md`, `specs/games/g4-adventure-tasks.md`
+- **Backlog de tareas del frontend** (privado de este repo, no mezclar con el del backend): `SPEC_BACKLOG.md`
+- **Estado para el backend** (qué contrato asumen los mocks, qué se desbloquea por servicio): `specs/frontend-status.md` — actualizar cuando un mock cambie de forma
 
 ## Stack
 - **Flutter** 3.x / Dart SDK ≥ 3.4.0
@@ -21,7 +23,7 @@ App móvil de EduPlay para niños colombianos de primaria (6-12 años). Gamifica
 - **Motor de juego**: Flame 1.37 + flame_bloc + flame_audio
 - **HTTP**: dio (ApiClient registrado en DI, pendiente de conectar)
 - **DI**: get_it (registro manual de 6 dependencias en injection.dart)
-- **Persistencia**: shared_preferences (grado seleccionado), drift (listado, sin implementar)
+- **Persistencia**: shared_preferences (grado seleccionado). Drift (offline) se evaluó y se descartó por ahora — depende del bundle manifest de content-service en el backend, que no existe; se retoma cuando ese servicio esté listo
 - **Tests**: flutter_test + bloc_test + mocktail
 
 ## Estructura de carpetas
@@ -35,10 +37,10 @@ lib/
     router/       → app_router.dart (go_router con redirect guards por rol)
     theme/        → app_theme.dart (colores EduPlayColors, tipografía Nunito, Material 3)
   features/
-    auth/         → splash, onboarding, login padre, selector niño
+    auth/         → splash, onboarding, login padre, registro padre, selector niño
       data/       → mock_auth_repository.dart
-      domain/     → auth_entities, auth_repository (interfaz)
-      presentation/ → auth_cubit, screens
+      domain/     → auth_entities, auth_repository (interfaz, register() exige consentGiven)
+      presentation/ → auth_cubit (login/register/logout, estado AuthRegistered), screens
     home/         → home_screen del niño (mock data)
     lesson/
       data/       → curriculum_data.dart (índice) + curriculum_grade1–5.dart (75 lecciones)
@@ -61,6 +63,8 @@ lib/
         g4_adventure_game.dart → FlameGame principal (sin hack Future.delayed)
     onboarding/   → onboarding_screen
     parent_dashboard/ → parent_dashboard_screen, child_progress_screen
+    gamification/ → achievements_screen, leaderboard_screen (mock, catálogo real de 10 logros)
+    settings/     → settings_screen (niño), parent_settings_screen (controles parentales, ruta /parent/settings)
   shared/
     widgets/      → ep_button (con Semantics), ep_card, xp_bar, streak_badge, heart_indicator, confetti_overlay
 assets/
@@ -78,8 +82,8 @@ flutter run -d chrome  # web (para desarrollo rápido)
 
 ## Tests
 ```bash
-flutter test                     # 33 tests (lesson_bloc, game_bloc, game_questions_provider)
-flutter analyze                  # 0 errores
+flutter test                     # 70 tests (lesson_bloc, game_bloc, game_questions_provider, auth: cubit + 4 pantallas)
+flutter analyze                  # 0 errores, 0 warnings/infos
 ```
 
 ## Archivos clave antes de tocar el código

@@ -234,8 +234,8 @@ class _FeedbackView extends StatelessWidget {
 
     return Scaffold(
       backgroundColor: correct
-          ? EduPlayColors.successGreen.withOpacity(0.08)
-          : EduPlayColors.softRed.withOpacity(0.08),
+          ? EduPlayColors.successGreen.withValues(alpha: 0.08)
+          : EduPlayColors.softRed.withValues(alpha: 0.08),
       body: SafeArea(
         child: Column(
           children: [

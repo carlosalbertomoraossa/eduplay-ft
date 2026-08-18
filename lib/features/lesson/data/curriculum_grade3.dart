@@ -7,7 +7,7 @@ const Map<String, Lesson> grade3Lessons = {
 
     // ── UNIDAD 301: Números hasta 100.000 ── DBA #1 Grado 3°
     // "Lee, escribe y ordena números hasta 100.000. Representa en recta numérica."
-    'lesson-301': const Lesson(
+    'lesson-301': Lesson(
       id: 'lesson-301', unitId: 'unit-301', orderNum: 1,
       title: 'Los miles',
       type: LessonType.intro, estimatedMinutes: 5,
@@ -62,7 +62,7 @@ const Map<String, Lesson> grade3Lessons = {
       ],
     ),
 
-    'lesson-302': const Lesson(
+    'lesson-302': Lesson(
       id: 'lesson-302', unitId: 'unit-301', orderNum: 2,
       title: 'Decenas de mil',
       type: LessonType.standard, estimatedMinutes: 6,
@@ -118,7 +118,7 @@ const Map<String, Lesson> grade3Lessons = {
       ],
     ),
 
-    'lesson-303': const Lesson(
+    'lesson-303': Lesson(
       id: 'lesson-303', unitId: 'unit-301', orderNum: 3,
       title: 'Comparar números grandes',
       type: LessonType.standard, estimatedMinutes: 7,
@@ -173,7 +173,7 @@ const Map<String, Lesson> grade3Lessons = {
       ],
     ),
 
-    'lesson-304': const Lesson(
+    'lesson-304': Lesson(
       id: 'lesson-304', unitId: 'unit-301', orderNum: 4,
       title: 'La recta numérica',
       type: LessonType.standard, estimatedMinutes: 7,
@@ -229,7 +229,7 @@ const Map<String, Lesson> grade3Lessons = {
       ],
     ),
 
-    'lesson-305': const Lesson(
+    'lesson-305': Lesson(
       id: 'lesson-305', unitId: 'unit-301', orderNum: 5,
       title: '¡Desafío de números grandes!',
       type: LessonType.boss, estimatedMinutes: 10,
@@ -294,7 +294,7 @@ const Map<String, Lesson> grade3Lessons = {
 
     // ── UNIDAD 302: Tablas del 1 al 10 ── DBA #3 Grado 3°
     // "Comprende y aplica las tablas de multiplicar del 1 al 10."
-    'lesson-306': const Lesson(
+    'lesson-306': Lesson(
       id: 'lesson-306', unitId: 'unit-302', orderNum: 1,
       title: 'Tablas del 4 y del 6',
       type: LessonType.intro, estimatedMinutes: 6,
@@ -344,7 +344,7 @@ const Map<String, Lesson> grade3Lessons = {
       ],
     ),
 
-    'lesson-307': const Lesson(
+    'lesson-307': Lesson(
       id: 'lesson-307', unitId: 'unit-302', orderNum: 2,
       title: 'Tablas del 7 y del 8',
       type: LessonType.standard, estimatedMinutes: 6,
@@ -394,7 +394,7 @@ const Map<String, Lesson> grade3Lessons = {
       ],
     ),
 
-    'lesson-308': const Lesson(
+    'lesson-308': Lesson(
       id: 'lesson-308', unitId: 'unit-302', orderNum: 3,
       title: 'Tabla del 9',
       type: LessonType.standard, estimatedMinutes: 7,
@@ -444,7 +444,7 @@ const Map<String, Lesson> grade3Lessons = {
       ],
     ),
 
-    'lesson-309': const Lesson(
+    'lesson-309': Lesson(
       id: 'lesson-309', unitId: 'unit-302', orderNum: 4,
       title: 'Propiedad conmutativa',
       type: LessonType.standard, estimatedMinutes: 7,
@@ -495,7 +495,7 @@ const Map<String, Lesson> grade3Lessons = {
       ],
     ),
 
-    'lesson-310': const Lesson(
+    'lesson-310': Lesson(
       id: 'lesson-310', unitId: 'unit-302', orderNum: 5,
       title: '¡Campeón de tablas!',
       type: LessonType.boss, estimatedMinutes: 10,
@@ -555,7 +555,7 @@ const Map<String, Lesson> grade3Lessons = {
 
     // ── UNIDAD 303: División básica ── DBA #4 Grado 3°
     // "Comprende la división como reparto equitativo y como medida."
-    'lesson-311': const Lesson(
+    'lesson-311': Lesson(
       id: 'lesson-311', unitId: 'unit-303', orderNum: 1,
       title: '¿Qué es dividir?',
       type: LessonType.intro, estimatedMinutes: 5,
@@ -606,7 +606,7 @@ const Map<String, Lesson> grade3Lessons = {
       ],
     ),
 
-    'lesson-312': const Lesson(
+    'lesson-312': Lesson(
       id: 'lesson-312', unitId: 'unit-303', orderNum: 2,
       title: 'Dividir entre 2 y 3',
       type: LessonType.standard, estimatedMinutes: 6,
@@ -656,7 +656,7 @@ const Map<String, Lesson> grade3Lessons = {
       ],
     ),
 
-    'lesson-313': const Lesson(
+    'lesson-313': Lesson(
       id: 'lesson-313', unitId: 'unit-303', orderNum: 3,
       title: 'Dividir entre 4 y 5',
       type: LessonType.standard, estimatedMinutes: 6,
@@ -706,7 +706,7 @@ const Map<String, Lesson> grade3Lessons = {
       ],
     ),
 
-    'lesson-314': const Lesson(
+    'lesson-314': Lesson(
       id: 'lesson-314', unitId: 'unit-303', orderNum: 4,
       title: 'Dividir entre 6, 7 y 8',
       type: LessonType.standard, estimatedMinutes: 7,
@@ -756,7 +756,7 @@ const Map<String, Lesson> grade3Lessons = {
       ],
     ),
 
-    'lesson-315': const Lesson(
+    'lesson-315': Lesson(
       id: 'lesson-315', unitId: 'unit-303', orderNum: 5,
       title: '¡Desafío de división!',
       type: LessonType.boss, estimatedMinutes: 10,

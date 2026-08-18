@@ -51,7 +51,7 @@ class _ExerciseFillBlankState extends State<ExerciseFillBlank> {
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
             decoration: BoxDecoration(
-              color: EduPlayColors.energyYellow.withOpacity(0.15),
+              color: EduPlayColors.energyYellow.withValues(alpha: 0.15),
               borderRadius: BorderRadius.circular(12),
             ),
             child: const Text(
@@ -134,7 +134,7 @@ class _ExerciseFillBlankState extends State<ExerciseFillBlank> {
                   ),
                   decoration: BoxDecoration(
                     color: isSelected
-                        ? EduPlayColors.energyYellow.withOpacity(0.2)
+                        ? EduPlayColors.energyYellow.withValues(alpha: 0.2)
                         : isDisabled
                             ? EduPlayColors.backgroundLight
                             : Colors.white,
@@ -188,7 +188,7 @@ class _BlankSlot extends StatelessWidget {
       constraints: const BoxConstraints(minWidth: 80),
       decoration: BoxDecoration(
         color: filled
-            ? EduPlayColors.energyYellow.withOpacity(0.2)
+            ? EduPlayColors.energyYellow.withValues(alpha: 0.2)
             : EduPlayColors.backgroundLight,
         borderRadius: BorderRadius.circular(10),
         border: Border.all(
