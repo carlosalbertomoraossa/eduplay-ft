@@ -140,7 +140,14 @@ class LessonResultScreen extends ConsumerWidget {
                   EpButton(
                     label: 'Ir al inicio',
                     variant: EpButtonVariant.secondary,
-                    onPressed: () => context.go('/home'),
+                    onPressed: () {
+                      if (passed) {
+                        ref
+                            .read(lessonProgressProvider.notifier)
+                            .completeLesson(result.lessonId);
+                      }
+                      context.go('/home');
+                    },
                   )
                       .animate(delay: 600.ms)
                       .fadeIn(duration: 400.ms),

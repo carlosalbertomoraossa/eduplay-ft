@@ -9,6 +9,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../../../core/theme/app_theme.dart';
 import '../../domain/entities/lesson.dart';
 import '../bloc/lesson_bloc.dart';
+import 'exercise_visual_aid.dart';
 
 class ExerciseFillBlank extends StatefulWidget {
   final Exercise exercise;
@@ -42,7 +43,7 @@ class _ExerciseFillBlankState extends State<ExerciseFillBlank> {
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
+    return SingleChildScrollView(
       padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -65,7 +66,7 @@ class _ExerciseFillBlankState extends State<ExerciseFillBlank> {
             ),
           ),
 
-          const SizedBox(height: 32),
+          const SizedBox(height: 20),
 
           // Oración con hueco visual
           Center(
@@ -100,7 +101,16 @@ class _ExerciseFillBlankState extends State<ExerciseFillBlank> {
             ),
           ),
 
-          const SizedBox(height: 48),
+          const SizedBox(height: 20),
+
+          // Gráfico matemático + Tip pedagógico
+          ExerciseVisualAid(
+            questionText: _sentence,
+            hint: widget.exercise.hint,
+            options: _options,
+          ),
+
+          const SizedBox(height: 24),
 
           const Text(
             'Elige una palabra:',

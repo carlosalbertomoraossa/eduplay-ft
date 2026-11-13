@@ -9,6 +9,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../../../core/theme/app_theme.dart';
 import '../../domain/entities/lesson.dart';
 import '../bloc/lesson_bloc.dart';
+import 'exercise_visual_aid.dart';
 
 // Fases del ejercicio
 enum _Phase { filling, reviewing }
@@ -124,20 +125,29 @@ class _ExerciseDragDropState extends State<ExerciseDragDrop> {
                   ),
                 ),
 
-                const SizedBox(height: 20),
+                const SizedBox(height: 12),
 
                 Text(
                   _instruction,
                   style: const TextStyle(
-                    fontSize: 20,
+                    fontSize: 19,
                     fontWeight: FontWeight.w700,
                     color: EduPlayColors.textDark,
                     fontFamily: 'Nunito',
-                    height: 1.4,
+                    height: 1.35,
                   ),
                 ),
 
-                const SizedBox(height: 24),
+                const SizedBox(height: 12),
+
+                ExerciseVisualAid(
+                  questionText: '$_instruction ${_targets.join(' ')}',
+                  hint: widget.exercise.hint,
+                  options: _items,
+                  compact: true,
+                ),
+
+                const SizedBox(height: 14),
 
                 // Zona de targets
                 Expanded(

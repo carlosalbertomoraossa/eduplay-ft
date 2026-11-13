@@ -3,9 +3,11 @@
 import 'package:flame/game.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../../../core/di/injection.dart';
+import '../../../../../core/providers/game_progress_provider.dart';
 import '../../../../../core/theme/app_theme.dart';
 import '../../data/game_questions_provider.dart';
 import '../../g4_adventure_game.dart';
@@ -23,16 +25,16 @@ import '../overlays/question_overlay.dart';
 /// Crea [GameBloc] y [G4AdventureGame], arranca el nivel [level] y
 /// gestiona transiciones entre niveles (LevelComplete → siguiente nivel)
 /// y reinicios (GameOver → GameRestarted → mismo nivel).
-class GamePlayScreen extends StatefulWidget {
+class GamePlayScreen extends ConsumerStatefulWidget {
   final int level;
 
   const GamePlayScreen({super.key, required this.level});
 
   @override
-  State<GamePlayScreen> createState() => _GamePlayScreenState();
+  ConsumerState<GamePlayScreen> createState() => _GamePlayScreenState();
 }
 
-class _GamePlayScreenState extends State<GamePlayScreen> {
+class _GamePlayScreenState extends ConsumerState<GamePlayScreen> {
   late final GameBloc _gameBloc;
   late final G4AdventureGame _game;
 
@@ -77,8 +79,19 @@ class _GamePlayScreenState extends State<GamePlayScreen> {
         bloc: _gameBloc,
         listener: (context, state) {
           if (state is LevelComplete) {
+            ref.read(gameProgressProvider.notifier).recordLevelCompleted(
+                  level: state.level,
+                  score: state.partialResult.finalScore,
+                  accuracy: state.partialResult.accuracy,
+                );
             // Guardar nivel siguiente antes de que NextLevel emita GameInitial
             _nextLevel = state.level + 1;
+          } else if (state is GameComplete) {
+            ref.read(gameProgressProvider.notifier).recordLevelCompleted(
+                  level: 8,
+                  score: state.result.finalScore,
+                  accuracy: state.result.accuracy,
+                );
           } else if (state is GameInitial) {
             // Reacción a GameRestarted o NextLevel — limpiar overlays y relanzar
             final level = _nextLevel ?? widget.level;

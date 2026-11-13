@@ -11,6 +11,8 @@ class GameQuestion extends Equatable {
   final int correctIndex; // 0, 1 o 2
   final int xpReward;
   final Difficulty difficulty;
+  final String? hint;
+  final String topicLabel;
 
   const GameQuestion({
     required this.id,
@@ -19,6 +21,8 @@ class GameQuestion extends Equatable {
     required this.correctIndex,
     required this.xpReward,
     required this.difficulty,
+    this.hint,
+    this.topicLabel = 'Desafío Matemático',
   });
 
   bool isCorrectAnswer(int index) => index == correctIndex;

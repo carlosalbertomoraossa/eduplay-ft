@@ -27,6 +27,17 @@ const Map<int, List<String>> _levelExerciseIds = {
       'l510-e4', 'l514-e3', 'l415-e4', 'l505-e3', 'l405-e6'],
 };
 
+const Map<int, String> _levelTopicLabels = {
+  1: 'Nivel 1 · Fracciones Básicas',
+  2: 'Nivel 2 · Fracciones y Operaciones',
+  3: 'Nivel 3 · Multiplicación y División',
+  4: 'Nivel 4 · Decimales y Enteros',
+  5: 'Nivel 5 · Porcentajes y Descuentos',
+  6: 'Nivel 6 · Razones y Proporciones',
+  7: 'Nivel 7 · Repaso Mixto',
+  8: 'Nivel 8 · ¡Boss Final!',
+};
+
 Difficulty _difficultyForLevel(int level) {
   if (level <= 2) return Difficulty.easy;
   if (level <= 5) return Difficulty.medium;
@@ -50,10 +61,16 @@ class GameQuestionsProvider {
 
     final difficulty = _difficultyForLevel(level);
     final xpReward = _xpForLevel(level);
+    final topicLabel = _levelTopicLabels[level] ?? 'Nivel $level';
 
     final questions = <GameQuestion>[];
     for (final exerciseId in ids) {
-      final q = _buildQuestion(exerciseId, difficulty, xpReward);
+      final q = _buildQuestion(
+        exerciseId,
+        difficulty,
+        xpReward,
+        topicLabel: topicLabel,
+      );
       if (q != null) questions.add(q);
     }
     return questions;
@@ -62,8 +79,9 @@ class GameQuestionsProvider {
   static GameQuestion? _buildQuestion(
     String exerciseId,
     Difficulty difficulty,
-    int xpReward,
-  ) {
+    int xpReward, {
+    required String topicLabel,
+  }) {
     // exerciseId format: 'l401-e1' → lección 'lesson-401'
     final match = RegExp(r'^l(\d+)-').firstMatch(exerciseId);
     if (match == null) return null;
@@ -108,6 +126,8 @@ class GameQuestionsProvider {
       correctIndex: correctIndex,
       xpReward: xpReward,
       difficulty: difficulty,
+      hint: exercise.hint,
+      topicLabel: topicLabel,
     );
   }
 }

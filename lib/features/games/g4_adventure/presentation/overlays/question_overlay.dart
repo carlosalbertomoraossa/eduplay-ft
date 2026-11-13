@@ -3,6 +3,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
+import '../../../../lesson/presentation/widgets/exercise_visual_aid.dart';
 import '../../domain/entities/game_question.dart';
 import '../bloc/game_bloc.dart';
 import '../bloc/game_event.dart';
@@ -104,8 +105,9 @@ class _QuestionCardState extends State<_QuestionCard>
             child: ScaleTransition(
               scale: _scale,
               child: Container(
-                margin: const EdgeInsets.symmetric(horizontal: 20),
-                padding: const EdgeInsets.fromLTRB(22, 20, 22, 18),
+                margin: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+                padding: const EdgeInsets.fromLTRB(20, 16, 20, 14),
+                constraints: const BoxConstraints(maxWidth: 520),
                 decoration: BoxDecoration(
                   color: Colors.white,
                   borderRadius: BorderRadius.circular(28),
@@ -122,62 +124,75 @@ class _QuestionCardState extends State<_QuestionCard>
                     ),
                   ],
                 ),
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    // Indicador temático: fracciones
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 14, vertical: 7),
-                      decoration: BoxDecoration(
-                        gradient: const LinearGradient(
-                          colors: [Color(0xFF6A1B9A), Color(0xFF1565C0)],
-                        ),
-                        borderRadius: BorderRadius.circular(20),
-                      ),
-                      child: const Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Text('🔢', style: TextStyle(fontSize: 16)),
-                          SizedBox(width: 6),
-                          Text(
-                            'Fracciones Básicas',
-                            style: TextStyle(
-                              fontFamily: 'Nunito',
-                              fontSize: 13,
-                              fontWeight: FontWeight.w800,
-                              color: Colors.white,
-                            ),
+                child: SingleChildScrollView(
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      // Indicador temático dinámico por nivel
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 14, vertical: 6),
+                        decoration: BoxDecoration(
+                          gradient: const LinearGradient(
+                            colors: [Color(0xFF6A1B9A), Color(0xFF1565C0)],
                           ),
-                        ],
+                          borderRadius: BorderRadius.circular(20),
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            const Text('🔢', style: TextStyle(fontSize: 15)),
+                            const SizedBox(width: 6),
+                            Flexible(
+                              child: Text(
+                                widget.question.topicLabel,
+                                style: const TextStyle(
+                                  fontFamily: 'Nunito',
+                                  fontSize: 13,
+                                  fontWeight: FontWeight.w800,
+                                  color: Colors.white,
+                                ),
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ),
+                          ],
+                        ),
                       ),
-                    ),
-                    const SizedBox(height: 16),
-                    // Pregunta
-                    Text(
-                      widget.question.question,
-                      style: const TextStyle(
-                        fontFamily: 'Nunito',
-                        fontSize: 20,
-                        fontWeight: FontWeight.w800,
-                        color: Color(0xFF1A237E),
-                        height: 1.3,
+                      const SizedBox(height: 12),
+                      // Pregunta
+                      Text(
+                        widget.question.question,
+                        style: const TextStyle(
+                          fontFamily: 'Nunito',
+                          fontSize: 18,
+                          fontWeight: FontWeight.w800,
+                          color: Color(0xFF1A237E),
+                          height: 1.28,
+                        ),
+                        textAlign: TextAlign.center,
                       ),
-                      textAlign: TextAlign.center,
-                    ),
-                    const SizedBox(height: 18),
-                    // Opciones
-                    ...List.generate(widget.question.options.length, (i) {
-                      return _OptionButton(
-                        text: widget.question.options[i],
-                        baseColor: _optionColors[i % _optionColors.length],
-                        selected: _selected == i,
-                        submitted: _submitted,
-                        isCorrect: i == widget.question.correctIndex,
-                        onTap: _submitted ? null : () => _onTap(i),
-                      );
-                    }),
-                  ],
+                      const SizedBox(height: 12),
+                      // Gráfico matemático + Tip pedagógico en todos los niveles
+                      ExerciseVisualAid(
+                        questionText: widget.question.question,
+                        hint: widget.question.hint,
+                        options: widget.question.options,
+                        compact: true,
+                      ),
+                      const SizedBox(height: 14),
+                      // Opciones
+                      ...List.generate(widget.question.options.length, (i) {
+                        return _OptionButton(
+                          text: widget.question.options[i],
+                          baseColor: _optionColors[i % _optionColors.length],
+                          selected: _selected == i,
+                          submitted: _submitted,
+                          isCorrect: i == widget.question.correctIndex,
+                          onTap: _submitted ? null : () => _onTap(i),
+                        );
+                      }),
+                    ],
+                  ),
                 ),
               ),
             ),

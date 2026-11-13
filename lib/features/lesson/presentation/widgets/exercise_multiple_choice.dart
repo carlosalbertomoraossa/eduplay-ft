@@ -9,6 +9,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../../../core/theme/app_theme.dart';
 import '../../domain/entities/lesson.dart';
 import '../bloc/lesson_bloc.dart';
+import 'exercise_visual_aid.dart';
 
 class ExerciseMultipleChoice extends StatefulWidget {
   final Exercise exercise;
@@ -62,28 +63,36 @@ class _ExerciseMultipleChoiceState extends State<ExerciseMultipleChoice> {
             ),
           ),
 
-          const SizedBox(height: 20),
+          const SizedBox(height: 14),
 
           // Pregunta
           Text(
             _question,
             style: const TextStyle(
-              fontSize: 22,
+              fontSize: 21,
               fontWeight: FontWeight.w700,
               color: EduPlayColors.textDark,
               fontFamily: 'Nunito',
-              height: 1.4,
+              height: 1.35,
             ),
           ),
 
-          const SizedBox(height: 32),
+          const SizedBox(height: 14),
+
+          // Gráfico matemático + Tip pedagógico
+          ExerciseVisualAid(
+            questionText: _question,
+            hint: widget.exercise.hint,
+            options: _options,
+          ),
+
+          const SizedBox(height: 18),
 
           // Opciones
           Expanded(
             child: ListView.separated(
-              physics: const NeverScrollableScrollPhysics(),
               itemCount: _options.length,
-              separatorBuilder: (_, __) => const SizedBox(height: 12),
+              separatorBuilder: (_, __) => const SizedBox(height: 10),
               itemBuilder: (_, i) {
                 return _OptionTile(
                   label: _options[i],

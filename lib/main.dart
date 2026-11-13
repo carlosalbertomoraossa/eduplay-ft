@@ -8,6 +8,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'core/di/injection.dart';
+import 'core/providers/game_progress_provider.dart';
+import 'core/providers/lesson_progress_provider.dart';
 import 'core/providers/selected_grade_provider.dart';
 import 'core/router/app_router.dart';
 import 'core/theme/app_theme.dart';
@@ -22,6 +24,12 @@ void main() async {
       overrides: [
         selectedGradeProvider.overrideWith(
           (_) => SelectedGradeNotifier(prefs),
+        ),
+        lessonProgressProvider.overrideWith(
+          (_) => LessonProgressNotifier(prefs),
+        ),
+        gameProgressProvider.overrideWith(
+          (_) => GameProgressNotifier(prefs),
         ),
       ],
       child: const EduPlayApp(),

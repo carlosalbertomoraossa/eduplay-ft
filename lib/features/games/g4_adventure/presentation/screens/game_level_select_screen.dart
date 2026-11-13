@@ -1,8 +1,10 @@
 // Spec: .sdd/implemented/features/g4-adventure/g4-adventure-plan.md Fase 4 §4.1
 
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../../../core/providers/game_progress_provider.dart';
 import '../../../../../core/theme/app_theme.dart';
 
 // Metadatos de cada nivel: nombre temático y dificultad (1-3 estrellas)
@@ -17,11 +19,13 @@ const List<_LevelMeta> _levels = [
   _LevelMeta(8, '¡Boss!\nTodo el grado', 3, Color(0xFFE91E63)),
 ];
 
-class GameLevelSelectScreen extends StatelessWidget {
+class GameLevelSelectScreen extends ConsumerWidget {
   const GameLevelSelectScreen({super.key});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final progress = ref.watch(gameProgressProvider);
+
     return Scaffold(
       backgroundColor: const Color(0xFF0D1B2A),
       appBar: AppBar(
@@ -43,7 +47,7 @@ class GameLevelSelectScreen extends StatelessWidget {
           Padding(
             padding: const EdgeInsets.fromLTRB(20, 4, 20, 16),
             child: Text(
-              'Elige tu nivel',
+              'Elige tu nivel · Desbloqueados: ${progress.unlockedLevel}/8',
               style: TextStyle(
                 color: Colors.white.withValues(alpha: 0.8),
                 fontFamily: 'Nunito',
@@ -59,11 +63,17 @@ class GameLevelSelectScreen extends StatelessWidget {
                   crossAxisCount: 2,
                   crossAxisSpacing: 14,
                   mainAxisSpacing: 14,
-                  childAspectRatio: 1.1,
+                  childAspectRatio: 1.05,
                 ),
                 itemCount: _levels.length,
                 itemBuilder: (context, index) {
-                  return _LevelCard(meta: _levels[index]);
+                  final meta = _levels[index];
+                  return _LevelCard(
+                    meta: meta,
+                    earnedStars: progress.starsFor(meta.level),
+                    bestScore: progress.bestScoreFor(meta.level),
+                    isUnlocked: progress.isUnlocked(meta.level),
+                  );
                 },
               ),
             ),
@@ -77,11 +87,21 @@ class GameLevelSelectScreen extends StatelessWidget {
 
 class _LevelCard extends StatelessWidget {
   final _LevelMeta meta;
+  final int earnedStars;
+  final int bestScore;
+  final bool isUnlocked;
 
-  const _LevelCard({required this.meta});
+  const _LevelCard({
+    required this.meta,
+    required this.earnedStars,
+    required this.bestScore,
+    required this.isUnlocked,
+  });
 
   @override
   Widget build(BuildContext context) {
+    final displayStars = earnedStars > 0 ? earnedStars : meta.stars;
+
     return GestureDetector(
       onTap: () => context.push('/games/g4-adventure/play/${meta.level}'),
       child: Container(
@@ -90,14 +110,16 @@ class _LevelCard extends StatelessWidget {
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
             colors: [
-              meta.color.withValues(alpha: 0.85),
-              meta.color.withValues(alpha: 0.55),
+              meta.color.withValues(alpha: isUnlocked ? 0.90 : 0.45),
+              meta.color.withValues(alpha: isUnlocked ? 0.60 : 0.30),
             ],
           ),
           borderRadius: BorderRadius.circular(18),
           border: Border.all(
-            color: Colors.white.withValues(alpha: 0.15),
-            width: 1.5,
+            color: earnedStars > 0
+                ? EduPlayColors.energyYellow
+                : Colors.white.withValues(alpha: 0.15),
+            width: earnedStars > 0 ? 2 : 1.5,
           ),
           boxShadow: [
             BoxShadow(
@@ -134,8 +156,27 @@ class _LevelCard extends StatelessWidget {
                       ),
                     ),
                   ),
-                  // Icono especial para boss
-                  if (meta.level == 8)
+                  if (earnedStars > 0)
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 8,
+                        vertical: 2,
+                      ),
+                      decoration: BoxDecoration(
+                        color: Colors.black.withValues(alpha: 0.28),
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      child: Text(
+                        '⚡ $bestScore pts',
+                        style: const TextStyle(
+                          color: EduPlayColors.energyYellow,
+                          fontSize: 11,
+                          fontWeight: FontWeight.w800,
+                          fontFamily: 'Nunito',
+                        ),
+                      ),
+                    )
+                  else if (meta.level == 8)
                     const Text('👑', style: TextStyle(fontSize: 20)),
                 ],
               ),
@@ -152,17 +193,29 @@ class _LevelCard extends StatelessWidget {
                 ),
               ),
               const SizedBox(height: 6),
-              // Estrellas de dificultad
+              // Estrellas ganadas o dificultad
               Row(
-                children: List.generate(3, (i) {
-                  return Icon(
-                    i < meta.stars ? Icons.star_rounded : Icons.star_outline_rounded,
-                    color: i < meta.stars
-                        ? EduPlayColors.energyYellow
-                        : Colors.white.withValues(alpha: 0.3),
-                    size: 16,
-                  );
-                }),
+                children: [
+                  ...List.generate(3, (i) {
+                    return Icon(
+                      i < displayStars
+                          ? Icons.star_rounded
+                          : Icons.star_outline_rounded,
+                      color: i < displayStars
+                          ? EduPlayColors.energyYellow
+                          : Colors.white.withValues(alpha: 0.3),
+                      size: 16,
+                    );
+                  }),
+                  if (earnedStars > 0) ...[
+                    const SizedBox(width: 6),
+                    const Icon(
+                      Icons.check_circle_rounded,
+                      color: Colors.white,
+                      size: 14,
+                    ),
+                  ],
+                ],
               ),
             ],
           ),
