@@ -47,19 +47,36 @@ class UnitsScreen extends ConsumerWidget {
         itemBuilder: (_, i) {
           final unitId = unitIds[i];
           final title = CurriculumData.unitTitles[unitId] ?? unitId;
+          final description = CurriculumData.unitDescriptions[unitId];
+          final period = CurriculumData.getUnitPeriod(unitId);
+          final prevPeriod =
+              i > 0 ? CurriculumData.getUnitPeriod(unitIds[i - 1]) : null;
+          final showPeriodHeader = period != prevPeriod;
           final lessonsTotal = CurriculumData.getLessonsForUnit(unitId).length;
           final lessonsCompleted = _completedCount(unitId, completed);
           final unlocked = _isUnlocked(i, unitIds, completed);
 
-          return _UnitCard(
-            id: unitId,
-            order: i + 1,
-            title: title,
-            lessonsTotal: lessonsTotal,
-            lessonsCompleted: lessonsCompleted,
-            isUnlocked: unlocked,
+          return Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              if (showPeriodHeader)
+                _PeriodHeader(
+                  period: period,
+                  isFirst: i == 0,
+                ),
+              _UnitCard(
+                id: unitId,
+                order: i + 1,
+                period: period,
+                title: title,
+                description: description,
+                lessonsTotal: lessonsTotal,
+                lessonsCompleted: lessonsCompleted,
+                isUnlocked: unlocked,
+              ),
+            ],
           )
-              .animate(delay: Duration(milliseconds: i * 80))
+              .animate(delay: Duration(milliseconds: i * 60))
               .fadeIn(duration: 350.ms)
               .slideX(begin: 0.1, end: 0);
         },
@@ -68,10 +85,81 @@ class UnitsScreen extends ConsumerWidget {
   }
 }
 
+class _PeriodHeader extends StatelessWidget {
+  final int period;
+  final bool isFirst;
+
+  const _PeriodHeader({
+    required this.period,
+    required this.isFirst,
+  });
+
+  static const _periodLabels = {
+    1: 'Período 1 · Primer Bimestre',
+    2: 'Período 2 · Segundo Bimestre',
+    3: 'Período 3 · Tercer Bimestre',
+    4: 'Período 4 · Cuarto Bimestre',
+  };
+
+  static const _periodColors = {
+    1: Color(0xFF3B82F6),
+    2: Color(0xFF8B5CF6),
+    3: Color(0xFF10B981),
+    4: Color(0xFFF59E0B),
+  };
+
+  @override
+  Widget build(BuildContext context) {
+    final color = _periodColors[period] ?? EduPlayColors.primaryBlue;
+    final label = _periodLabels[period] ?? 'Período $period';
+
+    return Padding(
+      padding: EdgeInsets.only(top: isFirst ? 0 : 12, bottom: 12),
+      child: Row(
+        children: [
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+            decoration: BoxDecoration(
+              color: color.withValues(alpha: 0.12),
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(color: color.withValues(alpha: 0.3)),
+            ),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(Icons.calendar_month_rounded, size: 16, color: color),
+                const SizedBox(width: 6),
+                Text(
+                  label,
+                  style: TextStyle(
+                    fontSize: 13,
+                    fontWeight: FontWeight.w800,
+                    color: color,
+                    fontFamily: 'Nunito',
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Divider(
+              color: color.withValues(alpha: 0.2),
+              thickness: 1.5,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
 class _UnitCard extends StatelessWidget {
   final String id;
   final int order;
+  final int period;
   final String title;
+  final String? description;
   final int lessonsTotal;
   final int lessonsCompleted;
   final bool isUnlocked;
@@ -79,7 +167,9 @@ class _UnitCard extends StatelessWidget {
   const _UnitCard({
     required this.id,
     required this.order,
+    required this.period,
     required this.title,
+    this.description,
     required this.lessonsTotal,
     required this.lessonsCompleted,
     required this.isUnlocked,
@@ -162,6 +252,18 @@ class _UnitCard extends StatelessWidget {
                       fontFamily: 'Nunito',
                     ),
                   ),
+                  if (description != null) ...[
+                    const SizedBox(height: 2),
+                    Text(
+                      description!,
+                      style: const TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w600,
+                        color: EduPlayColors.textMedium,
+                        fontFamily: 'Nunito',
+                      ),
+                    ),
+                  ],
                   const SizedBox(height: 4),
                   Text(
                     !isUnlocked

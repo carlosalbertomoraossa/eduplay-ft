@@ -11,6 +11,7 @@ import '../../../../../core/providers/lesson_progress_provider.dart';
 import '../../../../../core/providers/selected_grade_provider.dart';
 import '../../../../../core/theme/app_theme.dart';
 import '../../../../../shared/widgets/xp_bar.dart';
+import '../../../lesson/data/curriculum_data.dart';
 
 // Mock data — reemplazar con providers reales en bloque 11
 class _MockChildData {
@@ -47,41 +48,41 @@ const _grades = [
     grade: 1,
     label: 'Primer grado',
     emoji: '🌱',
-    subtitle: 'Números, suma y resta hasta 20',
+    subtitle: '4 períodos · Números hasta 99, figuras y pictogramas',
     color: Color(0xFF3B82F6),
-    totalLessons: 15,
+    totalLessons: 40,
   ),
   _GradeConfig(
     grade: 2,
     label: 'Segundo grado',
     emoji: '⭐',
-    subtitle: 'Números hasta 1.000, tablas ×2 ×3 ×5',
+    subtitle: '4 períodos · Números hasta 999, tablas, reloj y gráficas',
     color: Color(0xFF8B5CF6),
-    totalLessons: 15,
+    totalLessons: 35,
   ),
   _GradeConfig(
     grade: 3,
     label: 'Tercer grado',
     emoji: '🚀',
-    subtitle: 'Multiplicación, división y fracciones',
+    subtitle: '4 períodos · Multiplicación, división, fracciones y perímetro',
     color: Color(0xFF22C55E),
-    totalLessons: 15,
+    totalLessons: 40,
   ),
   _GradeConfig(
     grade: 4,
     label: 'Cuarto grado',
     emoji: '🏆',
-    subtitle: 'Fracciones, decimales y áreas',
+    subtitle: '4 períodos · Fracciones, decimales, ángulos, áreas y moda',
     color: Color(0xFFF59E0B),
-    totalLessons: 15,
+    totalLessons: 40,
   ),
   _GradeConfig(
     grade: 5,
     label: 'Quinto grado',
     emoji: '🎓',
-    subtitle: 'Porcentajes, proporciones y álgebra',
+    subtitle: '4 períodos · Porcentajes, volumen, plano cartesiano y álgebra',
     color: Color(0xFFEF4444),
-    totalLessons: 15,
+    totalLessons: 40,
   ),
 ];
 
@@ -131,7 +132,10 @@ class HomeScreen extends ConsumerWidget {
                 delegate: SliverChildBuilderDelegate(
                   (_, i) {
                     final cfg = _grades[i];
-                    final completed = cfg.grade == 1 ? completedLessons.length : 0;
+                    final completed = completedLessons
+                        .intersection(
+                            CurriculumData.getLessonIdsForGrade(cfg.grade))
+                        .length;
                     return _GradeCard(
                       config: cfg,
                       completedLessons: completed,

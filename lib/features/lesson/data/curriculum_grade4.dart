@@ -1,5 +1,5 @@
-// Currículo Grado 4° — Fracciones, Multiplicación/División, Decimales
-// 15 lecciones alineadas con DBA MEN Colombia
+// Currículo Grado 4° — 8 unidades (4 períodos académicos, 40 lecciones)
+// Alineado con DBA MEN Colombia (Pensamientos NV, EM y AL)
 
 import '../domain/entities/lesson.dart';
 
@@ -802,6 +802,1441 @@ const Map<String, Lesson> grade4Lessons = {
             'question': '¿Cuál de estos números es el mayor?',
             'options': ['3.09', '3.9', '3.19', '3.91'],
             'correct_index': 3,
+          },
+        ),
+      ],
+    ),
+
+    // ── UNIDAD 404: Números hasta un millón ── DBA #1 Grado 4° (Período 1)
+    // "Lee, escribe y compara números hasta 1.000.000. Redondea y estima."
+    'lesson-416': Lesson(
+      id: 'lesson-416', unitId: 'unit-404', orderNum: 1,
+      title: 'Centenas de mil y el millón',
+      type: LessonType.intro, estimatedMinutes: 5,
+      xpReward: 25, coinReward: 8, difficulty: Difficulty.easy,
+      exercises: [
+        Exercise(
+          id: 'l416-e1', orderNum: 1, type: ExerciseType.multipleChoice,
+          hint: '10 decenas de mil forman 1 centena de mil (100.000)',
+          content: {
+            'question': '¿Cuántas unidades hay en 1 centena de mil?',
+            'options': ['10.000', '100.000', '1.000.000', '1.000'],
+            'correct_index': 1,
+          },
+        ),
+        Exercise(
+          id: 'l416-e2', orderNum: 2, type: ExerciseType.fillBlank,
+          content: {
+            'sentence': '10 centenas de mil forman 1 millón, que se escribe ___',
+            'options': ['100.000', '1.000.000', '10.000', '999.999'],
+            'correct_answer': '1.000.000',
+          },
+        ),
+        Exercise(
+          id: 'l416-e3', orderNum: 3, type: ExerciseType.multipleChoice,
+          content: {
+            'question': '¿Qué número sigue inmediatamente después de 999.999?',
+            'options': ['999.998', '1.000.000', '100.000', '900.000'],
+            'correct_index': 1,
+          },
+        ),
+        Exercise(
+          id: 'l416-e4', orderNum: 4, type: ExerciseType.dragDrop,
+          content: {
+            'instruction': 'Relaciona cada número con su lectura',
+            'items': ['200.000', '550.000', '1.000.000'],
+            'targets': ['Doscientos mil', 'Quinientos cincuenta mil', 'Un millón'],
+            'correct_mapping': {
+              '200.000': 'Doscientos mil',
+              '550.000': 'Quinientos cincuenta mil',
+              '1.000.000': 'Un millón',
+            },
+          },
+        ),
+        Exercise(
+          id: 'l416-e5', orderNum: 5, type: ExerciseType.fillBlank,
+          content: {
+            'sentence': '300.000 + 40.000 + 5.000 = ___',
+            'options': ['345.000', '354.000', '304.500', '435.000'],
+            'correct_answer': '345.000',
+          },
+        ),
+      ],
+    ),
+
+    'lesson-417': Lesson(
+      id: 'lesson-417', unitId: 'unit-404', orderNum: 2,
+      title: 'Valor posicional hasta 6 cifras',
+      type: LessonType.standard, estimatedMinutes: 6,
+      xpReward: 30, coinReward: 10, difficulty: Difficulty.easy,
+      exercises: [
+        Exercise(
+          id: 'l417-e1', orderNum: 1, type: ExerciseType.multipleChoice,
+          content: {
+            'question': 'En el número 648.320, ¿qué valor representa el dígito 6?',
+            'options': ['6.000', '60.000', '600.000', '600'],
+            'correct_index': 2,
+          },
+        ),
+        Exercise(
+          id: 'l417-e2', orderNum: 2, type: ExerciseType.fillBlank,
+          content: {
+            'sentence': 'En 752.419, el dígito que ocupa las decenas de mil es el ___',
+            'options': ['7', '5', '2', '4'],
+            'correct_answer': '5',
+          },
+        ),
+        Exercise(
+          id: 'l417-e3', orderNum: 3, type: ExerciseType.multipleChoice,
+          content: {
+            'question': '¿Cuál es la descomposición correcta de 483.200?',
+            'options': [
+              '400.000 + 80.000 + 3.000 + 200',
+              '40.000 + 8.000 + 300 + 20',
+              '400.000 + 8.000 + 300 + 2',
+              '480.000 + 32.000',
+            ],
+            'correct_index': 0,
+          },
+        ),
+        Exercise(
+          id: 'l417-e4', orderNum: 4, type: ExerciseType.dragDrop,
+          content: {
+            'instruction': 'En el número 539.184, relaciona cada dígito con su posición',
+            'items': ['Dígito 5', 'Dígito 3', 'Dígito 9'],
+            'targets': ['Centenas de mil (500.000)', 'Decenas de mil (30.000)', 'Unidades de mil (9.000)'],
+            'correct_mapping': {
+              'Dígito 5': 'Centenas de mil (500.000)',
+              'Dígito 3': 'Decenas de mil (30.000)',
+              'Dígito 9': 'Unidades de mil (9.000)',
+            },
+          },
+        ),
+        Exercise(
+          id: 'l417-e5', orderNum: 5, type: ExerciseType.fillBlank,
+          content: {
+            'sentence': '8 centenas de mil + 5 decenas de mil + 2 unidades de mil = ___',
+            'options': ['852.000', '825.000', '582.000', '805.200'],
+            'correct_answer': '852.000',
+          },
+        ),
+      ],
+    ),
+
+    'lesson-418': Lesson(
+      id: 'lesson-418', unitId: 'unit-404', orderNum: 3,
+      title: 'Comparar poblaciones de Colombia',
+      type: LessonType.standard, estimatedMinutes: 6,
+      xpReward: 30, coinReward: 10, difficulty: Difficulty.medium,
+      exercises: [
+        Exercise(
+          id: 'l418-e1', orderNum: 1, type: ExerciseType.multipleChoice,
+          content: {
+            'question': 'Manizales tiene cerca de 450.000 habitantes y Pereira cerca de 480.000. ¿Cuál ciudad tiene más habitantes?',
+            'options': ['Manizales', 'Pereira', 'Tienen igual', 'No se sabe'],
+            'correct_index': 1,
+          },
+        ),
+        Exercise(
+          id: 'l418-e2', orderNum: 2, type: ExerciseType.fillBlank,
+          content: {
+            'sentence': 'Entre 609.500 y 690.500, el número mayor es ___',
+            'options': ['609.500', '690.500', 'son iguales', '600.950'],
+            'correct_answer': '690.500',
+          },
+        ),
+        Exercise(
+          id: 'l418-e3', orderNum: 3, type: ExerciseType.multipleChoice,
+          content: {
+            'question': '¿Qué símbolo debe ir en el espacio: 325.800 ___ 325.080?',
+            'options': ['> (mayor que)', '< (menor que)', '= (igual a)', '+'],
+            'correct_index': 0,
+          },
+        ),
+        Exercise(
+          id: 'l418-e4', orderNum: 4, type: ExerciseType.dragDrop,
+          content: {
+            'instruction': 'Ordena estas ciudades colombianas de menor a mayor población aproximada',
+            'items': ['Popayán (330.000)', 'Santa Marta (550.000)', 'Bucaramanga (610.000)'],
+            'targets': ['1° (menor)', '2° (intermedia)', '3° (mayor)'],
+            'correct_mapping': {
+              'Popayán (330.000)': '1° (menor)',
+              'Santa Marta (550.000)': '2° (intermedia)',
+              'Bucaramanga (610.000)': '3° (mayor)',
+            },
+          },
+        ),
+        Exercise(
+          id: 'l418-e5', orderNum: 5, type: ExerciseType.fillBlank,
+          content: {
+            'sentence': 'El mayor número de 6 cifras que existe es ___',
+            'options': ['100.000', '900.000', '999.999', '1.000.000'],
+            'correct_answer': '999.999',
+          },
+        ),
+      ],
+    ),
+
+    'lesson-419': Lesson(
+      id: 'lesson-419', unitId: 'unit-404', orderNum: 4,
+      title: 'Redondeo y estimación',
+      type: LessonType.standard, estimatedMinutes: 6,
+      xpReward: 40, coinReward: 12, difficulty: Difficulty.medium,
+      exercises: [
+        Exercise(
+          id: 'l419-e1', orderNum: 1, type: ExerciseType.multipleChoice,
+          hint: 'Si la cifra siguiente es 5 o más, redondeamos hacia arriba',
+          content: {
+            'question': '¿A qué unidad de mil se redondea el número 4.820?',
+            'options': ['4.000', '5.000', '4.500', '6.000'],
+            'correct_index': 1,
+          },
+        ),
+        Exercise(
+          id: 'l419-e2', orderNum: 2, type: ExerciseType.fillBlank,
+          content: {
+            'sentence': 'El número 32.150 redondeado a la decena de mil más cercana es ___',
+            'options': ['20.000', '30.000', '40.000', '35.000'],
+            'correct_answer': '30.000',
+          },
+        ),
+        Exercise(
+          id: 'l419-e3', orderNum: 3, type: ExerciseType.multipleChoice,
+          content: {
+            'question': 'Un televisor cuesta \$895.000. Redondeando a la centena de mil más cercana, cuesta aproximadamente…',
+            'options': ['\$800.000', '\$900.000', '\$1.000.000', '\$700.000'],
+            'correct_index': 1,
+          },
+        ),
+        Exercise(
+          id: 'l419-e4', orderNum: 4, type: ExerciseType.dragDrop,
+          content: {
+            'instruction': 'Redondea cada precio al millar más cercano',
+            'items': ['\$1.900', '\$3.120', '\$7.850'],
+            'targets': ['\$2.000', '\$3.000', '\$8.000'],
+            'correct_mapping': {
+              '\$1.900': '\$2.000',
+              '\$3.120': '\$3.000',
+              '\$7.850': '\$8.000',
+            },
+          },
+        ),
+        Exercise(
+          id: 'l419-e5', orderNum: 5, type: ExerciseType.fillBlank,
+          content: {
+            'sentence': 'Si estimamos 198.000 + 302.000 redondeando a centenas de mil (200.000 + 300.000), obtenemos ___',
+            'options': ['400.000', '500.000', '600.000', '450.000'],
+            'correct_answer': '500.000',
+          },
+        ),
+      ],
+    ),
+
+    'lesson-420': Lesson(
+      id: 'lesson-420', unitId: 'unit-404', orderNum: 5,
+      title: '¡Desafío del millón!',
+      type: LessonType.boss, estimatedMinutes: 8,
+      xpReward: 60, coinReward: 20, difficulty: Difficulty.hard,
+      exercises: [
+        Exercise(
+          id: 'l420-e1', orderNum: 1, type: ExerciseType.multipleChoice,
+          content: {
+            'question': '¿Cuánto le falta a 750.000 para llegar a 1.000.000?',
+            'options': ['150.000', '200.000', '250.000', '350.000'],
+            'correct_index': 2,
+          },
+        ),
+        Exercise(
+          id: 'l420-e2', orderNum: 2, type: ExerciseType.fillBlank,
+          content: {
+            'sentence': 'En el número 904.630, el valor posicional del dígito 4 es ___',
+            'options': ['400', '4.000', '40.000', '400.000'],
+            'correct_answer': '4.000',
+          },
+        ),
+        Exercise(
+          id: 'l420-e3', orderNum: 3, type: ExerciseType.multipleChoice,
+          content: {
+            'question': 'Una bicicleta cuesta \$489.000 y un casco \$98.000. Estimando al millar, ¿cuánto cuestan juntos aproximadamente (490.000 + 100.000)?',
+            'options': ['\$500.000', '\$590.000', '\$650.000', '\$490.000'],
+            'correct_index': 1,
+          },
+        ),
+        Exercise(
+          id: 'l420-e4', orderNum: 4, type: ExerciseType.dragDrop,
+          content: {
+            'instruction': 'Relaciona cada operación con su resultado exacto',
+            'items': ['400.000 + 600.000', '850.000 - 250.000', '100.000 × 5'],
+            'targets': ['1.000.000', '600.000', '500.000'],
+            'correct_mapping': {
+              '400.000 + 600.000': '1.000.000',
+              '850.000 - 250.000': '600.000',
+              '100.000 × 5': '500.000',
+            },
+          },
+        ),
+        Exercise(
+          id: 'l420-e5', orderNum: 5, type: ExerciseType.fillBlank,
+          content: {
+            'sentence': '568.900 redondeado a la centena de mil más cercana es ___',
+            'options': ['500.000', '570.000', '600.000', '560.000'],
+            'correct_answer': '600.000',
+          },
+        ),
+        Exercise(
+          id: 'l420-e6', orderNum: 6, type: ExerciseType.multipleChoice,
+          content: {
+            'question': '¿Cuál de estos números es MENOR que medio millón (500.000)?',
+            'options': ['505.000', '499.900', '510.000', '600.000'],
+            'correct_index': 1,
+          },
+        ),
+      ],
+    ),
+
+    // ── UNIDAD 405: Figuras y simetría ── DBA #6 Grado 4° (Período 2)
+    // "Clasifica ángulos y triángulos. Reconoce simetría en figuras planas."
+    'lesson-421': Lesson(
+      id: 'lesson-421', unitId: 'unit-405', orderNum: 1,
+      title: 'Medición de ángulos en grados',
+      type: LessonType.intro, estimatedMinutes: 5,
+      xpReward: 25, coinReward: 8, difficulty: Difficulty.easy,
+      exercises: [
+        Exercise(
+          id: 'l421-e1', orderNum: 1, type: ExerciseType.multipleChoice,
+          hint: 'Usamos el transportador para medir en grados (°)',
+          content: {
+            'question': '¿Cuántos grados mide exactamente un ángulo recto?',
+            'options': ['45°', '90°', '180°', '360°'],
+            'correct_index': 1,
+          },
+        ),
+        Exercise(
+          id: 'l421-e2', orderNum: 2, type: ExerciseType.fillBlank,
+          content: {
+            'sentence': 'Un ángulo que mide 45° es menor que 90°, por eso es un ángulo ___',
+            'options': ['agudo', 'recto', 'obtuso', 'llano'],
+            'correct_answer': 'agudo',
+          },
+        ),
+        Exercise(
+          id: 'l421-e3', orderNum: 3, type: ExerciseType.multipleChoice,
+          content: {
+            'question': 'Un ángulo llano (una línea recta abierta) mide el doble de un ángulo recto. ¿Cuántos grados mide?',
+            'options': ['90°', '120°', '180°', '270°'],
+            'correct_index': 2,
+          },
+        ),
+        Exercise(
+          id: 'l421-e4', orderNum: 4, type: ExerciseType.dragDrop,
+          content: {
+            'instruction': 'Clasifica cada medida de ángulo según su tipo',
+            'items': ['35°', '90°', '130°'],
+            'targets': ['Ángulo agudo', 'Ángulo recto', 'Ángulo obtuso'],
+            'correct_mapping': {
+              '35°': 'Ángulo agudo',
+              '90°': 'Ángulo recto',
+              '130°': 'Ángulo obtuso',
+            },
+          },
+        ),
+        Exercise(
+          id: 'l421-e5', orderNum: 5, type: ExerciseType.fillBlank,
+          content: {
+            'sentence': 'El instrumento escolar en forma de semicírculo para medir ángulos se llama ___',
+            'options': ['transportador', 'balanza', 'termómetro', 'cronómetro'],
+            'correct_answer': 'transportador',
+          },
+        ),
+      ],
+    ),
+
+    'lesson-422': Lesson(
+      id: 'lesson-422', unitId: 'unit-405', orderNum: 2,
+      title: 'Clasificación de triángulos',
+      type: LessonType.standard, estimatedMinutes: 6,
+      xpReward: 30, coinReward: 10, difficulty: Difficulty.medium,
+      exercises: [
+        Exercise(
+          id: 'l422-e1', orderNum: 1, type: ExerciseType.multipleChoice,
+          content: {
+            'question': '¿Cómo se llama el triángulo que tiene sus 3 lados de igual medida?',
+            'options': ['Equilátero', 'Isósceles', 'Escaleno', 'Rectángulo'],
+            'correct_index': 0,
+          },
+        ),
+        Exercise(
+          id: 'l422-e2', orderNum: 2, type: ExerciseType.fillBlank,
+          content: {
+            'sentence': 'Un triángulo que tiene 2 lados iguales y 1 diferente se llama ___',
+            'options': ['isósceles', 'equilátero', 'escaleno', 'cuadrado'],
+            'correct_answer': 'isósceles',
+          },
+        ),
+        Exercise(
+          id: 'l422-e3', orderNum: 3, type: ExerciseType.multipleChoice,
+          content: {
+            'question': 'Si los lados de un triángulo miden 4 cm, 5 cm y 7 cm (todos diferentes), ¿qué tipo de triángulo es?',
+            'options': ['Equilátero', 'Isósceles', 'Escaleno', 'Circular'],
+            'correct_index': 2,
+          },
+        ),
+        Exercise(
+          id: 'l422-e4', orderNum: 4, type: ExerciseType.dragDrop,
+          content: {
+            'instruction': 'Relaciona cada triángulo con la medida de sus lados',
+            'items': ['Lados: 6 cm, 6 cm, 6 cm', 'Lados: 8 cm, 8 cm, 5 cm', 'Lados: 3 cm, 4 cm, 5 cm'],
+            'targets': ['Equilátero', 'Isósceles', 'Escaleno'],
+            'correct_mapping': {
+              'Lados: 6 cm, 6 cm, 6 cm': 'Equilátero',
+              'Lados: 8 cm, 8 cm, 5 cm': 'Isósceles',
+              'Lados: 3 cm, 4 cm, 5 cm': 'Escaleno',
+            },
+          },
+        ),
+        Exercise(
+          id: 'l422-e5', orderNum: 5, type: ExerciseType.fillBlank,
+          content: {
+            'sentence': 'Un triángulo que tiene un ángulo recto (90°) se llama triángulo ___',
+            'options': ['rectángulo', 'obtusángulo', 'acutángulo', 'redondo'],
+            'correct_answer': 'rectángulo',
+          },
+        ),
+      ],
+    ),
+
+    'lesson-423': Lesson(
+      id: 'lesson-423', unitId: 'unit-405', orderNum: 3,
+      title: 'Cuadriláteros y paralelogramos',
+      type: LessonType.standard, estimatedMinutes: 6,
+      xpReward: 30, coinReward: 10, difficulty: Difficulty.medium,
+      exercises: [
+        Exercise(
+          id: 'l423-e1', orderNum: 1, type: ExerciseType.multipleChoice,
+          content: {
+            'question': '¿Cómo se llaman todas las figuras planas cerradas que tienen exactamente 4 lados?',
+            'options': ['Triángulos', 'Cuadriláteros', 'Pentágonos', 'Círculos'],
+            'correct_index': 1,
+          },
+        ),
+        Exercise(
+          id: 'l423-e2', orderNum: 2, type: ExerciseType.fillBlank,
+          content: {
+            'sentence': 'Una cometa tradicional con 4 lados iguales pero sin ángulos rectos tiene forma de ___',
+            'options': ['rombo', 'círculo', 'triángulo', 'esfera'],
+            'correct_answer': 'rombo',
+          },
+        ),
+        Exercise(
+          id: 'l423-e3', orderNum: 3, type: ExerciseType.multipleChoice,
+          content: {
+            'question': 'Dos líneas rectas que van en la misma dirección y NUNCA se cruzan (como los rieles del tren) son líneas…',
+            'options': ['Paralelas', 'Perpendiculares', 'Curvas', 'Secantes'],
+            'correct_index': 0,
+          },
+        ),
+        Exercise(
+          id: 'l423-e4', orderNum: 4, type: ExerciseType.dragDrop,
+          content: {
+            'instruction': 'Relaciona cada cuadrilátero con su descripción',
+            'items': ['Cuadrado', 'Rombo', 'Trapecio'],
+            'targets': ['4 lados iguales y 4 ángulos rectos', '4 lados iguales y ángulos no rectos', 'Solo 1 par de lados paralelos'],
+            'correct_mapping': {
+              'Cuadrado': '4 lados iguales y 4 ángulos rectos',
+              'Rombo': '4 lados iguales y ángulos no rectos',
+              'Trapecio': 'Solo 1 par de lados paralelos',
+            },
+          },
+        ),
+        Exercise(
+          id: 'l423-e5', orderNum: 5, type: ExerciseType.fillBlank,
+          content: {
+            'sentence': 'Dos líneas que se cruzan formando un ángulo recto (90°) se llaman líneas ___',
+            'options': ['perpendiculares', 'paralelas', 'curvas', 'iguales'],
+            'correct_answer': 'perpendiculares',
+          },
+        ),
+      ],
+    ),
+
+    'lesson-424': Lesson(
+      id: 'lesson-424', unitId: 'unit-405', orderNum: 4,
+      title: 'Ejes de simetría',
+      type: LessonType.standard, estimatedMinutes: 6,
+      xpReward: 40, coinReward: 12, difficulty: Difficulty.medium,
+      exercises: [
+        Exercise(
+          id: 'l424-e1', orderNum: 1, type: ExerciseType.multipleChoice,
+          content: {
+            'question': '¿Qué es un eje de simetría en una figura como una mariposa morpho?',
+            'options': [
+              'Una línea que divide la figura en dos mitades iguales como un espejo',
+              'El borde externo de la figura',
+              'Una esquina puntiaguda',
+              'El color de las alas',
+            ],
+            'correct_index': 0,
+          },
+        ),
+        Exercise(
+          id: 'l424-e2', orderNum: 2, type: ExerciseType.fillBlank,
+          content: {
+            'sentence': 'Un cuadrado se puede doblar en mitades iguales de ___ formas distintas (4 ejes de simetría)',
+            'options': ['1', '2', '4', '0'],
+            'correct_answer': '4',
+          },
+        ),
+        Exercise(
+          id: 'l424-e3', orderNum: 3, type: ExerciseType.multipleChoice,
+          content: {
+            'question': '¿Cuál de estas letras mayúsculas tiene simetría vertical (si la partes de arriba a abajo sus dos lados son iguales)?',
+            'options': ['La letra A', 'La letra F', 'La letra P', 'La letra G'],
+            'correct_index': 0,
+          },
+        ),
+        Exercise(
+          id: 'l424-e4', orderNum: 4, type: ExerciseType.dragDrop,
+          content: {
+            'instruction': 'Relaciona cada figura con su cantidad de ejes de simetría',
+            'items': ['Triángulo escaleno (lados distintos)', 'Triángulo equilátero', 'Cuadrado'],
+            'targets': ['0 ejes de simetría', '3 ejes de simetría', '4 ejes de simetría'],
+            'correct_mapping': {
+              'Triángulo escaleno (lados distintos)': '0 ejes de simetría',
+              'Triángulo equilátero': '3 ejes de simetría',
+              'Cuadrado': '4 ejes de simetría',
+            },
+          },
+        ),
+        Exercise(
+          id: 'l424-e5', orderNum: 5, type: ExerciseType.fillBlank,
+          content: {
+            'sentence': 'Cuando una figura se refleja al otro lado de un eje como en un espejo, la transformación se llama ___',
+            'options': ['reflexión (simetría)', 'ampliación', 'división', 'rotación'],
+            'correct_answer': 'reflexión (simetría)',
+          },
+        ),
+      ],
+    ),
+
+    'lesson-425': Lesson(
+      id: 'lesson-425', unitId: 'unit-405', orderNum: 5,
+      title: '¡Desafío geométrico 4°!',
+      type: LessonType.boss, estimatedMinutes: 8,
+      xpReward: 60, coinReward: 20, difficulty: Difficulty.hard,
+      exercises: [
+        Exercise(
+          id: 'l425-e1', orderNum: 1, type: ExerciseType.multipleChoice,
+          content: {
+            'question': 'La suma de los 3 ángulos internos de cualquier triángulo siempre es…',
+            'options': ['90°', '180°', '270°', '360°'],
+            'correct_index': 1,
+          },
+        ),
+        Exercise(
+          id: 'l425-e2', orderNum: 2, type: ExerciseType.fillBlank,
+          content: {
+            'sentence': 'Si un ángulo mide 115°, como está entre 90° y 180°, es un ángulo ___',
+            'options': ['obtuso', 'agudo', 'recto', 'llano'],
+            'correct_answer': 'obtuso',
+          },
+        ),
+        Exercise(
+          id: 'l425-e3', orderNum: 3, type: ExerciseType.multipleChoice,
+          content: {
+            'question': 'Un triángulo equilátero tiene perímetro de 27 cm. ¿Cuánto mide cada uno de sus 3 lados iguales?',
+            'options': ['7 cm', '8 cm', '9 cm', '10 cm'],
+            'correct_index': 2,
+          },
+        ),
+        Exercise(
+          id: 'l425-e4', orderNum: 4, type: ExerciseType.dragDrop,
+          content: {
+            'instruction': 'Relaciona cada concepto geométrico con su definición',
+            'items': ['Triángulo isósceles', 'Rectas perpendiculares', 'Eje de simetría'],
+            'targets': ['Tiene 2 lados iguales', 'Se cortan formando 90°', 'Divide en 2 mitades iguales'],
+            'correct_mapping': {
+              'Triángulo isósceles': 'Tiene 2 lados iguales',
+              'Rectas perpendiculares': 'Se cortan formando 90°',
+              'Eje de simetría': 'Divide en 2 mitades iguales',
+            },
+          },
+        ),
+        Exercise(
+          id: 'l425-e5', orderNum: 5, type: ExerciseType.fillBlank,
+          content: {
+            'sentence': 'Un rectángulo (que no es cuadrado) tiene ___ ejes de simetría (uno vertical y uno horizontal)',
+            'options': ['1', '2', '3', '4'],
+            'correct_answer': '2',
+          },
+        ),
+        Exercise(
+          id: 'l425-e6', orderNum: 6, type: ExerciseType.multipleChoice,
+          content: {
+            'question': 'Si en un triángulo rectángulo un ángulo mide 90° y otro mide 45°, ¿cuánto mide el tercer ángulo para completar 180°?',
+            'options': ['30°', '45°', '60°', '90°'],
+            'correct_index': 1,
+          },
+        ),
+      ],
+    ),
+
+    // ── UNIDAD 406: Área y perímetro ── DBA #5 Grado 4° (Período 3)
+    // "Calcula área de rectángulos y cuadrados. Diferencia área de perímetro."
+    'lesson-426': Lesson(
+      id: 'lesson-426', unitId: 'unit-406', orderNum: 1,
+      title: 'Diferencia entre área y perímetro',
+      type: LessonType.intro, estimatedMinutes: 5,
+      xpReward: 25, coinReward: 8, difficulty: Difficulty.easy,
+      exercises: [
+        Exercise(
+          id: 'l426-e1', orderNum: 1, type: ExerciseType.multipleChoice,
+          hint: 'El perímetro es el borde; el área es la superficie de adentro',
+          content: {
+            'question': 'Si queremos poner baldosas en todo el piso del salón, ¿qué debemos medir?',
+            'options': ['El área (superficie interior)', 'Solo una esquina', 'El peso del salón', 'La temperatura'],
+            'correct_index': 0,
+          },
+        ),
+        Exercise(
+          id: 'l426-e2', orderNum: 2, type: ExerciseType.fillBlank,
+          content: {
+            'sentence': 'El contorno o borde alrededor de una figura es el perímetro, mientras que la superficie interior es el ___',
+            'options': ['área', 'vértice', 'ángulo', 'litro'],
+            'correct_answer': 'área',
+          },
+        ),
+        Exercise(
+          id: 'l426-e3', orderNum: 3, type: ExerciseType.multipleChoice,
+          content: {
+            'question': 'Una figura formada por 12 cuadritos de 1 cm² cada uno tiene un área de…',
+            'options': ['6 cm²', '12 cm²', '24 cm²', '4 cm²'],
+            'correct_index': 1,
+          },
+        ),
+        Exercise(
+          id: 'l426-e4', orderNum: 4, type: ExerciseType.dragDrop,
+          content: {
+            'instruction': 'Relaciona cada situación con lo que se necesita calcular',
+            'items': ['Poner cerca alrededor de una finca', 'Sembrar pasto en toda una cancha', 'Poner marco de madera a un cuadro'],
+            'targets': ['Perímetro', 'Área', 'Perímetro del cuadro'],
+            'correct_mapping': {
+              'Poner cerca alrededor de una finca': 'Perímetro',
+              'Sembrar pasto en toda una cancha': 'Área',
+              'Poner marco de madera a un cuadro': 'Perímetro del cuadro',
+            },
+          },
+        ),
+        Exercise(
+          id: 'l426-e5', orderNum: 5, type: ExerciseType.fillBlank,
+          content: {
+            'sentence': 'El área se mide en unidades cuadradas como el metro cuadrado (___)',
+            'options': ['m²', 'kg', 'cm', 'km'],
+            'correct_answer': 'm²',
+          },
+        ),
+      ],
+    ),
+
+    'lesson-427': Lesson(
+      id: 'lesson-427', unitId: 'unit-406', orderNum: 2,
+      title: 'Área del rectángulo y del cuadrado',
+      type: LessonType.standard, estimatedMinutes: 6,
+      xpReward: 30, coinReward: 10, difficulty: Difficulty.medium,
+      exercises: [
+        Exercise(
+          id: 'l427-e1', orderNum: 1, type: ExerciseType.multipleChoice,
+          hint: 'Área del rectángulo = largo × ancho (base × altura)',
+          content: {
+            'question': '¿Cuál es el área de un rectángulo que mide 8 cm de base y 5 cm de altura?',
+            'options': ['13 cm²', '26 cm²', '40 cm²', '45 cm²'],
+            'correct_index': 2,
+          },
+        ),
+        Exercise(
+          id: 'l427-e2', orderNum: 2, type: ExerciseType.fillBlank,
+          content: {
+            'sentence': 'Un cuadrado de lado 6 cm tiene un área de (6 × 6) = ___ cm²',
+            'options': ['12', '24', '36', '42'],
+            'correct_answer': '36',
+          },
+        ),
+        Exercise(
+          id: 'l427-e3', orderNum: 3, type: ExerciseType.multipleChoice,
+          content: {
+            'question': 'Una huerta rectangular de café mide 10 m de largo por 7 m de ancho. ¿Cuál es su área?',
+            'options': ['17 m²', '34 m²', '70 m²', '77 m²'],
+            'correct_index': 2,
+          },
+        ),
+        Exercise(
+          id: 'l427-e4', orderNum: 4, type: ExerciseType.dragDrop,
+          content: {
+            'instruction': 'Relaciona cada figura con su área (base × altura)',
+            'items': ['Cuadrado de lado 5 m', 'Rectángulo de 9 m × 4 m', 'Cuadrado de lado 10 m'],
+            'targets': ['25 m²', '36 m²', '100 m²'],
+            'correct_mapping': {
+              'Cuadrado de lado 5 m': '25 m²',
+              'Rectángulo de 9 m × 4 m': '36 m²',
+              'Cuadrado de lado 10 m': '100 m²',
+            },
+          },
+        ),
+        Exercise(
+          id: 'l427-e5', orderNum: 5, type: ExerciseType.fillBlank,
+          content: {
+            'sentence': 'Si un rectángulo tiene área de 24 cm² y su base mide 6 cm, su altura mide (24 ÷ 6) = ___ cm',
+            'options': ['3', '4', '6', '18'],
+            'correct_answer': '4',
+          },
+        ),
+      ],
+    ),
+
+    'lesson-428': Lesson(
+      id: 'lesson-428', unitId: 'unit-406', orderNum: 3,
+      title: 'Comparar área y perímetro',
+      type: LessonType.standard, estimatedMinutes: 6,
+      xpReward: 30, coinReward: 10, difficulty: Difficulty.medium,
+      exercises: [
+        Exercise(
+          id: 'l428-e1', orderNum: 1, type: ExerciseType.multipleChoice,
+          content: {
+            'question': 'Para un cuadrado de lado 5 cm, ¿cuánto valen su perímetro y su área?',
+            'options': [
+              'Perímetro = 20 cm y Área = 25 cm²',
+              'Perímetro = 25 cm y Área = 20 cm²',
+              'Perímetro = 10 cm y Área = 10 cm²',
+              'Perímetro = 15 cm y Área = 25 cm²',
+            ],
+            'correct_index': 0,
+          },
+        ),
+        Exercise(
+          id: 'l428-e2', orderNum: 2, type: ExerciseType.fillBlank,
+          content: {
+            'sentence': 'Un rectángulo de 6 m × 2 m tiene área de 12 m² y perímetro de (6+2+6+2) = ___ m',
+            'options': ['12', '14', '16', '18'],
+            'correct_answer': '16',
+          },
+        ),
+        Exercise(
+          id: 'l428-e3', orderNum: 3, type: ExerciseType.multipleChoice,
+          content: {
+            'question': 'Un rectángulo de 4×3 y otro de 6×2 tienen ambos área de 12 cm². ¿Tienen también el mismo perímetro?',
+            'options': [
+              'No: el de 4×3 tiene perímetro 14 cm y el de 6×2 tiene perímetro 16 cm',
+              'Sí, siempre tienen el mismo perímetro',
+              'Ninguno tiene perímetro',
+              'Ambos tienen perímetro 12 cm',
+            ],
+            'correct_index': 0,
+          },
+        ),
+        Exercise(
+          id: 'l428-e4', orderNum: 4, type: ExerciseType.dragDrop,
+          content: {
+            'instruction': 'Para un rectángulo de 7 cm de largo y 3 cm de ancho, relaciona',
+            'items': ['Área (7 × 3)', 'Perímetro (7+3+7+3)', 'Suma de largo + ancho'],
+            'targets': ['21 cm²', '20 cm', '10 cm'],
+            'correct_mapping': {
+              'Área (7 × 3)': '21 cm²',
+              'Perímetro (7+3+7+3)': '20 cm',
+              'Suma de largo + ancho': '10 cm',
+            },
+          },
+        ),
+        Exercise(
+          id: 'l428-e5', orderNum: 5, type: ExerciseType.fillBlank,
+          content: {
+            'sentence': 'Si el área de un cuadrado es 49 m², cada lado mide ___ m (porque 7 × 7 = 49)',
+            'options': ['6', '7', '8', '9'],
+            'correct_answer': '7',
+          },
+        ),
+      ],
+    ),
+
+    'lesson-429': Lesson(
+      id: 'lesson-429', unitId: 'unit-406', orderNum: 4,
+      title: 'Área del triángulo y figuras compuestas',
+      type: LessonType.standard, estimatedMinutes: 6,
+      xpReward: 40, coinReward: 12, difficulty: Difficulty.medium,
+      exercises: [
+        Exercise(
+          id: 'l429-e1', orderNum: 1, type: ExerciseType.multipleChoice,
+          hint: 'Si cortas un rectángulo por su diagonal, obtienes 2 triángulos iguales',
+          content: {
+            'question': 'Un triángulo es la mitad de un rectángulo de igual base y altura. Si el rectángulo tiene área 20 cm², ¿cuál es el área del triángulo?',
+            'options': ['5 cm²', '10 cm²', '20 cm²', '40 cm²'],
+            'correct_index': 1,
+          },
+        ),
+        Exercise(
+          id: 'l429-e2', orderNum: 2, type: ExerciseType.fillBlank,
+          content: {
+            'sentence': 'El área de un triángulo de base 8 cm y altura 6 cm es (8 × 6) ÷ 2 = ___ cm²',
+            'options': ['14', '24', '48', '12'],
+            'correct_answer': '24',
+          },
+        ),
+        Exercise(
+          id: 'l429-e3', orderNum: 3, type: ExerciseType.multipleChoice,
+          content: {
+            'question': 'Una casa tiene una sala de 20 m² y una cocina de 12 m². ¿Cuál es el área total de las dos habitaciones?',
+            'options': ['8 m²', '30 m²', '32 m²', '240 m²'],
+            'correct_index': 2,
+          },
+        ),
+        Exercise(
+          id: 'l429-e4', orderNum: 4, type: ExerciseType.dragDrop,
+          content: {
+            'instruction': 'Relaciona cada figura con su área',
+            'items': ['Triángulo de base 10 cm y altura 4 cm', 'Cuadrado de lado 4 cm', 'Dos cuadrados de 10 m² cada uno'],
+            'targets': ['20 cm²', '16 cm²', '20 m²'],
+            'correct_mapping': {
+              'Triángulo de base 10 cm y altura 4 cm': '20 cm²',
+              'Cuadrado de lado 4 cm': '16 cm²',
+              'Dos cuadrados de 10 m² cada uno': '20 m²',
+            },
+          },
+        ),
+        Exercise(
+          id: 'l429-e5', orderNum: 5, type: ExerciseType.fillBlank,
+          content: {
+            'sentence': 'Un jardín rectangular de 30 m² tiene una fuente de 6 m². El área que queda con césped es ___ m²',
+            'options': ['18', '24', '36', '20'],
+            'correct_answer': '24',
+          },
+        ),
+      ],
+    ),
+
+    'lesson-430': Lesson(
+      id: 'lesson-430', unitId: 'unit-406', orderNum: 5,
+      title: '¡Desafío de área y perímetro!',
+      type: LessonType.boss, estimatedMinutes: 8,
+      xpReward: 60, coinReward: 20, difficulty: Difficulty.hard,
+      exercises: [
+        Exercise(
+          id: 'l430-e1', orderNum: 1, type: ExerciseType.multipleChoice,
+          content: {
+            'question': 'Una cancha de voleibol mide 18 m de largo por 9 m de ancho. ¿Cuál es su área (18 × 9)?',
+            'options': ['54 m²', '162 m²', '180 m²', '27 m²'],
+            'correct_index': 1,
+          },
+        ),
+        Exercise(
+          id: 'l430-e2', orderNum: 2, type: ExerciseType.fillBlank,
+          content: {
+            'sentence': 'Si un cuadrado tiene perímetro de 32 cm, cada lado mide 8 cm y su área es (8 × 8) = ___ cm²',
+            'options': ['16', '32', '64', '48'],
+            'correct_answer': '64',
+          },
+        ),
+        Exercise(
+          id: 'l430-e3', orderNum: 3, type: ExerciseType.multipleChoice,
+          content: {
+            'question': 'Un piso de 15 m² se va a cubrir con baldosas. Si cada metro cuadrado cuesta \$20.000, ¿cuánto cuestan los 15 m²?',
+            'options': ['\$150.000', '\$250.000', '\$300.000', '\$350.000'],
+            'correct_index': 2,
+          },
+        ),
+        Exercise(
+          id: 'l430-e4', orderNum: 4, type: ExerciseType.dragDrop,
+          content: {
+            'instruction': 'Relaciona cada cálculo con su resultado',
+            'items': ['Área de rectángulo 12 m × 5 m', 'Perímetro de rectángulo 12 m × 5 m', 'Área de cuadrado de lado 9 m'],
+            'targets': ['60 m²', '34 m', '81 m²'],
+            'correct_mapping': {
+              'Área de rectángulo 12 m × 5 m': '60 m²',
+              'Perímetro de rectángulo 12 m × 5 m': '34 m',
+              'Área de cuadrado de lado 9 m': '81 m²',
+            },
+          },
+        ),
+        Exercise(
+          id: 'l430-e5', orderNum: 5, type: ExerciseType.fillBlank,
+          content: {
+            'sentence': 'Un lote rectangular tiene área de 80 m² y mide 10 m de frente. Su fondo mide ___ m',
+            'options': ['6', '8', '10', '70'],
+            'correct_answer': '8',
+          },
+        ),
+        Exercise(
+          id: 'l430-e6', orderNum: 6, type: ExerciseType.multipleChoice,
+          content: {
+            'question': '¿Cuál de estas dos mesas tiene MAYOR área: una cuadrada de 6 m × 6 m o una rectangular de 8 m × 4 m?',
+            'options': [
+              'La cuadrada (36 m² > 32 m²)',
+              'La rectangular (32 m² > 36 m²)',
+              'Tienen igual área',
+              'No se puede saber',
+            ],
+            'correct_index': 0,
+          },
+        ),
+      ],
+    ),
+
+    // ── UNIDAD 407: Mapas y escalas ── DBA #7 Grado 4° (Período 4)
+    // "Interpreta y usa escalas sencillas en mapas y planos."
+    'lesson-431': Lesson(
+      id: 'lesson-431', unitId: 'unit-407', orderNum: 1,
+      title: 'Coordenadas en cuadrícula',
+      type: LessonType.intro, estimatedMinutes: 5,
+      xpReward: 25, coinReward: 8, difficulty: Difficulty.easy,
+      exercises: [
+        Exercise(
+          id: 'l431-e1', orderNum: 1, type: ExerciseType.multipleChoice,
+          hint: 'Primero leemos la columna (horizontal) y luego la fila (vertical)',
+          content: {
+            'question': 'En un mapa escolar con columnas A, B, C y filas 1, 2, 3, ¿qué significa la coordenada (B, 3)?',
+            'options': ['Columna B y fila 3', 'Columna 3 y fila B', 'Solo la fila 3', 'Esquina fuera del mapa'],
+            'correct_index': 0,
+          },
+        ),
+        Exercise(
+          id: 'l431-e2', orderNum: 2, type: ExerciseType.fillBlank,
+          content: {
+            'sentence': 'En el par ordenado (4, 7) del plano cartesiano, el primer número (4) indica avanzar horizontalmente y el ___ indica subir verticalmente',
+            'options': ['4', '7', '11', '0'],
+            'correct_answer': '7',
+          },
+        ),
+        Exercise(
+          id: 'l431-e3', orderNum: 3, type: ExerciseType.multipleChoice,
+          content: {
+            'question': 'El punto donde se cruzan el eje horizontal y el eje vertical en el plano tiene coordenadas…',
+            'options': ['(0, 0)', '(1, 1)', '(10, 10)', '(0, 1)'],
+            'correct_index': 0,
+          },
+        ),
+        Exercise(
+          id: 'l431-e4', orderNum: 4, type: ExerciseType.dragDrop,
+          content: {
+            'instruction': 'Relaciona cada movimiento desde (0, 0) con su coordenada',
+            'items': ['3 a la derecha y 2 arriba', '5 a la derecha y 1 arriba', '2 a la derecha y 6 arriba'],
+            'targets': ['(3, 2)', '(5, 1)', '(2, 6)'],
+            'correct_mapping': {
+              '3 a la derecha y 2 arriba': '(3, 2)',
+              '5 a la derecha y 1 arriba': '(5, 1)',
+              '2 a la derecha y 6 arriba': '(2, 6)',
+            },
+          },
+        ),
+        Exercise(
+          id: 'l431-e5', orderNum: 5, type: ExerciseType.fillBlank,
+          content: {
+            'sentence': 'Si estás en la casilla (2, 4) y avanzas 3 casillas hacia arriba, llegas a (2, ___)',
+            'options': ['5', '6', '7', '1'],
+            'correct_answer': '7',
+          },
+        ),
+      ],
+    ),
+
+    'lesson-432': Lesson(
+      id: 'lesson-432', unitId: 'unit-407', orderNum: 2,
+      title: 'Puntos cardinales en mapas de Colombia',
+      type: LessonType.standard, estimatedMinutes: 6,
+      xpReward: 30, coinReward: 10, difficulty: Difficulty.easy,
+      exercises: [
+        Exercise(
+          id: 'l432-e1', orderNum: 1, type: ExerciseType.multipleChoice,
+          content: {
+            'question': 'En la rosa de los vientos de un mapa de Colombia, ¿qué punto cardinal señala hacia arriba (donde está La Guajira y el mar Caribe)?',
+            'options': ['El Norte', 'El Sur', 'El Oriente (Este)', 'El Occidente (Oeste)'],
+            'correct_index': 0,
+          },
+        ),
+        Exercise(
+          id: 'l432-e2', orderNum: 2, type: ExerciseType.fillBlank,
+          content: {
+            'sentence': 'Leticia y la selva del Amazonas quedan en el extremo ___ de Colombia',
+            'options': ['Sur', 'Norte', 'Occidente', 'Centro'],
+            'correct_answer': 'Sur',
+          },
+        ),
+        Exercise(
+          id: 'l432-e3', orderNum: 3, type: ExerciseType.multipleChoice,
+          content: {
+            'question': 'El Sol sale cada mañana por la cordillera hacia los Llanos Orientales. ¿Qué punto cardinal es ese?',
+            'options': ['Oriente (Este)', 'Occidente (Oeste)', 'Sur', 'Norte'],
+            'correct_index': 0,
+          },
+        ),
+        Exercise(
+          id: 'l432-e4', orderNum: 4, type: ExerciseType.dragDrop,
+          content: {
+            'instruction': 'Relaciona cada región de Colombia con su ubicación en el mapa',
+            'items': ['Península de La Guajira', 'Océano Pacífico (Chocó y Valle)', 'Amazonas (Leticia)'],
+            'targets': ['Norte', 'Occidente (Oeste)', 'Sur'],
+            'correct_mapping': {
+              'Península de La Guajira': 'Norte',
+              'Océano Pacífico (Chocó y Valle)': 'Occidente (Oeste)',
+              'Amazonas (Leticia)': 'Sur',
+            },
+          },
+        ),
+        Exercise(
+          id: 'l432-e5', orderNum: 5, type: ExerciseType.fillBlank,
+          content: {
+            'sentence': 'El punto cardinal opuesto al Oriente (Este) es el ___',
+            'options': ['Occidente (Oeste)', 'Norte', 'Sur', 'Centro'],
+            'correct_answer': 'Occidente (Oeste)',
+          },
+        ),
+      ],
+    ),
+
+    'lesson-433': Lesson(
+      id: 'lesson-433', unitId: 'unit-407', orderNum: 3,
+      title: '¿Qué es una escala (1:100)?',
+      type: LessonType.standard, estimatedMinutes: 6,
+      xpReward: 30, coinReward: 10, difficulty: Difficulty.medium,
+      exercises: [
+        Exercise(
+          id: 'l433-e1', orderNum: 1, type: ExerciseType.multipleChoice,
+          hint: '1:100 significa que 1 cm en el plano equivale a 100 cm (1 metro) en la vida real',
+          content: {
+            'question': 'En el plano de una casa con escala 1:100, cada 1 cm dibujado representa 1 metro real. Si la sala mide 5 cm en el plano, ¿cuánto mide en realidad?',
+            'options': ['5 metros', '50 metros', '500 metros', '1 metro'],
+            'correct_index': 0,
+          },
+        ),
+        Exercise(
+          id: 'l433-e2', orderNum: 2, type: ExerciseType.fillBlank,
+          content: {
+            'sentence': 'En un plano a escala 1 cm = 2 metros, un corredor que mide 6 cm en el papel tiene ___ metros reales',
+            'options': ['8', '10', '12', '6'],
+            'correct_answer': '12',
+          },
+        ),
+        Exercise(
+          id: 'l433-e3', orderNum: 3, type: ExerciseType.multipleChoice,
+          content: {
+            'question': '¿Para qué sirve la escala en un mapa o plano?',
+            'options': [
+              'Para representar lugares grandes en una hoja manteniendo sus proporciones reales',
+              'Para cambiar los colores del mapa',
+              'Para borrar las montañas',
+              'Para medir el peso del papel',
+            ],
+            'correct_index': 0,
+          },
+        ),
+        Exercise(
+          id: 'l433-e4', orderNum: 4, type: ExerciseType.dragDrop,
+          content: {
+            'instruction': 'Con escala 1 cm = 10 metros, relaciona la medida del dibujo con la real',
+            'items': ['3 cm en el plano', '7 cm en el plano', '10 cm en el plano'],
+            'targets': ['30 metros reales', '70 metros reales', '100 metros reales'],
+            'correct_mapping': {
+              '3 cm en el plano': '30 metros reales',
+              '7 cm en el plano': '70 metros reales',
+              '10 cm en el plano': '100 metros reales',
+            },
+          },
+        ),
+        Exercise(
+          id: 'l433-e5', orderNum: 5, type: ExerciseType.fillBlank,
+          content: {
+            'sentence': 'Si una cancha mide 28 metros reales y la escala es 1 cm = 4 m, en el plano debemos dibujarla de (28 ÷ 4) = ___ cm',
+            'options': ['6', '7', '8', '9'],
+            'correct_answer': '7',
+          },
+        ),
+      ],
+    ),
+
+    'lesson-434': Lesson(
+      id: 'lesson-434', unitId: 'unit-407', orderNum: 4,
+      title: 'Distancias en mapas de Colombia',
+      type: LessonType.standard, estimatedMinutes: 6,
+      xpReward: 40, coinReward: 12, difficulty: Difficulty.medium,
+      exercises: [
+        Exercise(
+          id: 'l434-e1', orderNum: 1, type: ExerciseType.multipleChoice,
+          content: {
+            'question': 'En un mapa de Colombia donde 1 cm = 50 km, la distancia en línea recta entre dos ciudades es de 4 cm. ¿Cuántos kilómetros reales las separan?',
+            'options': ['100 km', '150 km', '200 km', '250 km'],
+            'correct_index': 2,
+          },
+        ),
+        Exercise(
+          id: 'l434-e2', orderNum: 2, type: ExerciseType.fillBlank,
+          content: {
+            'sentence': 'Si en un mapa 1 cm equivale a 100 km, entonces 6 cm representan ___ km',
+            'options': ['60', '600', '6.000', '106'],
+            'correct_answer': '600',
+          },
+        ),
+        Exercise(
+          id: 'l434-e3', orderNum: 3, type: ExerciseType.multipleChoice,
+          content: {
+            'question': 'En un mapa turístico del Parque Tayrona, 1 cm = 500 metros. Si el sendero mide 6 cm en el mapa, ¿cuántos metros caminarás?',
+            'options': ['1.500 m', '2.000 m', '3.000 m', '600 m'],
+            'correct_index': 2,
+          },
+        ),
+        Exercise(
+          id: 'l434-e4', orderNum: 4, type: ExerciseType.dragDrop,
+          content: {
+            'instruction': 'Con escala 1 cm = 25 km, relaciona cada distancia en el mapa con los kilómetros reales',
+            'items': ['2 cm', '4 cm', '8 cm'],
+            'targets': ['50 km', '100 km', '200 km'],
+            'correct_mapping': {'2 cm': '50 km', '4 cm': '100 km', '8 cm': '200 km'},
+          },
+        ),
+        Exercise(
+          id: 'l434-e5', orderNum: 5, type: ExerciseType.fillBlank,
+          content: {
+            'sentence': '1 kilómetro es igual a ___ metros',
+            'options': ['100', '500', '1.000', '10.000'],
+            'correct_answer': '1.000',
+          },
+        ),
+      ],
+    ),
+
+    'lesson-435': Lesson(
+      id: 'lesson-435', unitId: 'unit-407', orderNum: 5,
+      title: '¡Desafío de mapas y escalas!',
+      type: LessonType.boss, estimatedMinutes: 8,
+      xpReward: 60, coinReward: 20, difficulty: Difficulty.hard,
+      exercises: [
+        Exercise(
+          id: 'l435-e1', orderNum: 1, type: ExerciseType.multipleChoice,
+          content: {
+            'question': 'El plano de un salón está a escala 1:100 (1 cm = 1 m). Si el salón en el dibujo mide 8 cm de largo por 6 cm de ancho, ¿cuál es su área real?',
+            'options': ['14 m²', '28 m²', '48 m²', '480 m²'],
+            'correct_index': 2,
+          },
+        ),
+        Exercise(
+          id: 'l435-e2', orderNum: 2, type: ExerciseType.fillBlank,
+          content: {
+            'sentence': 'Si estás en el punto (3, 5) de una cuadrícula y te mueves 4 unidades a la derecha, tu nueva posición es (___, 5)',
+            'options': ['6', '7', '8', '9'],
+            'correct_answer': '7',
+          },
+        ),
+        Exercise(
+          id: 'l435-e3', orderNum: 3, type: ExerciseType.multipleChoice,
+          content: {
+            'question': 'Dos pueblos están a 120 km de distancia real y en el mapa están separados por 4 cm. ¿Cuántos kilómetros representa 1 cm del mapa (120 ÷ 4)?',
+            'options': ['20 km', '30 km', '40 km', '60 km'],
+            'correct_index': 1,
+          },
+        ),
+        Exercise(
+          id: 'l435-e4', orderNum: 4, type: ExerciseType.dragDrop,
+          content: {
+            'instruction': 'Relaciona cada elemento de un mapa con su utilidad',
+            'items': ['Rosa de los vientos', 'Escala (ej. 1:100)', 'Cuadrícula de coordenadas'],
+            'targets': ['Indica Norte, Sur, Este y Oeste', 'Relaciona el tamaño del dibujo con el real', 'Ubica puntos con pares (columna, fila)'],
+            'correct_mapping': {
+              'Rosa de los vientos': 'Indica Norte, Sur, Este y Oeste',
+              'Escala (ej. 1:100)': 'Relaciona el tamaño del dibujo con el real',
+              'Cuadrícula de coordenadas': 'Ubica puntos con pares (columna, fila)',
+            },
+          },
+        ),
+        Exercise(
+          id: 'l435-e5', orderNum: 5, type: ExerciseType.fillBlank,
+          content: {
+            'sentence': 'Con escala 1 cm = 15 km, un río que mide 5 cm en el mapa tiene una longitud real de ___ km',
+            'options': ['60', '70', '75', '85'],
+            'correct_answer': '75',
+          },
+        ),
+        Exercise(
+          id: 'l435-e6', orderNum: 6, type: ExerciseType.multipleChoice,
+          content: {
+            'question': 'Si viajas desde Bogotá hacia Barranquilla o Santa Marta, ¿hacia qué punto cardinal te diriges?',
+            'options': ['Hacia el Norte', 'Hacia el Sur', 'Hacia la Antártida', 'No te mueves'],
+            'correct_index': 0,
+          },
+        ),
+      ],
+    ),
+
+    // ── UNIDAD 408: Probabilidad ── DBA #8 Grado 4° (Período 4)
+    // "Calcula probabilidades simples en experimentos concretos (cara/sello, dados)."
+    'lesson-436': Lesson(
+      id: 'lesson-436', unitId: 'unit-408', orderNum: 1,
+      title: 'Seguro, posible e imposible',
+      type: LessonType.intro, estimatedMinutes: 5,
+      xpReward: 25, coinReward: 8, difficulty: Difficulty.easy,
+      exercises: [
+        Exercise(
+          id: 'l436-e1', orderNum: 1, type: ExerciseType.multipleChoice,
+          content: {
+            'question': 'En una bolsa hay SOLO 10 bolas rojas. Si sacas una bola sin mirar, ¿qué tan probable es que sea roja?',
+            'options': ['Seguro (siempre ocurrirá)', 'Imposible', 'Poco probable', 'Nunca pasa'],
+            'correct_index': 0,
+          },
+        ),
+        Exercise(
+          id: 'l436-e2', orderNum: 2, type: ExerciseType.fillBlank,
+          content: {
+            'sentence': 'Al lanzar un dado normal de 6 caras (con números del 1 al 6), sacar el número 9 es un evento ___',
+            'options': ['imposible', 'seguro', 'muy probable', 'igual'],
+            'correct_answer': 'imposible',
+          },
+        ),
+        Exercise(
+          id: 'l436-e3', orderNum: 3, type: ExerciseType.multipleChoice,
+          content: {
+            'question': 'Al lanzar una moneda de \$500 al aire, que caiga "cara" es un evento…',
+            'options': ['Posible', 'Imposible', 'Obligatorio siempre', 'Inexistente'],
+            'correct_index': 0,
+          },
+        ),
+        Exercise(
+          id: 'l436-e4', orderNum: 4, type: ExerciseType.dragDrop,
+          content: {
+            'instruction': 'Con una bolsa que tiene 5 dulces de fresa y 5 de limón, clasifica cada evento',
+            'items': ['Sacar un dulce de fresa o de limón', 'Sacar un dulce de fresa', 'Sacar un dulce de chocolate'],
+            'targets': ['Seguro', 'Posible', 'Imposible'],
+            'correct_mapping': {
+              'Sacar un dulce de fresa o de limón': 'Seguro',
+              'Sacar un dulce de fresa': 'Posible',
+              'Sacar un dulce de chocolate': 'Imposible',
+            },
+          },
+        ),
+        Exercise(
+          id: 'l436-e5', orderNum: 5, type: ExerciseType.fillBlank,
+          content: {
+            'sentence': 'Que después del día viernes llegue el día sábado es un evento ___',
+            'options': ['seguro', 'imposible', 'raro', 'dudoso'],
+            'correct_answer': 'seguro',
+          },
+        ),
+      ],
+    ),
+
+    'lesson-437': Lesson(
+      id: 'lesson-437', unitId: 'unit-408', orderNum: 2,
+      title: 'Más probable y menos probable',
+      type: LessonType.standard, estimatedMinutes: 6,
+      xpReward: 30, coinReward: 10, difficulty: Difficulty.easy,
+      exercises: [
+        Exercise(
+          id: 'l437-e1', orderNum: 1, type: ExerciseType.multipleChoice,
+          content: {
+            'question': 'En una caja hay 8 canicas azules, 3 verdes y 1 amarilla. Si sacas una sin mirar, ¿qué color es MÁS PROBABLE sacar?',
+            'options': ['Amarillo', 'Verde', 'Azul', 'Rojo'],
+            'correct_index': 2,
+          },
+        ),
+        Exercise(
+          id: 'l437-e2', orderNum: 2, type: ExerciseType.fillBlank,
+          content: {
+            'sentence': 'En la misma caja (8 azules, 3 verdes, 1 amarilla), el color MENOS probable (pero posible) de sacar es el ___',
+            'options': ['amarillo', 'azul', 'verde', 'negro'],
+            'correct_answer': 'amarillo',
+          },
+        ),
+        Exercise(
+          id: 'l437-e3', orderNum: 3, type: ExerciseType.multipleChoice,
+          content: {
+            'question': 'Una ruleta está dividida en 6 partes iguales: 3 son rojas y 3 son blancas. ¿Cuál color tiene mayor probabilidad?',
+            'options': ['El rojo', 'El blanco', 'Tienen igual probabilidad (50% y 50%)', 'Ninguno'],
+            'correct_index': 2,
+          },
+        ),
+        Exercise(
+          id: 'l437-e4', orderNum: 4, type: ExerciseType.dragDrop,
+          content: {
+            'instruction': 'En una canasta con 10 mangos, 4 manzanas y 1 pera, ordena su probabilidad',
+            'items': ['Sacar un mango (10)', 'Sacar una manzana (4)', 'Sacar una pera (1)'],
+            'targets': ['Más probable', 'Probabilidad media', 'Menos probable'],
+            'correct_mapping': {
+              'Sacar un mango (10)': 'Más probable',
+              'Sacar una manzana (4)': 'Probabilidad media',
+              'Sacar una pera (1)': 'Menos probable',
+            },
+          },
+        ),
+        Exercise(
+          id: 'l437-e5', orderNum: 5, type: ExerciseType.fillBlank,
+          content: {
+            'sentence': 'Al lanzar un dado del 1 al 6, sacar un número menor que 6 (1, 2, 3, 4 o 5) es ___ probable que sacar exactamente un 6',
+            'options': ['más', 'menos', 'igual de', 'nada'],
+            'correct_answer': 'más',
+          },
+        ),
+      ],
+    ),
+
+    'lesson-438': Lesson(
+      id: 'lesson-438', unitId: 'unit-408', orderNum: 3,
+      title: 'Monedas, dados y ruletas',
+      type: LessonType.standard, estimatedMinutes: 6,
+      xpReward: 30, coinReward: 10, difficulty: Difficulty.medium,
+      exercises: [
+        Exercise(
+          id: 'l438-e1', orderNum: 1, type: ExerciseType.multipleChoice,
+          content: {
+            'question': 'Al lanzar un dado común de 6 caras, ¿cuántos resultados posibles existen en total?',
+            'options': ['2 resultados', '4 resultados', '6 resultados (1, 2, 3, 4, 5, 6)', '12 resultados'],
+            'correct_index': 2,
+          },
+        ),
+        Exercise(
+          id: 'l438-e2', orderNum: 2, type: ExerciseType.fillBlank,
+          content: {
+            'sentence': 'En un dado del 1 al 6, los números pares son 2, 4 y 6, es decir hay ___ casos favorables de 6',
+            'options': ['2', '3', '4', '6'],
+            'correct_answer': '3',
+          },
+        ),
+        Exercise(
+          id: 'l438-e3', orderNum: 3, type: ExerciseType.multipleChoice,
+          content: {
+            'question': 'Al lanzar una moneda colombiana, ¿cuántos resultados posibles hay?',
+            'options': ['1 (solo cara)', '2 (cara o sello)', '4', '6'],
+            'correct_index': 1,
+          },
+        ),
+        Exercise(
+          id: 'l438-e4', orderNum: 4, type: ExerciseType.dragDrop,
+          content: {
+            'instruction': 'En un dado del 1 al 6, relaciona cada evento con cuántos números lo cumplen',
+            'items': ['Sacar el número 5', 'Sacar un número par (2, 4, 6)', 'Sacar un número mayor que 2 (3, 4, 5, 6)'],
+            'targets': ['1 de 6', '3 de 6', '4 de 6'],
+            'correct_mapping': {
+              'Sacar el número 5': '1 de 6',
+              'Sacar un número par (2, 4, 6)': '3 de 6',
+              'Sacar un número mayor que 2 (3, 4, 5, 6)': '4 de 6',
+            },
+          },
+        ),
+        Exercise(
+          id: 'l438-e5', orderNum: 5, type: ExerciseType.fillBlank,
+          content: {
+            'sentence': 'Si una ruleta tiene 8 secciones iguales numeradas del 1 al 8, hay ___ resultados posibles',
+            'options': ['4', '6', '8', '10'],
+            'correct_answer': '8',
+          },
+        ),
+      ],
+    ),
+
+    'lesson-439': Lesson(
+      id: 'lesson-439', unitId: 'unit-408', orderNum: 4,
+      title: 'Probabilidad como fracción',
+      type: LessonType.standard, estimatedMinutes: 6,
+      xpReward: 40, coinReward: 12, difficulty: Difficulty.medium,
+      exercises: [
+        Exercise(
+          id: 'l439-e1', orderNum: 1, type: ExerciseType.multipleChoice,
+          hint: 'Probabilidad = casos favorables / total de casos posibles',
+          content: {
+            'question': '¿Cuál es la probabilidad en fracción de sacar "cara" al lanzar una moneda?',
+            'options': ['1/2', '1/4', '1/6', '2/1'],
+            'correct_index': 0,
+          },
+        ),
+        Exercise(
+          id: 'l439-e2', orderNum: 2, type: ExerciseType.fillBlank,
+          content: {
+            'sentence': 'Al lanzar un dado de 6 caras, la probabilidad de sacar el número 4 es ___',
+            'options': ['1/6', '4/6', '1/4', '6/6'],
+            'correct_answer': '1/6',
+          },
+        ),
+        Exercise(
+          id: 'l439-e3', orderNum: 3, type: ExerciseType.multipleChoice,
+          content: {
+            'question': 'En una bolsa hay 3 fichas verdes y 2 fichas rojas (5 fichas en total). ¿Cuál es la probabilidad de sacar una ficha verde?',
+            'options': ['2/5', '3/5', '3/2', '1/5'],
+            'correct_index': 1,
+          },
+        ),
+        Exercise(
+          id: 'l439-e4', orderNum: 4, type: ExerciseType.dragDrop,
+          content: {
+            'instruction': 'En una bolsa con 10 balotas (5 rojas, 3 azules y 2 amarillas), relaciona cada probabilidad',
+            'items': ['Sacar roja', 'Sacar azul', 'Sacar amarilla'],
+            'targets': ['5/10 (o 1/2)', '3/10', '2/10'],
+            'correct_mapping': {
+              'Sacar roja': '5/10 (o 1/2)',
+              'Sacar azul': '3/10',
+              'Sacar amarilla': '2/10',
+            },
+          },
+        ),
+        Exercise(
+          id: 'l439-e5', orderNum: 5, type: ExerciseType.fillBlank,
+          content: {
+            'sentence': 'En una rifa de 100 boletas, si compras 7 boletas tu probabilidad de ganar es ___',
+            'options': ['7/100', '1/7', '7/10', '93/100'],
+            'correct_answer': '7/100',
+          },
+        ),
+      ],
+    ),
+
+    'lesson-440': Lesson(
+      id: 'lesson-440', unitId: 'unit-408', orderNum: 5,
+      title: '¡Desafío de probabilidad!',
+      type: LessonType.boss, estimatedMinutes: 8,
+      xpReward: 60, coinReward: 20, difficulty: Difficulty.hard,
+      exercises: [
+        Exercise(
+          id: 'l440-e1', orderNum: 1, type: ExerciseType.multipleChoice,
+          content: {
+            'question': 'En el salón 4°A hay 12 niñas y 8 niños (20 estudiantes en total). Si se elige un representante al azar, ¿cuál es la probabilidad de que sea niña?',
+            'options': ['8/20', '12/20', '1/12', '12/8'],
+            'correct_index': 1,
+          },
+        ),
+        Exercise(
+          id: 'l440-e2', orderNum: 2, type: ExerciseType.fillBlank,
+          content: {
+            'sentence': 'Al lanzar un dado de 6 caras, los números mayores que 4 son el 5 y el 6, por lo que la probabilidad es ___/6',
+            'options': ['1', '2', '3', '4'],
+            'correct_answer': '2',
+          },
+        ),
+        Exercise(
+          id: 'l440-e3', orderNum: 3, type: ExerciseType.multipleChoice,
+          content: {
+            'question': 'Un evento imposible tiene probabilidad 0, mientras que un evento 100% seguro tiene probabilidad igual a…',
+            'options': ['1 (el total sobre el total, ej. 6/6)', '0', '1/2', '1/10'],
+            'correct_index': 0,
+          },
+        ),
+        Exercise(
+          id: 'l440-e4', orderNum: 4, type: ExerciseType.dragDrop,
+          content: {
+            'instruction': 'Con una ruleta de 4 partes iguales (2 azules, 1 roja, 1 verde), relaciona',
+            'items': ['Caer en azul', 'Caer en rojo', 'Caer en morado'],
+            'targets': ['2/4 (1/2)', '1/4', '0/4 (imposible)'],
+            'correct_mapping': {
+              'Caer en azul': '2/4 (1/2)',
+              'Caer en rojo': '1/4',
+              'Caer en morado': '0/4 (imposible)',
+            },
+          },
+        ),
+        Exercise(
+          id: 'l440-e5', orderNum: 5, type: ExerciseType.fillBlank,
+          content: {
+            'sentence': 'Si tienes 3 camisas y 2 pantalones, puedes armar (3 × 2) = ___ combinaciones distintas de ropa',
+            'options': ['5', '6', '8', '9'],
+            'correct_answer': '6',
+          },
+        ),
+        Exercise(
+          id: 'l440-e6', orderNum: 6, type: ExerciseType.multipleChoice,
+          content: {
+            'question': 'Si sacas una letra al azar de la palabra COLOMBIA (8 letras, donde la O aparece 2 veces), ¿cuál es la probabilidad de sacar la letra O?',
+            'options': ['1/8', '2/8 (o 1/4)', '3/8', '2/6'],
+            'correct_index': 1,
           },
         ),
       ],

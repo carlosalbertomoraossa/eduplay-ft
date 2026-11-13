@@ -45,7 +45,7 @@ lib/
       presentation/ → auth_cubit (login/register/logout, estado AuthRegistered), screens
     home/         → home_screen del niño (mock data)
     lesson/
-      data/       → curriculum_data.dart (índice) + curriculum_grade1–5.dart (75 lecciones)
+      data/       → curriculum_data.dart (índice + períodos 1–4) + curriculum_grade1–5.dart (39 unidades, 195 lecciones)
       domain/     → lesson.dart (entities: Lesson, Exercise, LessonResult, Difficulty)
       presentation/
         bloc/     → lesson_bloc.dart (flujo completo de lección, try/catch)
@@ -93,7 +93,7 @@ flutter analyze                  # 0 errores, 0 warnings/infos
 2. `lib/core/router/app_router.dart` — rutas + guards de autenticación por rol
 3. `lib/core/providers/selected_grade_provider.dart` — grado activo persistente (SharedPreferences)
 4. `lib/core/l10n/app_strings.dart` — strings centralizados (preparación .arb)
-5. `lib/features/lesson/data/curriculum_data.dart` — índice de las 75 lecciones (agrega curriculum_grade1–5.dart)
+5. `lib/features/lesson/data/curriculum_data.dart` — índice de las 39 unidades y 195 lecciones en 4 períodos (agrega curriculum_grade1–5.dart)
 6. `lib/features/lesson/domain/entities/lesson.dart` — modelos Lesson, Exercise, LessonResult, Difficulty
 7. `lib/features/lesson/presentation/bloc/lesson_bloc.dart` — flujo de lección con try/catch
 8. `lib/features/games/g4_adventure/presentation/bloc/game_bloc.dart` — lógica del juego G4 (_maxLevel=8, correctAnswersCount)

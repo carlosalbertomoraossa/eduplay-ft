@@ -16,13 +16,13 @@
 - Pantalla de resultado post-lección (score, XP, estrellas)
 - Sistema de vidas (3 corazones) con pantalla de lección fallida
 - Fix navegación post-lección: redirige a la unidad correcta según grado
-- **75 lecciones de Matemáticas alineadas con DBA MEN Colombia** (Grados 1°–5°)
-  - Grado 1° — Unidades 1, 2, 3 (15 lecciones completas)
-  - Grado 2° — Unidades 201–203 (15 lecciones: números, suma/resta, tablas ×2×3×5)
-  - Grado 3° — Unidades 301–303 (15 lecciones: números hasta 100.000, tablas 1–10, división)
-  - Grado 4° — Unidades 401–403 (15 lecciones: fracciones, mult/div 2 cifras, decimales COP)
-  - Grado 5° — Unidades 501–503 (15 lecciones: enteros negativos, porcentajes, razones)
-  - **CurriculumData partido en 6 archivos** (curriculum_data.dart + curriculum_grade1–5.dart)
+- **195 lecciones de Matemáticas alineadas con DBA MEN Colombia (4 períodos académicos × Grados 1°–5° = 39 unidades)**
+  - Grado 1° — 8 unidades (`unit-001` a `unit-008`, 40 lecciones: números hasta 100, ubicación espacial, suma/resta hasta 20, medición, figuras planas, reloj y pictogramas)
+  - Grado 2° — 7 unidades (`unit-201` a `unit-207`, 35 lecciones: números hasta 1.000, medición en cm/m, suma/resta llevando, sólidos/simetría, tablas ×2×3×5, reloj/calendario y gráficas de barras)
+  - Grado 3° — 8 unidades (`unit-301` a `unit-308`, 40 lecciones: números hasta 100.000, perímetro, tablas 1–10, fracciones de unidad, división exacta, peso/capacidad, pictogramas/moda y secuencias)
+  - Grado 4° — 8 unidades (`unit-401` a `unit-408`, 40 lecciones: millones, mult/div 2 cifras, fracciones, ángulos/triángulos, decimales COP, área/perímetro, moda/probabilidad y patrones)
+  - Grado 5° — 8 unidades (`unit-501` a `unit-508`, 40 lecciones: enteros negativos, plano cartesiano, porcentajes/decimales, volumen, razones/regla de tres, círculo/circunferencia, media/mediana/moda y ecuaciones algebraicas)
+  - **CurriculumData partido en 6 archivos** (`curriculum_data.dart` + `curriculum_grade1–5.dart`) con agrupación visual por **Período 1–4** en `UnitsScreen`
 - Progreso de lecciones por sesión (Riverpod)
 - **Grado seleccionado persistente** en SharedPreferences (sobrevive reinicios)
 - Dashboard parental: resumen por hijo, actividad semanal, avance por unidad
@@ -45,7 +45,7 @@
 - **Widgets compartidos**: ep_button (con Semantics), ep_card, xp_bar, streak_badge, heart_indicator, confetti_overlay
 - **Strings centralizados**: EduPlayStrings en core/l10n/app_strings.dart (preparación para .arb)
 - **AuthCubit completo**: login padre, login niño, registro, logout, `checkStoredSession` — 11 tests
-- **Tests unitarios y de widgets**: 86 tests pasando (bloc de lección/juego/auth + widgets de las 4 pantallas de auth + gamificación/settings)
+- **Tests unitarios y de widgets**: 88 tests pasando (currículo completo de 39 unidades/195 lecciones, bloc de lección/juego/auth + widgets de las 4 pantallas de auth + gamificación/settings)
 - **Assets duplicados eliminados**: solo quedan assets/images/games/g4/ y assets/audio/games/g4/
 - **Dependencias fantasma removidas**: `drift`, `drift_dev`, `lottie`, `sqlite3_flutter_libs`, `path_provider`, `path` quitadas de `pubspec.yaml` — estaban declaradas sin código real usándolas
 
@@ -64,7 +64,7 @@
 
 - **Build**: ✅ Compila (web + APK debug)
 - **Linter**: ✅ 0 errores, 0 warnings/infos
-- **Tests**: ✅ 86 tests, todos pasando
+- **Tests**: ✅ 88 tests, todos pasando
 - **Cobertura**: lesson_bloc, game_bloc, game_questions_provider, auth_cubit, 4 pantallas de auth, gamificación, settings
 - **Último deploy**: nunca
 - **Errores conocidos**: ninguno

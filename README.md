@@ -76,7 +76,7 @@ flutter run --dart-define=API_BASE_URL=http://localhost:8000
 | Selector de niño (mock) | ✅ Implementado |
 | Home del niño | ✅ Implementado |
 | Camino de lecciones (Duolingo) | ✅ Implementado |
-| 75 lecciones Matemáticas (DBA MEN, grados 1°–5°) | ✅ Implementado |
+| 195 lecciones Matemáticas (39 unidades, 4 períodos DBA MEN, grados 1°–5°) | ✅ Implementado |
 | Ejercicios (múltiple choice, completar, arrastrar) | ✅ Implementado |
 | Pantalla de resultados | ✅ Implementado |
 | Sistema de vidas (3 corazones) | ✅ Implementado |
@@ -108,7 +108,7 @@ lib/
     auth/         → splash, onboarding, login, child selector
     home/         → home_screen del niño
     lesson/
-      data/       → curriculum_data.dart + curriculum_grade1–5.dart (75 lecciones)
+      data/       → curriculum_data.dart + curriculum_grade1–5.dart (39 unidades, 195 lecciones)
       domain/     → lesson.dart (Lesson, Exercise, LessonResult)
       presentation/ → bloc, screens, widgets (3 tipos de ejercicio)
     subjects/     → units_screen, lessons_screen
