@@ -6,6 +6,7 @@ import 'package:flutter_animate/flutter_animate.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../../shared/widgets/ep_button.dart';
+import '../../../../shared/widgets/lumi_lion_mascot.dart';
 
 class OnboardingScreen extends StatefulWidget {
   const OnboardingScreen({super.key});
@@ -20,9 +21,9 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
 
   static const _pages = [
     _OnboardingPage(
-      emoji: '🌍',
+      emoji: '🦁',
       title: '¡Bienvenido al\nMundo del Saber!',
-      subtitle: 'Aprende matemáticas, español y ciencias\njugando con Lumi y sus amigos.',
+      subtitle: 'Aprende matemáticas, español y ciencias\njugando con Lumi el Leoncito y sus amigos.',
       bgColor: Color(0xFF3B82F6),
     ),
     _OnboardingPage(
@@ -155,10 +156,15 @@ class _OnboardingPageView extends StatelessWidget {
             children: [
               const SizedBox(height: 40),
 
-              Text(
-                page.emoji,
-                style: const TextStyle(fontSize: 100),
-              )
+              (page.emoji == '🦁'
+                      ? const LumiLionMascot(
+                          size: 132,
+                          expressionVariant: 1,
+                        )
+                      : Text(
+                          page.emoji,
+                          style: const TextStyle(fontSize: 100),
+                        ))
                   .animate()
                   .scale(
                     begin: const Offset(0.6, 0.6),

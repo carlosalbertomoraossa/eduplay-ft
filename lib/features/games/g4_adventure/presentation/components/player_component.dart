@@ -158,8 +158,27 @@ class PlayerComponent extends PositionComponent
     );
     canvas.restore();
 
-    // — Brazos —
-    final armPaint = Paint()..color = const Color(0xFFFFCC99);
+    // — Colita de leoncito con pompón —
+    final tailSwing = math.sin(_animTime * 9) * 3;
+    final tailPath = Path()
+      ..moveTo(6, bodyTop + bodyH * 0.75)
+      ..quadraticBezierTo(-7, bodyTop + bodyH * 0.5 + tailSwing, -5, bodyTop + 2 + tailSwing);
+    canvas.drawPath(
+      tailPath,
+      Paint()
+        ..color = const Color(0xFFF59E0B)
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = 3.5
+        ..strokeCap = StrokeCap.round,
+    );
+    canvas.drawCircle(
+      Offset(-5, bodyTop + 1 + tailSwing),
+      4,
+      Paint()..color = const Color(0xFFB45309),
+    );
+
+    // — Brazos / garritas doradas de Lumi el Leoncito —
+    final armPaint = Paint()..color = const Color(0xFFFBBF24);
     if (isJumping) {
       canvas.drawRRect(
         RRect.fromRectAndRadius(Rect.fromLTWH(-3, bodyTop - 2, 9, 20), const Radius.circular(4)),
@@ -183,38 +202,66 @@ class PlayerComponent extends PositionComponent
       );
     }
 
-    // — Cabeza —
+    // — Cabeza de Lumi el Leoncito (orejitas + melena esponjosa + carita dorada) —
     final headCx = w / 2;
     final headCy = h * 0.2;
     final headR = h * 0.16;
-    canvas.drawCircle(Offset(headCx, headCy), headR, Paint()..color = const Color(0xFFFFCC99));
 
-    // — Pelo (arco superior) —
-    canvas.drawArc(
-      Rect.fromCenter(center: Offset(headCx, headCy), width: headR * 2 + 2, height: headR * 2 + 2),
-      math.pi, math.pi, // top half
-      true,
-      Paint()..color = const Color(0xFF4E342E),
+    // Orejitas redondas de león
+    for (final dx in [-headR * 0.85, headR * 0.85]) {
+      final earCenter = Offset(headCx + dx, headCy - headR * 0.82);
+      canvas.drawCircle(earCenter, 5.2, Paint()..color = const Color(0xFFF59E0B));
+      canvas.drawCircle(earCenter, 2.8, Paint()..color = const Color(0xFFFDBA74));
+    }
+
+    // Melena esponjosa alrededor de la cabeza
+    for (int i = 0; i < 10; i++) {
+      final angle = (i * 2 * math.pi) / 10;
+      final mx = headCx + math.cos(angle) * (headR + 1.8);
+      final my = headCy + math.sin(angle) * (headR + 1.8);
+      canvas.drawCircle(
+        Offset(mx, my),
+        4.8,
+        Paint()..color = i.isEven ? const Color(0xFFB45309) : const Color(0xFFD97706),
+      );
+    }
+    canvas.drawCircle(
+      Offset(headCx, headCy),
+      headR + 2.2,
+      Paint()..color = const Color(0xFFB45309),
     );
+
+    // Carita dorada
+    canvas.drawCircle(Offset(headCx, headCy), headR, Paint()..color = const Color(0xFFFBBF24));
 
     // — Ojos —
     final eyeP = Paint()..color = const Color(0xFF1A1A1A);
-    canvas.drawCircle(Offset(headCx - 5, headCy + 1), 2.5, eyeP);
-    canvas.drawCircle(Offset(headCx + 5, headCy + 1), 2.5, eyeP);
+    canvas.drawCircle(Offset(headCx - 4.5, headCy - 1), 2.5, eyeP);
+    canvas.drawCircle(Offset(headCx + 4.5, headCy - 1), 2.5, eyeP);
     // brillo
     final glintP = Paint()..color = Colors.white;
-    canvas.drawCircle(Offset(headCx - 4, headCy), 1, glintP);
-    canvas.drawCircle(Offset(headCx + 6, headCy), 1, glintP);
+    canvas.drawCircle(Offset(headCx - 3.7, headCy - 1.8), 1, glintP);
+    canvas.drawCircle(Offset(headCx + 5.3, headCy - 1.8), 1, glintP);
 
-    // — Boca (smile) —
+    // — Hocico cremita y naricita de león —
+    canvas.drawOval(
+      Rect.fromCenter(center: Offset(headCx, headCy + 4), width: 11, height: 6.5),
+      Paint()..color = const Color(0xFFFEF3C7),
+    );
+    canvas.drawCircle(
+      Offset(headCx, headCy + 2.2),
+      2.0,
+      Paint()..color = const Color(0xFF9A3412),
+    );
     canvas.drawArc(
-      Rect.fromCenter(center: Offset(headCx, headCy + 5), width: 10, height: 7),
-      0, math.pi,
+      Rect.fromCenter(center: Offset(headCx, headCy + 4.5), width: 7, height: 4),
+      0,
+      math.pi,
       false,
       Paint()
-        ..color = const Color(0xFFBF6B3B)
+        ..color = const Color(0xFF78350F)
         ..style = PaintingStyle.stroke
-        ..strokeWidth = 1.5,
+        ..strokeWidth = 1.3,
     );
   }
 

@@ -10,6 +10,8 @@ import 'package:go_router/go_router.dart';
 import '../../../../../core/providers/lesson_progress_provider.dart';
 import '../../../../../core/providers/selected_grade_provider.dart';
 import '../../../../../core/theme/app_theme.dart';
+import '../../../../../shared/widgets/lumi_lion_mascot.dart';
+import '../../../../../shared/widgets/playful_world_background.dart';
 import '../../../../../shared/widgets/xp_bar.dart';
 import '../../../lesson/data/curriculum_data.dart';
 
@@ -95,62 +97,65 @@ class HomeScreen extends ConsumerWidget {
 
     return Scaffold(
       backgroundColor: EduPlayColors.backgroundLight,
-      body: SafeArea(
-        child: CustomScrollView(
-          slivers: [
-            SliverToBoxAdapter(
-              child: _Header(
-                onSettingsTap: () => context.push('/settings'),
+      body: PlayfulWorldBackground(
+        theme: PlayfulWorldTheme.sunnyMeadow,
+        child: SafeArea(
+          child: CustomScrollView(
+            slivers: [
+              SliverToBoxAdapter(
+                child: _Header(
+                  onSettingsTap: () => context.push('/settings'),
+                ),
               ),
-            ),
 
-            SliverToBoxAdapter(child: _StreakBanner()),
+              SliverToBoxAdapter(child: _StreakBanner()),
 
-            const SliverToBoxAdapter(child: _GamificationLinksRow()),
+              const SliverToBoxAdapter(child: _GamificationLinksRow()),
 
-            // Juegos — visible solo para Grado 4
-            const SliverToBoxAdapter(child: _GamesBanner()),
+              // Juegos — visible solo para Grado 4
+              const SliverToBoxAdapter(child: _GamesBanner()),
 
-            const SliverToBoxAdapter(
-              child: Padding(
-                padding: EdgeInsets.fromLTRB(24, 24, 24, 12),
-                child: Text(
-                  '¿En qué grado estás?',
-                  style: TextStyle(
-                    fontSize: 22,
-                    fontWeight: FontWeight.w800,
-                    color: EduPlayColors.textDark,
-                    fontFamily: 'Nunito',
+              const SliverToBoxAdapter(
+                child: Padding(
+                  padding: EdgeInsets.fromLTRB(24, 24, 24, 12),
+                  child: Text(
+                    '🌈 ¿En qué grado estás?',
+                    style: TextStyle(
+                      fontSize: 22,
+                      fontWeight: FontWeight.w900,
+                      color: EduPlayColors.textDark,
+                      fontFamily: 'Nunito',
+                    ),
                   ),
                 ),
               ),
-            ),
 
-            SliverPadding(
-              padding: const EdgeInsets.fromLTRB(16, 0, 16, 32),
-              sliver: SliverList(
-                delegate: SliverChildBuilderDelegate(
-                  (_, i) {
-                    final cfg = _grades[i];
-                    final completed = completedLessons
-                        .intersection(
-                            CurriculumData.getLessonIdsForGrade(cfg.grade))
-                        .length;
-                    return _GradeCard(
-                      config: cfg,
-                      completedLessons: completed,
-                      delay: i * 80,
-                      onTap: () {
-                        ref.read(selectedGradeProvider.notifier).setGrade(cfg.grade);
-                        context.push('/subjects/math/units');
-                      },
-                    );
-                  },
-                  childCount: _grades.length,
+              SliverPadding(
+                padding: const EdgeInsets.fromLTRB(16, 0, 16, 32),
+                sliver: SliverList(
+                  delegate: SliverChildBuilderDelegate(
+                    (_, i) {
+                      final cfg = _grades[i];
+                      final completed = completedLessons
+                          .intersection(
+                              CurriculumData.getLessonIdsForGrade(cfg.grade))
+                          .length;
+                      return _GradeCard(
+                        config: cfg,
+                        completedLessons: completed,
+                        delay: i * 80,
+                        onTap: () {
+                          ref.read(selectedGradeProvider.notifier).setGrade(cfg.grade);
+                          context.push('/subjects/math/units');
+                        },
+                      );
+                    },
+                    childCount: _grades.length,
+                  ),
                 ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );
@@ -179,16 +184,10 @@ class _Header extends StatelessWidget {
         children: [
           Row(
             children: [
-              Container(
-                width: 48,
-                height: 48,
-                decoration: const BoxDecoration(
-                  color: EduPlayColors.backgroundLight,
-                  shape: BoxShape.circle,
-                ),
-                child: const Center(
-                  child: Text('👧', style: TextStyle(fontSize: 28)),
-                ),
+              const LumiLionMascot(
+                size: 54,
+                grade: 3,
+                expressionVariant: 1,
               ),
               const SizedBox(width: 12),
               const Expanded(
@@ -465,31 +464,41 @@ class _GradeCard extends StatelessWidget {
       onTap: onTap,
       child: Container(
         margin: const EdgeInsets.only(bottom: 14),
+        padding: const EdgeInsets.only(bottom: 5),
         decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(22),
+          color: config.color,
+          borderRadius: BorderRadius.circular(24),
           boxShadow: [
             BoxShadow(
-              color: config.color.withValues(alpha: 0.12),
+              color: config.color.withValues(alpha: 0.22),
               blurRadius: 14,
-              offset: const Offset(0, 5),
+              offset: const Offset(0, 6),
             ),
           ],
         ),
-        child: Row(
-          children: [
-            // Barra de color lateral
-            Container(
-              width: 8,
-              height: 88,
-              decoration: BoxDecoration(
-                color: config.color,
-                borderRadius: const BorderRadius.only(
-                  topLeft: Radius.circular(22),
-                  bottomLeft: Radius.circular(22),
+        child: Container(
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(22),
+            border: Border.all(
+              color: config.color.withValues(alpha: 0.55),
+              width: 2.2,
+            ),
+          ),
+          child: Row(
+            children: [
+              // Barra de color lateral
+              Container(
+                width: 8,
+                height: 88,
+                decoration: BoxDecoration(
+                  color: config.color,
+                  borderRadius: const BorderRadius.only(
+                    topLeft: Radius.circular(20),
+                    bottomLeft: Radius.circular(20),
+                  ),
                 ),
               ),
-            ),
 
             // Emoji del grado
             Padding(
@@ -603,6 +612,7 @@ class _GradeCard extends StatelessWidget {
           ],
         ),
       ),
+    ),
     )
         .animate(delay: Duration(milliseconds: delay + 200))
         .fadeIn(duration: 400.ms)
@@ -639,7 +649,12 @@ class _GamesBanner extends StatelessWidget {
           ),
           child: Row(
             children: [
-              const Text('🎮', style: TextStyle(fontSize: 36)),
+              const LumiLionMascot(
+                size: 52,
+                grade: 4,
+                accentColor: Color(0xFFF59E0B),
+                expressionVariant: 1,
+              ),
               const SizedBox(width: 14),
               Expanded(
                 child: Column(

@@ -277,7 +277,7 @@ const Map<String, Lesson> grade5Lessons = {
       exercises: [
         Exercise(
           id: 'l506-e1', orderNum: 1, type: ExerciseType.multipleChoice,
-          hint: 'La palabra "por ciento" viene del latín "per centum"',
+          hint: '¡"Por ciento" suena a "por cien"! Significa cuántas partes tomas de cada 100 🎯',
           content: {
             'question': '¿Qué significa "por ciento"?',
             'options': ['Por cada 10', 'Por cada 50', 'Por cada 100', 'Por cada 1.000'],
@@ -544,7 +544,7 @@ const Map<String, Lesson> grade5Lessons = {
       exercises: [
         Exercise(
           id: 'l511-e1', orderNum: 1, type: ExerciseType.multipleChoice,
-          hint: 'Una razón compara dos cantidades directamente',
+          hint: '¡Es como una pareja! 🥭 Pon primero la cantidad de mangos y al lado lo que cuestan',
           content: {
             'question': 'Si por cada 2 mangos pagas \$1.000, ¿cuál es la razón mango:precio?',
             'options': ['1:500', '2:1.000', '1:1.000', '2:500'],
@@ -1569,7 +1569,7 @@ const Map<String, Lesson> grade5Lessons = {
       exercises: [
         Exercise(
           id: 'l529-e1', orderNum: 1, type: ExerciseType.multipleChoice,
-          hint: 'C = π × D (o C = 2 × π × r)',
+          hint: '¡Multiplica lo que mide el diámetro de lado a lado por 3,14 para dar toda la vuelta! 🎡',
           content: {
             'question': 'Una glorieta circular tiene 20 m de diámetro. Usando π = 3,14, ¿cuánto mide su borde (3,14 × 20)?',
             'options': ['31,4 m', '62,8 m', '94,2 m', '40 m'],

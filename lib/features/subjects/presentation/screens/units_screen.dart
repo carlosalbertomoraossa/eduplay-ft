@@ -9,6 +9,7 @@ import 'package:go_router/go_router.dart';
 import '../../../../../core/providers/lesson_progress_provider.dart';
 import '../../../../../core/providers/selected_grade_provider.dart';
 import '../../../../../core/theme/app_theme.dart';
+import '../../../../../shared/widgets/playful_world_background.dart';
 import '../../../lesson/data/curriculum_data.dart';
 
 int _completedCount(String unitId, Set<String> completed) =>
@@ -21,15 +22,29 @@ bool _isUnlocked(int index, List<String> unitIds, Set<String> completed) {
   return _completedCount(prevId, completed) >= prevTotal;
 }
 
-class UnitsScreen extends ConsumerWidget {
+class UnitsScreen extends ConsumerStatefulWidget {
   final String subjectCode;
   const UnitsScreen({super.key, required this.subjectCode});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<UnitsScreen> createState() => _UnitsScreenState();
+}
+
+class _UnitsScreenState extends ConsumerState<UnitsScreen> {
+  int _selectedPeriodFilter = 0; // 0 = Todos, 1..4 = Período 1..4
+
+  @override
+  Widget build(BuildContext context) {
     final completed = ref.watch(lessonProgressProvider);
     final grade = ref.watch(selectedGradeProvider);
-    final unitIds = CurriculumData.getUnitIdsForGrade(grade);
+    final allUnitIds = CurriculumData.getUnitIdsForGrade(grade);
+    final visibleEntries = <(int globalIdx, String unitId)>[
+      for (int i = 0; i < allUnitIds.length; i++)
+        if (_selectedPeriodFilter == 0 ||
+            CurriculumData.getUnitPeriod(allUnitIds[i]) ==
+                _selectedPeriodFilter)
+          (i, allUnitIds[i]),
+    ];
 
     return Scaffold(
       backgroundColor: EduPlayColors.backgroundLight,
@@ -41,45 +56,108 @@ class UnitsScreen extends ConsumerWidget {
               context.canPop() ? context.pop() : context.go('/home'),
         ),
       ),
-      body: ListView.builder(
-        padding: const EdgeInsets.all(20),
-        itemCount: unitIds.length,
-        itemBuilder: (_, i) {
-          final unitId = unitIds[i];
-          final title = CurriculumData.unitTitles[unitId] ?? unitId;
-          final description = CurriculumData.unitDescriptions[unitId];
-          final period = CurriculumData.getUnitPeriod(unitId);
-          final prevPeriod =
-              i > 0 ? CurriculumData.getUnitPeriod(unitIds[i - 1]) : null;
-          final showPeriodHeader = period != prevPeriod;
-          final lessonsTotal = CurriculumData.getLessonsForUnit(unitId).length;
-          final lessonsCompleted = _completedCount(unitId, completed);
-          final unlocked = _isUnlocked(i, unitIds, completed);
-
-          return Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              if (showPeriodHeader)
-                _PeriodHeader(
-                  period: period,
-                  isFirst: i == 0,
+      body: PlayfulWorldBackground(
+        theme: PlayfulWorldBackground.fromPeriod(
+          _selectedPeriodFilter == 0 ? 1 : _selectedPeriodFilter,
+        ),
+        child: Column(
+          children: [
+            // Selector rápido de Período (1 a 4)
+            Container(
+              color: Colors.white.withValues(alpha: 0.88),
+              padding: const EdgeInsets.fromLTRB(16, 10, 16, 12),
+              child: SingleChildScrollView(
+                scrollDirection: Axis.horizontal,
+                child: Row(
+                  children: [
+                    for (final p in [0, 1, 2, 3, 4])
+                      Padding(
+                        padding: const EdgeInsets.only(right: 8),
+                        child: GestureDetector(
+                          onTap: () => setState(() => _selectedPeriodFilter = p),
+                          child: AnimatedContainer(
+                            duration: const Duration(milliseconds: 180),
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 14,
+                              vertical: 7,
+                            ),
+                            decoration: BoxDecoration(
+                              color: _selectedPeriodFilter == p
+                                  ? EduPlayColors.primaryBlue
+                                  : Colors.white,
+                              borderRadius: BorderRadius.circular(20),
+                              border: Border.all(
+                                color: EduPlayColors.primaryBlue
+                                    .withValues(alpha: 0.35),
+                              ),
+                            ),
+                            child: Text(
+                              p == 0 ? '📅 Todos los períodos' : '🌟 Período $p',
+                              style: TextStyle(
+                                fontFamily: 'Nunito',
+                                fontSize: 13,
+                                fontWeight: FontWeight.w800,
+                                color: _selectedPeriodFilter == p
+                                    ? Colors.white
+                                    : EduPlayColors.textDark,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                  ],
                 ),
-              _UnitCard(
-                id: unitId,
-                order: i + 1,
-                period: period,
-                title: title,
-                description: description,
-                lessonsTotal: lessonsTotal,
-                lessonsCompleted: lessonsCompleted,
-                isUnlocked: unlocked,
               ),
-            ],
-          )
-              .animate(delay: Duration(milliseconds: i * 60))
-              .fadeIn(duration: 350.ms)
-              .slideX(begin: 0.1, end: 0);
-        },
+            ),
+
+            Expanded(
+              child: ListView.builder(
+                padding: const EdgeInsets.all(20),
+                itemCount: visibleEntries.length,
+                itemBuilder: (_, idx) {
+                  final entry = visibleEntries[idx];
+                  final globalIdx = entry.$1;
+                  final unitId = entry.$2;
+                  final title = CurriculumData.unitTitles[unitId] ?? unitId;
+                  final description = CurriculumData.unitDescriptions[unitId];
+                  final period = CurriculumData.getUnitPeriod(unitId);
+                  final prevPeriod = idx > 0
+                      ? CurriculumData.getUnitPeriod(visibleEntries[idx - 1].$2)
+                      : null;
+                  final showPeriodHeader = period != prevPeriod;
+                  final lessonsTotal =
+                      CurriculumData.getLessonsForUnit(unitId).length;
+                  final lessonsCompleted = _completedCount(unitId, completed);
+                  final unlocked = _isUnlocked(globalIdx, allUnitIds, completed);
+
+                  return Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      if (showPeriodHeader)
+                        _PeriodHeader(
+                          period: period,
+                          isFirst: idx == 0,
+                        ),
+                      _UnitCard(
+                        id: unitId,
+                        order: globalIdx + 1,
+                        period: period,
+                        title: title,
+                        description: description,
+                        lessonsTotal: lessonsTotal,
+                        lessonsCompleted: lessonsCompleted,
+                        isUnlocked: unlocked,
+                      ),
+                    ],
+                  )
+                      .animate(delay: Duration(milliseconds: idx * 60))
+                      .fadeIn(duration: 350.ms)
+                      .slideX(begin: 0.1, end: 0);
+                },
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -180,132 +258,194 @@ class _UnitCard extends StatelessWidget {
     final isComplete = lessonsCompleted >= lessonsTotal;
     final progress =
         lessonsTotal == 0 ? 0.0 : lessonsCompleted / lessonsTotal;
+    final borderAccent = isComplete
+        ? EduPlayColors.successGreen
+        : !isUnlocked
+            ? const Color(0xFFCBD5E1)
+            : const Color(0xFF60A5FA);
 
-    return GestureDetector(
-      onTap: isUnlocked ? () => context.push('/subjects/$id/lessons') : null,
-      child: Container(
-        margin: const EdgeInsets.only(bottom: 16),
-        padding: const EdgeInsets.all(20),
-        decoration: BoxDecoration(
-          color: !isUnlocked ? const Color(0xFFF8FAFC) : Colors.white,
-          borderRadius: BorderRadius.circular(20),
-          border: Border.all(
-            color: isComplete
-                ? EduPlayColors.successGreen
-                : !isUnlocked
-                    ? const Color(0xFFE2E8F0)
-                    : Colors.transparent,
-            width: isComplete ? 2 : 1,
-          ),
-          boxShadow: !isUnlocked
-              ? []
-              : [
-                  BoxShadow(
-                    color: EduPlayColors.primaryBlue.withValues(alpha: 0.06),
-                    blurRadius: 12,
-                    offset: const Offset(0, 3),
-                  ),
-                ],
-        ),
-        child: Row(
-          children: [
-            Container(
-              width: 48,
-              height: 48,
-              decoration: BoxDecoration(
-                color: !isUnlocked
-                    ? const Color(0xFFE2E8F0)
-                    : isComplete
-                        ? EduPlayColors.successGreen
-                        : EduPlayColors.primaryBlue,
-                shape: BoxShape.circle,
-              ),
-              child: Center(
-                child: !isUnlocked
-                    ? const Icon(Icons.lock, color: Colors.white, size: 20)
-                    : isComplete
-                        ? const Icon(Icons.check, color: Colors.white, size: 24)
-                        : Text(
-                            '$order',
-                            style: const TextStyle(
-                              fontSize: 20,
-                              fontWeight: FontWeight.w800,
-                              color: Colors.white,
-                              fontFamily: 'Nunito',
-                            ),
-                          ),
-              ),
+    return Playful3DCard(
+      margin: const EdgeInsets.only(bottom: 16),
+      padding: const EdgeInsets.all(18),
+      borderColor: borderAccent,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          GestureDetector(
+            onTap: () => context.push(
+              isUnlocked
+                  ? '/subjects/$id/lessons'
+                  : '/subjects/$id/lessons?zone=prep',
             ),
-            const SizedBox(width: 16),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    title,
-                    style: TextStyle(
-                      fontSize: 17,
-                      fontWeight: FontWeight.w700,
-                      color: !isUnlocked
-                          ? EduPlayColors.textMedium
-                          : EduPlayColors.textDark,
-                      fontFamily: 'Nunito',
-                    ),
+            child: Row(
+              children: [
+                Container(
+                  width: 48,
+                  height: 48,
+                  decoration: BoxDecoration(
+                    color: !isUnlocked
+                        ? const Color(0xFF94A3B8)
+                        : isComplete
+                            ? EduPlayColors.successGreen
+                            : EduPlayColors.primaryBlue,
+                    shape: BoxShape.circle,
                   ),
-                  if (description != null) ...[
-                    const SizedBox(height: 2),
-                    Text(
-                      description!,
-                      style: const TextStyle(
-                        fontSize: 12,
-                        fontWeight: FontWeight.w600,
-                        color: EduPlayColors.textMedium,
-                        fontFamily: 'Nunito',
-                      ),
-                    ),
-                  ],
-                  const SizedBox(height: 4),
-                  Text(
-                    !isUnlocked
-                        ? 'Completa la unidad anterior primero'
-                        : '$lessonsCompleted/$lessonsTotal lecciones',
-                    style: TextStyle(
-                      fontSize: 13,
-                      fontFamily: 'Nunito',
-                      color: !isUnlocked
-                          ? EduPlayColors.textMedium
-                          : lessonsCompleted > 0
-                              ? EduPlayColors.successGreen
-                              : EduPlayColors.textMedium,
-                    ),
+                  child: Center(
+                    child: !isUnlocked
+                        ? const Icon(
+                            Icons.menu_book_rounded,
+                            color: Colors.white,
+                            size: 22,
+                          )
+                        : isComplete
+                            ? const Icon(
+                                Icons.check,
+                                color: Colors.white,
+                                size: 24,
+                              )
+                            : Text(
+                                '$order',
+                                style: const TextStyle(
+                                  fontSize: 20,
+                                  fontWeight: FontWeight.w800,
+                                  color: Colors.white,
+                                  fontFamily: 'Nunito',
+                                ),
+                              ),
                   ),
-                  if (isUnlocked) ...[
-                    const SizedBox(height: 8),
-                    ClipRRect(
-                      borderRadius: BorderRadius.circular(4),
-                      child: LinearProgressIndicator(
-                        value: progress,
-                        minHeight: 6,
-                        backgroundColor: EduPlayColors.backgroundLight,
-                        valueColor: AlwaysStoppedAnimation<Color>(
-                          isComplete
-                              ? EduPlayColors.successGreen
-                              : EduPlayColors.primaryBlue,
+                ),
+                const SizedBox(width: 14),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        title,
+                        style: const TextStyle(
+                          fontSize: 17,
+                          fontWeight: FontWeight.w800,
+                          color: EduPlayColors.textDark,
+                          fontFamily: 'Nunito',
                         ),
                       ),
-                    ),
-                  ],
-                ],
-              ),
+                      if (description != null) ...[
+                        const SizedBox(height: 2),
+                        Text(
+                          description!,
+                          style: const TextStyle(
+                            fontSize: 12,
+                            fontWeight: FontWeight.w600,
+                            color: EduPlayColors.textMedium,
+                            fontFamily: 'Nunito',
+                          ),
+                        ),
+                      ],
+                      const SizedBox(height: 4),
+                      Text(
+                        !isUnlocked
+                            ? '📖 Temario abierto · Completa la unidad anterior para los retos'
+                            : '$lessonsCompleted/$lessonsTotal ejercicios completados',
+                        style: TextStyle(
+                          fontSize: 12.5,
+                          fontFamily: 'Nunito',
+                          fontWeight: FontWeight.w700,
+                          color: !isUnlocked
+                              ? const Color(0xFFD97706)
+                              : lessonsCompleted > 0
+                                  ? EduPlayColors.successGreen
+                                  : EduPlayColors.textMedium,
+                        ),
+                      ),
+                      if (isUnlocked) ...[
+                        const SizedBox(height: 8),
+                        ClipRRect(
+                          borderRadius: BorderRadius.circular(4),
+                          child: LinearProgressIndicator(
+                            value: progress,
+                            minHeight: 6,
+                            backgroundColor: EduPlayColors.backgroundLight,
+                            valueColor: AlwaysStoppedAnimation<Color>(
+                              isComplete
+                                  ? EduPlayColors.successGreen
+                                  : EduPlayColors.primaryBlue,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ],
+                  ),
+                ),
+              ],
             ),
-            if (isUnlocked)
-              const Icon(
-                Icons.arrow_forward_ios,
-                size: 16,
-                color: EduPlayColors.textMedium,
+          ),
+          const SizedBox(height: 14),
+
+          // Botones de las 2 zonas de la sección: Zona de Preparación y Zona de Ejercicios
+          Row(
+            children: [
+              Expanded(
+                child: OutlinedButton.icon(
+                  onPressed: () =>
+                      context.push('/subjects/$id/lessons?zone=prep'),
+                  style: OutlinedButton.styleFrom(
+                    foregroundColor: const Color(0xFFB45309),
+                    backgroundColor: const Color(0xFFFFFBEB),
+                    side: const BorderSide(
+                      color: Color(0xFFF59E0B),
+                      width: 1.5,
+                    ),
+                    padding: const EdgeInsets.symmetric(vertical: 10),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
+                  icon: const Text('📖', style: TextStyle(fontSize: 15)),
+                  label: const Text(
+                    'Preparación',
+                    style: TextStyle(
+                      fontFamily: 'Nunito',
+                      fontSize: 13,
+                      fontWeight: FontWeight.w900,
+                    ),
+                  ),
+                ),
               ),
-          ],
-        ),
+              const SizedBox(width: 10),
+              Expanded(
+                child: ElevatedButton.icon(
+                  onPressed: isUnlocked
+                      ? () => context.push('/subjects/$id/lessons')
+                      : null,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: isComplete
+                        ? EduPlayColors.successGreen
+                        : EduPlayColors.primaryBlue,
+                    foregroundColor: Colors.white,
+                    disabledBackgroundColor: const Color(0xFFE2E8F0),
+                    disabledForegroundColor: const Color(0xFF94A3B8),
+                    elevation: 0,
+                    padding: const EdgeInsets.symmetric(vertical: 10),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
+                  icon: Text(
+                    isUnlocked ? '🎯' : '🔒',
+                    style: const TextStyle(fontSize: 15),
+                  ),
+                  label: const Text(
+                    'Ejercicios',
+                    style: TextStyle(
+                      fontFamily: 'Nunito',
+                      fontSize: 13,
+                      fontWeight: FontWeight.w900,
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ],
       ),
     );
   }

@@ -2,6 +2,7 @@ import 'dart:math' as math;
 import 'package:flutter/material.dart';
 
 import '../../../../../core/theme/app_theme.dart';
+import '../../../../../shared/widgets/lumi_lion_mascot.dart';
 
 enum _VisualTopic {
   placeValue,
@@ -44,7 +45,11 @@ class _ExerciseVisualAidState extends State<ExerciseVisualAid> {
   late _VisualTopic _topic;
 
   // Estados interactivos según el tipo de gráfico
-  int _selectedPlaceIdx = 1; // 0:M, 1:CM, 2:DM, 3:UM, 4:C, 5:D, 6:U
+  int _selectedPlaceIdx = 4; // 0:M, 1:CM, 2:DM, 3:UM, 4:C, 5:D, 6:U
+  int _startPlaceCol = 4; // desde qué columna mostrar (4=C..U, 3=UM..U, 1=CM..U, 0=M..U)
+  List<int> _placeDigits = [0, 0, 0, 0, 1, 0, 0]; // 7 dígitos: M, CM, DM, UM, C, D, U
+  List<int> _candidatePlaceNumbers = const [];
+  bool _showExtraTip = false;
   int _activeSlices = 1;
   int _totalSlices = 4;
   int _extraMinutes = 0;
@@ -77,25 +82,12 @@ class _ExerciseVisualAidState extends State<ExerciseVisualAid> {
     final q = widget.questionText;
     final lower = q.toLowerCase();
     _topic = _detectTopic(q, widget.options);
+    _showExtraTip = false;
 
     // Inicializar estado coherente con los datos reales de la pregunta
     switch (_topic) {
       case _VisualTopic.placeValue:
-        if (lower.contains('millón') || lower.contains('millon')) {
-          _selectedPlaceIdx = 0;
-        } else if (lower.contains('centena de mil') || lower.contains('centenas de mil')) {
-          _selectedPlaceIdx = 1;
-        } else if (lower.contains('decena de mil') || lower.contains('decenas de mil')) {
-          _selectedPlaceIdx = 2;
-        } else if (lower.contains('unidad de mil') || lower.contains('unidades de mil') || lower.contains('mil')) {
-          _selectedPlaceIdx = 3;
-        } else if (lower.contains('centena')) {
-          _selectedPlaceIdx = 4;
-        } else if (lower.contains('decena')) {
-          _selectedPlaceIdx = 5;
-        } else {
-          _selectedPlaceIdx = 1;
-        }
+        _initPlaceValueFromQuestion(q, lower, widget.options);
 
       case _VisualTopic.fraction:
         final parsed = _parseFractionFromQuestion(q);
@@ -163,6 +155,156 @@ class _ExerciseVisualAidState extends State<ExerciseVisualAid> {
     }
   }
 
+  void _initPlaceValueFromQuestion(
+    String q,
+    String lower,
+    List<String> options,
+  ) {
+    // Extraer números grandes (con o sin puntos de miles) de la pregunta
+    final qNums = RegExp(r'\d+(?:\.\d{3})*')
+        .allMatches(q)
+        .map((m) => int.tryParse(m.group(0)!.replaceAll('.', '')) ?? -1)
+        .where((n) => n >= 10 && n <= 9999999)
+        .toSet()
+        .toList();
+
+    // Si la pregunta es de descomposición (ej. "500 + 60 + 8 = ___"), no pre-armar la suma total
+    final isSumDecomposition = RegExp(r'\d+\s*\+\s*(?:\d+|___)\s*\+').hasMatch(q);
+
+    // También extraer candidatos de las opciones cuando en la pregunta están en letras
+    final optNums = options
+        .map((o) => int.tryParse(o.replaceAll(RegExp(r'[^0-9]'), '')) ?? -1)
+        .where((n) => n >= 100 && n <= 9999999)
+        .take(4)
+        .toList();
+
+    if (!isSumDecomposition && qNums.isNotEmpty) {
+      _candidatePlaceNumbers = qNums.take(3).toList();
+    } else if (!isSumDecomposition && optNums.isNotEmpty && qNums.isEmpty) {
+      // Pregunta en palabras ("trescientos cuarenta y siete"): permitir probar opciones o armar desde 0
+      _candidatePlaceNumbers = const [];
+    } else {
+      _candidatePlaceNumbers = const [];
+    }
+
+    // Determinar cuántas columnas mostrar según la magnitud del problema
+    final scaleNums = qNums.isNotEmpty ? qNums : optNums;
+    final maxNum = scaleNums.isEmpty ? 0 : scaleNums.reduce(math.max);
+
+    if (lower.contains('millón') ||
+        lower.contains('millon') ||
+        maxNum >= 1000000) {
+      _startPlaceCol = 0; // M, CM, DM, UM, C, D, U (7 columnas)
+    } else if (lower.contains('centena de mil') ||
+        lower.contains('centenas de mil') ||
+        lower.contains('decena de mil') ||
+        lower.contains('decenas de mil') ||
+        maxNum >= 10000) {
+      _startPlaceCol = 1; // CM, DM, UM, C, D, U (6 columnas)
+    } else if (lower.contains('unidad de mil') ||
+        lower.contains('unidades de mil') ||
+        lower.contains('millar') ||
+        lower.contains('mil') ||
+        maxNum >= 1000) {
+      _startPlaceCol = 3; // UM, C, D, U (4 columnas)
+    } else {
+      _startPlaceCol = 4; // C, D, U (3 columnas amplias para 1° y 2°)
+    }
+
+    // Cargar el número principal en las casillas (o dejar en 0/100 para que el niño lo arme)
+    if (!isSumDecomposition && qNums.isNotEmpty) {
+      _setDigitsFromNumber(qNums.first);
+    } else if (lower.contains('1 centena de mil')) {
+      _setDigitsFromNumber(100000);
+    } else if (lower.contains('1 decena de mil')) {
+      _setDigitsFromNumber(10000);
+    } else if (lower.contains('1 unidad de mil') || lower.contains('un millar')) {
+      _setDigitsFromNumber(1000);
+    } else if (lower.contains('1 centena') || lower.contains('una centena')) {
+      _setDigitsFromNumber(100);
+    } else {
+      _setDigitsFromNumber(0);
+    }
+
+    // Seleccionar la columna relevante según la pregunta
+    // Si pregunta por un dígito específico ("el dígito 6" en 648.320), seleccionamos su columna
+    final digitAsked = RegExp(r'd[íi]gito\s+(\d)').firstMatch(lower);
+    if (digitAsked != null) {
+      final d = int.tryParse(digitAsked.group(1)!) ?? -1;
+      final idx = _placeDigits.indexOf(d, _startPlaceCol);
+      if (idx != -1) {
+        _selectedPlaceIdx = idx;
+        return;
+      }
+    }
+
+    if (lower.contains('millón') || lower.contains('millon')) {
+      _selectedPlaceIdx = 0;
+    } else if (lower.contains('centena de mil') ||
+        lower.contains('centenas de mil')) {
+      _selectedPlaceIdx = 1;
+    } else if (lower.contains('decena de mil') ||
+        lower.contains('decenas de mil')) {
+      _selectedPlaceIdx = 2;
+    } else if (lower.contains('unidad de mil') ||
+        lower.contains('unidades de mil') ||
+        lower.contains('millar')) {
+      _selectedPlaceIdx = 3;
+    } else if (lower.contains('centena')) {
+      _selectedPlaceIdx = 4;
+    } else if (lower.contains('decena')) {
+      _selectedPlaceIdx = 5;
+    } else if (lower.contains('unidad')) {
+      _selectedPlaceIdx = 6;
+    } else {
+      _selectedPlaceIdx = _startPlaceCol;
+    }
+  }
+
+  void _setDigitsFromNumber(int number) {
+    final clamped = number.clamp(0, 9999999);
+    final padded = clamped.toString().padLeft(7, '0');
+    _placeDigits = List.generate(7, (i) => int.parse(padded[i]));
+  }
+
+  int _currentPlaceNumber() {
+    int total = 0;
+    const multipliers = [1000000, 100000, 10000, 1000, 100, 10, 1];
+    for (int i = 0; i < 7; i++) {
+      total += _placeDigits[i] * multipliers[i];
+    }
+    return total;
+  }
+
+  void _changePlaceDigit(int colIdx, int delta) {
+    const multipliers = [1000000, 100000, 10000, 1000, 100, 10, 1];
+    final nextTotal =
+        (_currentPlaceNumber() + delta * multipliers[colIdx]).clamp(0, 9999999);
+    setState(() {
+      _selectedPlaceIdx = colIdx;
+      _setDigitsFromNumber(nextTotal);
+      if (nextTotal >= 1000000 && _startPlaceCol > 0) {
+        _startPlaceCol = 0;
+      } else if (nextTotal >= 100000 && _startPlaceCol > 1) {
+        _startPlaceCol = 1;
+      } else if (nextTotal >= 1000 && _startPlaceCol > 3) {
+        _startPlaceCol = 3;
+      }
+    });
+  }
+
+  static String _formatColombianInt(int n) {
+    final s = n.toString();
+    final buf = StringBuffer();
+    for (int i = 0; i < s.length; i++) {
+      if (i > 0 && (s.length - i) % 3 == 0) {
+        buf.write('.');
+      }
+      buf.write(s[i]);
+    }
+    return buf.toString();
+  }
+
   static (int, int) _parseFractionFromQuestion(String q) {
     final lower = q.toLowerCase();
     // 1. Si la pregunta misma contiene una fracción explícita a/b
@@ -195,20 +337,40 @@ class _ExerciseVisualAidState extends State<ExerciseVisualAid> {
   static _VisualTopic _detectTopic(String q, List<String> options) {
     final lower = q.toLowerCase();
 
-    // 1. Valor posicional / lectura y escritura de números grandes
+    // 1. Valor posicional / lectura, escritura, descomposición y comparación de números
+    final isPlaceDecomposition =
+        RegExp(r'\b[1-9]00(?:\.\d{3})*\s*\+\s*(?:[1-9]0|___)').hasMatch(q) ||
+        lower.contains('descomposición') ||
+        lower.contains('descomposicion');
+    final isBigNumberComparison =
+        (lower.contains('mayor') ||
+            lower.contains('menor') ||
+            lower.contains('símbolo') ||
+            lower.contains('habitantes') ||
+            lower.contains('población')) &&
+        RegExp(r'\b\d{3}(?:\.\d{3})*\b').hasMatch(q) &&
+        !lower.contains('fracción') &&
+        !lower.contains('ángulo') &&
+        !lower.contains('área') &&
+        !lower.contains('perímetro');
+
     if (lower.contains('centena') ||
         lower.contains('decena') ||
         lower.contains('unidad de mil') ||
         lower.contains('unidades de mil') ||
+        lower.contains('millar') ||
         lower.contains('millón') ||
         lower.contains('millon') ||
         lower.contains('valor posicional') ||
         lower.contains('dígito') ||
         lower.contains('digito') ||
+        lower.contains('cifras') ||
         lower.contains('redondea') ||
         lower.contains('cómo se escribe') ||
         lower.contains('como se escribe') ||
-        lower.contains('cómo se lee')) {
+        lower.contains('cómo se lee') ||
+        isPlaceDecomposition ||
+        isBigNumberComparison) {
       return _VisualTopic.placeValue;
     }
 
@@ -374,10 +536,12 @@ class _ExerciseVisualAidState extends State<ExerciseVisualAid> {
 
   @override
   Widget build(BuildContext context) {
-    final effectiveTip =
+    final primaryTip =
         (widget.hint != null && widget.hint!.trim().isNotEmpty)
             ? widget.hint!.trim()
             : _contextualTip();
+    final extraTip = _kidFriendlyExtraTip();
+    final displayedTip = _showExtraTip ? extraTip : primaryTip;
 
     return Column(
       mainAxisSize: MainAxisSize.min,
@@ -405,13 +569,16 @@ class _ExerciseVisualAidState extends State<ExerciseVisualAid> {
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Text(
-                    _topicTitle(),
-                    style: const TextStyle(
-                      fontFamily: 'Nunito',
-                      fontSize: 12,
-                      fontWeight: FontWeight.w800,
-                      color: Color(0xFF1E3A8A),
+                  Flexible(
+                    child: Text(
+                      _topicTitle(),
+                      style: const TextStyle(
+                        fontFamily: 'Nunito',
+                        fontSize: 12,
+                        fontWeight: FontWeight.w800,
+                        color: Color(0xFF1E3A8A),
+                      ),
+                      overflow: TextOverflow.ellipsis,
                     ),
                   ),
                   Container(
@@ -424,7 +591,7 @@ class _ExerciseVisualAidState extends State<ExerciseVisualAid> {
                       borderRadius: BorderRadius.circular(10),
                     ),
                     child: const Text(
-                      '👆 Interactivo',
+                      '👆 ¡Toca y juega!',
                       style: TextStyle(
                         fontFamily: 'Nunito',
                         fontSize: 10,
@@ -441,44 +608,85 @@ class _ExerciseVisualAidState extends State<ExerciseVisualAid> {
           ),
         ),
         SizedBox(height: widget.compact ? 8 : 10),
-        // ── Tip Pedagógico ───────────────────────────────────────────────
+        // ── Pista de Lumi para niños (con botón de súper truco extra) ────
         Container(
           padding: EdgeInsets.symmetric(
             horizontal: 12,
-            vertical: widget.compact ? 7 : 9,
+            vertical: widget.compact ? 8 : 10,
           ),
           decoration: BoxDecoration(
-            color: const Color(0xFFFFFBEB),
-            borderRadius: BorderRadius.circular(12),
+            gradient: const LinearGradient(
+              colors: [Color(0xFFFFFBEB), Color(0xFFFEF3C7)],
+            ),
+            borderRadius: BorderRadius.circular(14),
             border: Border.all(
-              color: const Color(0xFFF59E0B).withValues(alpha: 0.45),
+              color: const Color(0xFFF59E0B).withValues(alpha: 0.55),
+              width: 1.4,
             ),
           ),
-          child: Row(
+          child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Text('💡', style: TextStyle(fontSize: 16)),
-              const SizedBox(width: 8),
-              Expanded(
-                child: Text.rich(
-                  TextSpan(
-                    style: TextStyle(
-                      fontFamily: 'Nunito',
-                      fontSize: widget.compact ? 12 : 13,
-                      color: const Color(0xFF92400E),
-                      height: 1.3,
-                    ),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Row(
+                    mainAxisSize: MainAxisSize.min,
                     children: [
-                      const TextSpan(
-                        text: 'Tip: ',
-                        style: TextStyle(fontWeight: FontWeight.w800),
+                      LumiLionMascot(
+                        size: 30,
+                        expressionVariant: _showExtraTip ? 1 : 0,
                       ),
-                      TextSpan(
-                        text: effectiveTip,
-                        style: const TextStyle(fontWeight: FontWeight.w600),
+                      const SizedBox(width: 6),
+                      Text(
+                        _showExtraTip
+                            ? '🦁 Súper Tip: ¡Truco de Lumi!'
+                            : '🦁 Tip: ¡Pista de Lumi!',
+                        style: TextStyle(
+                          fontFamily: 'Nunito',
+                          fontSize: widget.compact ? 11.5 : 12.5,
+                          fontWeight: FontWeight.w900,
+                          color: const Color(0xFFB45309),
+                        ),
                       ),
                     ],
                   ),
+                  GestureDetector(
+                    onTap: () => setState(() => _showExtraTip = !_showExtraTip),
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 8,
+                        vertical: 3,
+                      ),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFF59E0B).withValues(alpha: 0.2),
+                        borderRadius: BorderRadius.circular(10),
+                        border: Border.all(
+                          color: const Color(0xFFD97706).withValues(alpha: 0.5),
+                        ),
+                      ),
+                      child: Text(
+                        _showExtraTip ? '🔙 Ver pista 1' : '✨ Otro truco',
+                        style: const TextStyle(
+                          fontFamily: 'Nunito',
+                          fontSize: 10.5,
+                          fontWeight: FontWeight.w800,
+                          color: Color(0xFF92400E),
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 4),
+              Text(
+                displayedTip,
+                style: TextStyle(
+                  fontFamily: 'Nunito',
+                  fontSize: widget.compact ? 12 : 13,
+                  fontWeight: FontWeight.w700,
+                  color: const Color(0xFF78350F),
+                  height: 1.32,
                 ),
               ),
             ],
@@ -490,20 +698,20 @@ class _ExerciseVisualAidState extends State<ExerciseVisualAid> {
 
   String _topicTitle() {
     return switch (_topic) {
-      _VisualTopic.placeValue => '🔢 Tablero de Valor Posicional',
-      _VisualTopic.fraction => '🍕 Modelo de Fracciones (Toca las partes)',
-      _VisualTopic.clock => '🕒 Reloj Analógico (Toca para avanzar)',
-      _VisualTopic.angle => '📐 Transportador de Ángulos',
+      _VisualTopic.placeValue => '🧮 Ábaco y Tabla Posicional (+ / −)',
+      _VisualTopic.fraction => '🍕 Fábrica de Fracciones (Toca las partes)',
+      _VisualTopic.clock => '🕒 Reloj Interactivo (Mueve los minutos)',
+      _VisualTopic.angle => '📐 Explorador de Ángulos',
       _VisualTopic.circle => '⭕ Círculo: Radio y Diámetro',
-      _VisualTopic.solid3D => '🧊 Prisma 3D y Volumen',
+      _VisualTopic.solid3D => '🧊 Cubo 3D y Volumen',
       _VisualTopic.polygonAreaPerimeter => '📏 Figura Geométrica (Área / Perímetro)',
-      _VisualTopic.cartesian => '📍 Plano Cartesiano (Toca un punto)',
-      _VisualTopic.statistics => '📊 Gráfica de Datos (Toca las barras)',
-      _VisualTopic.measurement => '⚖️ Equivalencias de Medida',
-      _VisualTopic.percentDecimalMoney => '💯 Cuadrícula de Porcentaje y Decimal',
+      _VisualTopic.cartesian => '📍 Mapa Cartesiano (Toca un punto)',
+      _VisualTopic.statistics => '📊 Gráfica de Barras (Toca cada barra)',
+      _VisualTopic.measurement => '⚖️ Tabla de Medidas y Equivalencias',
+      _VisualTopic.percentDecimalMoney => '💯 Bloques de Porcentaje y Decimal',
       _VisualTopic.algebra => '⚖️ Balanza de Ecuaciones',
-      _VisualTopic.numberLineSequence => '🐸 Recta Numérica y Saltos',
-      _VisualTopic.arithmetic => '🧮 Descomposición Paso a Paso',
+      _VisualTopic.numberLineSequence => '🐸 Saltos en la Recta Numérica',
+      _VisualTopic.arithmetic => '🧮 Laboratorio de Operaciones',
     };
   }
 
@@ -528,93 +736,399 @@ class _ExerciseVisualAidState extends State<ExerciseVisualAid> {
     };
   }
 
-  // 1. Valor Posicional Interactivo (U, D, C, UM, DM, CM, M)
+  // 1. Ábaco y Tabla Posicional Interactiva (con fichas visuales, botones + / − y descomposición en vivo)
   Widget _buildPlaceValueAbacus() {
-    const columns = [
-      ('M', '1.000.000', '1 Millón = 10 CM', Color(0xFFEF4444)),
-      ('CM', '100.000', '1 Centena de mil = 100.000 U', Color(0xFFF59E0B)),
-      ('DM', '10.000', '1 Decena de mil = 10.000 U', Color(0xFF10B981)),
-      ('UM', '1.000', '1 Unidad de mil = 1.000 U', Color(0xFF3B82F6)),
-      ('C', '100', '1 Centena = 100 Unidades', Color(0xFF6366F1)),
-      ('D', '10', '1 Decena = 10 Unidades', Color(0xFF8B5CF6)),
-      ('U', '1', '1 Unidad = valor base 1', Color(0xFF64748B)),
+    const allColumns = [
+      ('M', 'Millón', 1000000, Color(0xFFEF4444)),
+      ('CM', 'C. Mil', 100000, Color(0xFFF59E0B)),
+      ('DM', 'D. Mil', 10000, Color(0xFF10B981)),
+      ('UM', 'Mil', 1000, Color(0xFF3B82F6)),
+      ('C', 'Cien', 100, Color(0xFF6366F1)),
+      ('D', 'Diez', 10, Color(0xFF8B5CF6)),
+      ('U', 'Uno', 1, Color(0xFFEC4899)),
     ];
 
-    final selected = columns[_selectedPlaceIdx];
+    final startCol = _startPlaceCol.clamp(0, 4);
+    final selIdx = _selectedPlaceIdx.clamp(startCol, 6);
+    final selCol = allColumns[selIdx];
+    final selDigit = _placeDigits[selIdx];
+    final selValue = selDigit * selCol.$3;
+    final totalNum = _currentPlaceNumber();
+
+    // Partes de la descomposición aditiva (> 0)
+    final activeParts = <(int colIdx, String text, Color color)>[];
+    for (int i = startCol; i < 7; i++) {
+      final d = _placeDigits[i];
+      if (d > 0) {
+        activeParts.add((
+          i,
+          _formatColombianInt(d * allColumns[i].$3),
+          allColumns[i].$4,
+        ));
+      }
+    }
 
     return Column(
       children: [
+        // Barra superior: Número armado + botones rápidos (comparar números / vaciar / más casillas)
         Row(
-          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-          children: List.generate(columns.length, (i) {
-            final col = columns[i];
-            final isSel = i == _selectedPlaceIdx;
-            return Expanded(
-              child: GestureDetector(
-                onTap: () => setState(() => _selectedPlaceIdx = i),
-                child: AnimatedContainer(
-                  duration: const Duration(milliseconds: 200),
-                  margin: const EdgeInsets.symmetric(horizontal: 2),
-                  padding: const EdgeInsets.symmetric(vertical: 6),
-                  decoration: BoxDecoration(
-                    color: isSel ? col.$4 : Colors.white,
-                    borderRadius: BorderRadius.circular(10),
-                    border: Border.all(
-                      color: col.$4,
-                      width: isSel ? 2 : 1,
-                    ),
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Flexible(
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 3),
+                decoration: BoxDecoration(
+                  color: const Color(0xFF1E3A8A),
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: Text(
+                  '🔢 Número: ${_formatColombianInt(totalNum)}',
+                  style: const TextStyle(
+                    fontFamily: 'Nunito',
+                    fontSize: 12.5,
+                    fontWeight: FontWeight.w900,
+                    color: Colors.white,
                   ),
-                  child: Column(
-                    children: [
-                      Text(
-                        col.$1,
-                        style: TextStyle(
-                          fontFamily: 'Nunito',
-                          fontSize: 12,
-                          fontWeight: FontWeight.w900,
-                          color: isSel ? Colors.white : col.$4,
-                        ),
-                      ),
-                      const SizedBox(height: 2),
-                      Text(
-                        col.$2,
-                        style: TextStyle(
-                          fontFamily: 'Nunito',
-                          fontSize: 8.5,
-                          fontWeight: FontWeight.w700,
-                          color: isSel
-                              ? Colors.white.withValues(alpha: 0.95)
-                              : EduPlayColors.textMedium,
-                        ),
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                    ],
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
+            ),
+            const SizedBox(width: 6),
+            Wrap(
+              spacing: 4,
+              children: [
+                for (final cand in _candidatePlaceNumbers.take(2))
+                  if (_candidatePlaceNumbers.length > 1 || cand != totalNum)
+                    _MiniChipButton(
+                      label: '📌 ${_formatColombianInt(cand)}',
+                      active: totalNum == cand,
+                      onTap: () => setState(() => _setDigitsFromNumber(cand)),
+                    ),
+                if (totalNum > 0)
+                  _MiniChipButton(
+                    label: '🧹 En 0',
+                    onTap: () => setState(() => _setDigitsFromNumber(0)),
+                  ),
+                if (startCol > 0)
+                  _MiniChipButton(
+                    label: '+ casillas',
+                    onTap: () => setState(() {
+                      _startPlaceCol = startCol >= 4
+                          ? 3
+                          : startCol >= 3
+                              ? 1
+                              : 0;
+                    }),
+                  ),
+              ],
+            ),
+          ],
+        ),
+        const SizedBox(height: 6),
+
+        // Columnas interactivas del tablero con botones [+], fichas de ábaco, dígito y [-]
+        Row(
+          children: [
+            for (int i = startCol; i < 7; i++)
+              Expanded(
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 2),
+                  child: _buildPlaceColumnCard(
+                    colIdx: i,
+                    shortCode: allColumns[i].$1,
+                    friendlyName: allColumns[i].$2,
+                    unitValue: allColumns[i].$3,
+                    color: allColumns[i].$4,
+                    digit: _placeDigits[i],
+                    isSelected: i == selIdx,
+                    compact: widget.compact || (7 - startCol) >= 6,
                   ),
                 ),
               ),
-            );
-          }),
+          ],
         ),
         const SizedBox(height: 6),
+
+        // Barra de descomposición en vivo (tocar cada sumando selecciona su casilla)
         Container(
           width: double.infinity,
-          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 5),
           decoration: BoxDecoration(
-            color: selected.$4.withValues(alpha: 0.12),
-            borderRadius: BorderRadius.circular(8),
-          ),
-          child: Text(
-            '✨ ${selected.$3} (Cada columna vale ×10 la de su derecha)',
-            textAlign: TextAlign.center,
-            style: TextStyle(
-              fontFamily: 'Nunito',
-              fontSize: 11.5,
-              fontWeight: FontWeight.w800,
-              color: selected.$4,
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(10),
+            border: Border.all(
+              color: selCol.$4.withValues(alpha: 0.45),
+              width: 1.2,
             ),
+          ),
+          child: Column(
+            children: [
+              if (activeParts.isEmpty)
+                const Text(
+                  '👆 ¡Toca los botones + en cada casilla para poner fichas y armar tu número!',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    fontFamily: 'Nunito',
+                    fontSize: 11,
+                    fontWeight: FontWeight.w800,
+                    color: Color(0xFF1E3A8A),
+                  ),
+                )
+              else
+                Wrap(
+                  alignment: WrapAlignment.center,
+                  crossAxisAlignment: WrapCrossAlignment.center,
+                  spacing: 3,
+                  runSpacing: 2,
+                  children: [
+                    const Text(
+                      '🧩 Suma: ',
+                      style: TextStyle(
+                        fontFamily: 'Nunito',
+                        fontSize: 11,
+                        fontWeight: FontWeight.w800,
+                        color: EduPlayColors.textMedium,
+                      ),
+                    ),
+                    for (int p = 0; p < activeParts.length; p++) ...[
+                      if (p > 0)
+                        const Text(
+                          '+',
+                          style: TextStyle(
+                            fontFamily: 'Nunito',
+                            fontSize: 11,
+                            fontWeight: FontWeight.w900,
+                            color: EduPlayColors.textMedium,
+                          ),
+                        ),
+                      GestureDetector(
+                        onTap: () =>
+                            setState(() => _selectedPlaceIdx = activeParts[p].$1),
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 5,
+                            vertical: 1,
+                          ),
+                          decoration: BoxDecoration(
+                            color: activeParts[p].$1 == selIdx
+                                ? activeParts[p].$3
+                                : activeParts[p].$3.withValues(alpha: 0.14),
+                            borderRadius: BorderRadius.circular(6),
+                          ),
+                          child: Text(
+                            activeParts[p].$2,
+                            style: TextStyle(
+                              fontFamily: 'Nunito',
+                              fontSize: 11,
+                              fontWeight: FontWeight.w900,
+                              color: activeParts[p].$1 == selIdx
+                                  ? Colors.white
+                                  : activeParts[p].$3,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
+                    Text(
+                      ' = ${_formatColombianInt(totalNum)}',
+                      style: const TextStyle(
+                        fontFamily: 'Nunito',
+                        fontSize: 11.5,
+                        fontWeight: FontWeight.w900,
+                        color: Color(0xFF1E3A8A),
+                      ),
+                    ),
+                  ],
+                ),
+              const SizedBox(height: 3),
+              Text(
+                '🎯 Casilla ${selCol.$1} (${selCol.$2} = ${_formatColombianInt(selCol.$3)}): '
+                '$selDigit ${selDigit == 1 ? "ficha vale" : "fichas valen"} ${_formatColombianInt(selValue)}',
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  fontFamily: 'Nunito',
+                  fontSize: 11,
+                  fontWeight: FontWeight.w800,
+                  color: selCol.$4,
+                ),
+              ),
+            ],
           ),
         ),
       ],
+    );
+  }
+
+  Widget _buildPlaceColumnCard({
+    required int colIdx,
+    required String shortCode,
+    required String friendlyName,
+    required int unitValue,
+    required Color color,
+    required int digit,
+    required bool isSelected,
+    required bool compact,
+  }) {
+    final posVal = digit * unitValue;
+    return GestureDetector(
+      onTap: () => setState(() => _selectedPlaceIdx = colIdx),
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 180),
+        padding: EdgeInsets.symmetric(
+          vertical: compact ? 4 : 5,
+          horizontal: 2,
+        ),
+        decoration: BoxDecoration(
+          color: isSelected ? color.withValues(alpha: 0.12) : Colors.white,
+          borderRadius: BorderRadius.circular(11),
+          border: Border.all(
+            color: isSelected ? color : color.withValues(alpha: 0.45),
+            width: isSelected ? 2.2 : 1.2,
+          ),
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            // Etiqueta de la posición (M, CM, DM, UM, C, D, U)
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1),
+              decoration: BoxDecoration(
+                color: color,
+                borderRadius: BorderRadius.circular(6),
+              ),
+              child: Text(
+                shortCode,
+                style: TextStyle(
+                  fontFamily: 'Nunito',
+                  fontSize: compact ? 10 : 11,
+                  fontWeight: FontWeight.w900,
+                  color: Colors.white,
+                ),
+              ),
+            ),
+            if (!compact)
+              Text(
+                friendlyName,
+                style: TextStyle(
+                  fontFamily: 'Nunito',
+                  fontSize: 8.5,
+                  fontWeight: FontWeight.w700,
+                  color: color,
+                ),
+                overflow: TextOverflow.ellipsis,
+              ),
+            const SizedBox(height: 3),
+
+            // Botón [+] para agregar 1 ficha en esta columna
+            GestureDetector(
+              onTap: () => _changePlaceDigit(colIdx, 1),
+              child: Container(
+                width: double.infinity,
+                margin: const EdgeInsets.symmetric(horizontal: 3),
+                padding: const EdgeInsets.symmetric(vertical: 2),
+                decoration: BoxDecoration(
+                  color: color.withValues(alpha: 0.16),
+                  borderRadius: BorderRadius.circular(6),
+                ),
+                alignment: Alignment.center,
+                child: Text(
+                  '+',
+                  style: TextStyle(
+                    fontFamily: 'Nunito',
+                    fontSize: compact ? 12 : 13,
+                    fontWeight: FontWeight.w900,
+                    height: 1.0,
+                    color: color,
+                  ),
+                ),
+              ),
+            ),
+            const SizedBox(height: 3),
+
+            // Fichas visuales del ábaco (hasta 9 bolitas de color) + Dígito grande
+            SizedBox(
+              height: compact ? 12 : 16,
+              child: Center(
+                child: digit == 0
+                    ? Text(
+                        'vacío',
+                        style: TextStyle(
+                          fontFamily: 'Nunito',
+                          fontSize: 7.5,
+                          fontWeight: FontWeight.w600,
+                          color: EduPlayColors.textMedium.withValues(alpha: 0.6),
+                        ),
+                      )
+                    : Wrap(
+                        alignment: WrapAlignment.center,
+                        spacing: 1.5,
+                        runSpacing: 1.5,
+                        children: List.generate(
+                          digit,
+                          (_) => Container(
+                            width: compact ? 4.5 : 5.5,
+                            height: compact ? 4.5 : 5.5,
+                            decoration: BoxDecoration(
+                              color: color,
+                              shape: BoxShape.circle,
+                            ),
+                          ),
+                        ),
+                      ),
+              ),
+            ),
+            Text(
+              '$digit',
+              style: TextStyle(
+                fontFamily: 'Nunito',
+                fontSize: compact ? 15 : 17,
+                fontWeight: FontWeight.w900,
+                height: 1.1,
+                color: digit > 0 ? const Color(0xFF1E293B) : EduPlayColors.textMedium,
+              ),
+            ),
+            const SizedBox(height: 2),
+
+            // Botón [−] para quitar 1 ficha de esta columna
+            GestureDetector(
+              onTap: () => _changePlaceDigit(colIdx, -1),
+              child: Container(
+                width: double.infinity,
+                margin: const EdgeInsets.symmetric(horizontal: 3),
+                padding: const EdgeInsets.symmetric(vertical: 2),
+                decoration: BoxDecoration(
+                  color: const Color(0xFFE2E8F0).withValues(alpha: 0.7),
+                  borderRadius: BorderRadius.circular(6),
+                ),
+                alignment: Alignment.center,
+                child: Text(
+                  '−',
+                  style: TextStyle(
+                    fontFamily: 'Nunito',
+                    fontSize: compact ? 12 : 13,
+                    fontWeight: FontWeight.w900,
+                    height: 1.0,
+                    color: EduPlayColors.textDark,
+                  ),
+                ),
+              ),
+            ),
+            const SizedBox(height: 2),
+
+            // Valor posicional real de ese dígito abajo
+            Text(
+              _formatColombianInt(posVal),
+              style: TextStyle(
+                fontFamily: 'Nunito',
+                fontSize: compact ? 8 : 9,
+                fontWeight: FontWeight.w800,
+                color: digit > 0 ? color : EduPlayColors.textMedium,
+              ),
+              overflow: TextOverflow.ellipsis,
+            ),
+          ],
+        ),
+      ),
     );
   }
 
@@ -1489,35 +2003,134 @@ class _ExerciseVisualAidState extends State<ExerciseVisualAid> {
   }
 
   String _contextualTip() {
+    final lower = widget.questionText.toLowerCase();
+
+    return switch (_topic) {
+      _VisualTopic.placeValue => () {
+          if (lower.contains('redondea') || lower.contains('aproximadamente')) {
+            return '¡El truco del tobogán! 🛝 Mira el número vecino de la derecha: si es 5 o más (5, 6, 7, 8, 9), sube al siguiente escalón; si es menor que 5, se queda igual.';
+          }
+          if (lower.contains('mayor') ||
+              lower.contains('menor') ||
+              lower.contains('símbolo') ||
+              lower.contains('habitantes')) {
+            return '¡Usa el truco del cocodrilo hambriento! 🐊 Compara casilla por casilla desde la izquierda. Recuerda que la boca abierta (>) siempre se come al número más grande.';
+          }
+          if (lower.contains('dígito') || lower.contains('digito')) {
+            return '¡Juguemos al detective! 🕵️ Busca ese número en las casillas de arriba: el nombre de su casilla te dice cuánto vale y cuántos ceros lleva al final.';
+          }
+          return '¡Cada casilla es un equipo! 🧮 10 Unidades forman 1 Decena (10), y 10 Decenas forman 1 Centena (100). ¡Usa los botones + y − para armar el número!';
+        }(),
+      _VisualTopic.fraction => () {
+          if (lower.contains('equivalente')) {
+            return '¡Dos fracciones son gemelas (equivalentes) si pintan exactamente el mismo tamaño de pizza, aunque esté cortada en más pedacitos! 🍕';
+          }
+          return '¡Imagina una rica pizza! 🍕 El número de abajo cuenta en cuántos pedazos iguales se partió toda la pizza, y el de arriba cuántos pedazos tomaste.';
+        }(),
+      _VisualTopic.clock =>
+        '¡El secreto de las agujas! ⏰ La aguja cortita es tranquila y dice la HORA. La aguja larga es rápida y cuenta los MINUTOS de 5 en 5 alrededor del reloj.',
+      _VisualTopic.angle =>
+        '¡Haz el ángulo con tus brazos! 💪 Como la esquina de tu cuaderno = 90° (recto). Más cerradito = agudo (< 90°). Muy abierto = obtuso (> 90°).',
+      _VisualTopic.circle =>
+        '¡Piensa en una rueda de bicicleta! 🚲 Un rayo del centro al borde es el RADIO. Si cruzas todo el círculo pasando por el centro es el DIÁMETRO (¡mide 2 radios!).',
+      _VisualTopic.solid3D =>
+        '¡Imagina que llenas una caja con cubitos de armar! 🧱 Para saber cuántos cubitos caben adentro sin contarlos uno por uno, multiplica: largo × ancho × alto.',
+      _VisualTopic.polygonAreaPerimeter => () {
+          if (lower.contains('perímetro') || lower.contains('perimetro')) {
+            return '¡El PERÍMETRO es como la cerca que rodea un jardín! 🏡 Solo tienes que caminar por todo el borde y sumar lo que miden todos sus lados.';
+          }
+          if (lower.contains('área') || lower.contains('area')) {
+            return '¡El ÁREA es el pasto que cubre el piso por dentro! 🌱 Cuenta cuántos cuadritos caben adentro multiplicando el largo por el ancho.';
+          }
+          return '¡Cuenta con tu dedito las esquinas (vértices) y los bordes rectos (lados) de la figura! 📐';
+        }(),
+      _VisualTopic.cartesian =>
+        '¡Primero caminas y luego subes en ascensor! 🚀 El primer número te dice cuántos pasos das a la derecha (→) y el segundo cuántos pisos subes (↑).',
+      _VisualTopic.statistics => () {
+          if (lower.contains('moda')) {
+            return '¡La MODA es el campeón que más se repite! 🏆 Mira en la gráfica cuál es la barra más alta de todas.';
+          }
+          if (lower.contains('mediana')) {
+            return '¡Haz una fila del más pequeño al más grande! 🧍‍♂️🧍‍♀️ El número que quede justo en toda la mitad de la fila es la MEDIANA.';
+          }
+          if (lower.contains('promedio') || lower.contains('media')) {
+            return '¡El PROMEDIO es repartir en partes iguales! 🤝 Suma todos los puntos y luego divídelo entre la cantidad de datos.';
+          }
+          if (lower.contains('probabilidad') ||
+              lower.contains('dado') ||
+              lower.contains('moneda') ||
+              lower.contains('bolas')) {
+            return '¡Cuenta tus oportunidades de ganar! 🎲 Pon arriba cuántas opciones te sirven a ti y abajo el total de opciones que existen.';
+          }
+          return '¡Toca cada barra de colores para comparar! 📊 Entre más alta sea la barra, mayor es la cantidad.';
+        }(),
+      _VisualTopic.measurement =>
+        '¡Palabra mágica! ✨ "Kilo" significa MIL (1 km = 1.000 m, 1 kg = 1.000 g) y "Centi" significa CIEN (1 metro tiene 100 centímetros).',
+      _VisualTopic.percentDecimalMoney => () {
+          if (lower.contains('descuento')) {
+            return '¡Un descuento es plata que te ahorras! 🏷️ Primero calcula esa parte del precio y luego réstala de lo que costaba antes.';
+          }
+          return '¡Piensa en 100 moneditas! 🪙 50% es exactamente la mitad (÷ 2), 25% es la cuarta parte (÷ 4) y 10% es quitar un cero.';
+        }(),
+      _VisualTopic.algebra =>
+        '¡La letra x es un número misterioso con antifaz! 🎭 Como la balanza está en equilibrio, descúbrelo haciendo la operación contraria (si suma, resta; si multiplica, divide).',
+      _VisualTopic.numberLineSequence =>
+        '¡Salta como una ranita en la recta! 🐸 Cuando sumas o sube el calor vas a la derecha (+); cuando restas o hace frío bajo cero vas a la izquierda (−).',
+      _VisualTopic.arithmetic => () {
+          if (widget.questionText.contains('×') ||
+              lower.contains('por ') ||
+              lower.contains('cada') ||
+              lower.contains('veces')) {
+            return '¡Multiplicar es sumar rápido el mismo grupo varias veces! ⚡ Si un número termina en 0, multiplica los demás y ponle el 0 al final.';
+          }
+          if (widget.questionText.contains('÷') ||
+              lower.contains('repart') ||
+              lower.contains('divid')) {
+            return '¡Dividir es repartir dulces en partes iguales! 🍬 Pregúntate: ¿qué número multiplicado por el divisor me da el total?';
+          }
+          if (widget.questionText.contains('-') ||
+              lower.contains('resta') ||
+              lower.contains('queda') ||
+              lower.contains('menos') ||
+              lower.contains('diferencia')) {
+            return '¡Para restar sin equivocarte, empieza por las unidades! 🎯 También puedes contar cuánto le falta al número pequeño para alcanzar al grande.';
+          }
+          return '¡Suma primero las unidades y luego las decenas! 🌟 Si las unidades pasan de 9, formas 1 decena nueva y la llevas a la siguiente columna.';
+        }(),
+    };
+  }
+
+  String _kidFriendlyExtraTip() {
+    final totalNum = _currentPlaceNumber();
     return switch (_topic) {
       _VisualTopic.placeValue =>
-        'Toca cada casilla del tablero (M, CM, DM, UM, C, D, U): cada posición a la izquierda multiplica su valor por 10.',
+        'Usa los botones + y − del ábaco arriba: cada ficha en C vale 100, en D vale 10 y en U vale 1. Ahora mismo tienes armado el ${_formatColombianInt(totalNum)}. ¡Prueba cambiar las fichas!',
       _VisualTopic.fraction =>
-        'Toca las partes de la barra o la pizza: el denominador indica el total de partes iguales y el numerador las seleccionadas.',
+        'Toca los pedazos de la pizza o de la barra azul arriba hasta pintar $_activeSlices de $_totalSlices partes y compáralo con las opciones.',
       _VisualTopic.clock =>
-        'Usa los botones +15 min, +30 min y +1 hora en el reloj para comprobar a qué hora llega el minutero.',
+        'Toca el botón "+15 min" o "+30 min" en el reloj de arriba y mira a qué número apunta cada manecilla.',
       _VisualTopic.angle =>
-        'Toca los botones de grados en el transportador: 90° es recto, menor de 90° es agudo y mayor de 90° es obtuso.',
+        'Toca los botones 45°, 90°, 130° y 180° arriba para ver cómo se abre el abanico amarillo en el transportador.',
       _VisualTopic.circle =>
-        'Toca el círculo para alternar entre radio (r) y diámetro (d = 2 × r). Para la circunferencia multiplica por π ≈ 3,14.',
+        'Toca "Ver Radio (r)" y "Ver Diámetro (2r)" arriba: verás que el diámetro es el doble del radio. Para el borde completo multiplica el diámetro por 3,14.',
       _VisualTopic.solid3D =>
-        'El volumen cuenta cuántos cubos de 1 cm³ caben adentro: multiplica largo × ancho × alto.',
+        'Toca el cubo 3D arriba para ver la multiplicación de sus 3 medidas (largo × ancho × alto) o contar sus 6 caras y 8 esquinas.',
       _VisualTopic.polygonAreaPerimeter =>
-        'Alterna entre Área (cuadros interiores = base × altura) y Perímetro (suma de todos los lados del borde).',
+        'Toca los botones "Ver Área (interior)" y "Ver Perímetro (borde)" arriba para ver la fórmula resuelta con los números de tu ejercicio.',
       _VisualTopic.cartesian =>
-        'Toca cualquier punto del plano: primero cuenta hacia la derecha en el eje X y luego hacia arriba en el eje Y.',
+        'Toca la cuadrícula del mapa arriba para mover el punto rojo y ver cómo cambian los números (X horizontal, Y vertical).',
       _VisualTopic.statistics =>
-        'Toca cada barra para comparar cantidades. La barra más alta representa la moda (el dato más frecuente).',
+        'Toca cada barra de la gráfica arriba: la barra dorada te muestra enseguida el valor más alto.',
       _VisualTopic.measurement =>
-        'Toca las fichas de equivalencia para recordar cuántas unidades pequeñas caben en una grande.',
+        'Toca los botones de equivalencia arriba: si pasas de una medida grande a una pequeña multiplicas; de pequeña a grande divides.',
       _VisualTopic.percentDecimalMoney =>
-        'Toca los 10 bloques: cada bloque representa 10% (o 0,1). 5 bloques son 50% (la mitad).',
+        'Toca los 10 bloquecitos verdes arriba: cada bloque vale 10% (o 0,1). ¡Cuenta cuántos bloques necesitas!',
       _VisualTopic.algebra =>
-        'Pulsa "Despejar x": para mantener la balanza en equilibrio, haz la operación inversa en ambos lados.',
+        'Toca el botón "Despejar x" arriba: si a la x le suman un número, réstalo; si la multiplican por un número, divide entre ese número.',
       _VisualTopic.numberLineSequence =>
-        'Usa los botones de avanzar (+) y retroceder (−) en la recta para contar los saltos entre números.',
+        'Usa los botones "← Retroceder" y "Avanzar →" arriba para dar saltos de 1 en 1 y ver a qué número llegas.',
       _VisualTopic.arithmetic =>
-        'Pulsa "Ver estrategia" para descomponer la operación con los números exactos del problema.',
+        'Toca el botón "Ver estrategia" arriba a la derecha para ver cómo partir los números del problema en pasos súper fáciles.',
     };
   }
 }

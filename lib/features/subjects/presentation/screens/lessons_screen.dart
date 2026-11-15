@@ -10,7 +10,10 @@ import 'package:go_router/go_router.dart';
 
 import '../../../../../core/providers/lesson_progress_provider.dart';
 import '../../../../../core/theme/app_theme.dart';
+import '../../../../../shared/widgets/lumi_lion_mascot.dart';
+import '../../../../../shared/widgets/playful_world_background.dart';
 import '../../../lesson/data/curriculum_data.dart';
+import '../widgets/unit_prep_zone.dart';
 
 // ─── Layout constants ──────────────────────────────────────────────
 const double _bubbleH   = 52.0;
@@ -34,24 +37,56 @@ List<Offset> _nodePositions(double width, int count) {
 }
 
 // ─── Screen ────────────────────────────────────────────────────────
-class LessonsScreen extends ConsumerWidget {
+class LessonsScreen extends ConsumerStatefulWidget {
   final String unitId;
-  const LessonsScreen({super.key, required this.unitId});
+  final bool initialPrepZone;
+
+  const LessonsScreen({
+    super.key,
+    required this.unitId,
+    this.initialPrepZone = false,
+  });
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<LessonsScreen> createState() => _LessonsScreenState();
+}
+
+class _LessonsScreenState extends ConsumerState<LessonsScreen> {
+  late bool _inPrepZone;
+  int _selectedPrepLessonIdx = 0;
+
+  @override
+  void initState() {
+    super.initState();
+    _inPrepZone = widget.initialPrepZone;
+  }
+
+  @override
+  void didUpdateWidget(covariant LessonsScreen oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.unitId != widget.unitId ||
+        oldWidget.initialPrepZone != widget.initialPrepZone) {
+      _inPrepZone = widget.initialPrepZone;
+      _selectedPrepLessonIdx = 0;
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final completed = ref.watch(lessonProgressProvider);
-    final lessons = CurriculumData.getLessonsForUnit(unitId);
-    final unitTitle = CurriculumData.unitTitles[unitId] ?? 'Lecciones';
-    final unitDesc = CurriculumData.unitDescriptions[unitId] ?? 'Matemáticas';
+    final lessons = CurriculumData.getLessonsForUnit(widget.unitId);
+    final unitTitle = CurriculumData.unitTitles[widget.unitId] ?? 'Lecciones';
+    final unitDesc =
+        CurriculumData.unitDescriptions[widget.unitId] ?? 'Matemáticas';
 
     final completedInUnit =
         completed.intersection(lessons.map((l) => l.id).toSet()).length;
-    final isUnitComplete = lessons.isNotEmpty && completedInUnit >= lessons.length;
+    final isUnitComplete =
+        lessons.isNotEmpty && completedInUnit >= lessons.length;
 
     return Scaffold(
       backgroundColor: const Color(0xFF1CB0F6),
-      bottomSheet: isUnitComplete
+      bottomSheet: (!_inPrepZone && isUnitComplete)
           ? _UnitCompleteBanner(onContinue: () {
               if (context.canPop()) {
                 context.pop();
@@ -69,8 +104,9 @@ class LessonsScreen extends ConsumerWidget {
             elevation: 0,
             leading: IconButton(
               icon: const Icon(Icons.arrow_back_ios_rounded, color: Colors.white),
-              onPressed: () =>
-                  context.canPop() ? context.pop() : context.go('/subjects/math/units'),
+              onPressed: () => context.canPop()
+                  ? context.pop()
+                  : context.go('/subjects/math/units'),
             ),
             title: Text(
               unitTitle,
@@ -82,71 +118,239 @@ class LessonsScreen extends ConsumerWidget {
               ),
             ),
             bottom: PreferredSize(
-              preferredSize: const Size.fromHeight(52),
-              child: _UnitInfoBar(
-                description: unitDesc,
-                completed: completed,
-                lessons: lessons,
+              preferredSize: const Size.fromHeight(98),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  _UnitInfoBar(
+                    description: unitDesc,
+                    completed: completed,
+                    lessons: lessons,
+                  ),
+                  // Selector de las dos zonas: Preparación vs Ejercicios
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(16, 0, 16, 10),
+                    child: Container(
+                      padding: const EdgeInsets.all(4),
+                      decoration: BoxDecoration(
+                        color: Colors.black.withValues(alpha: 0.16),
+                        borderRadius: BorderRadius.circular(16),
+                      ),
+                      child: Row(
+                        children: [
+                          Expanded(
+                            child: GestureDetector(
+                              onTap: () => setState(() => _inPrepZone = true),
+                              child: AnimatedContainer(
+                                duration: const Duration(milliseconds: 200),
+                                padding: const EdgeInsets.symmetric(vertical: 8),
+                                decoration: BoxDecoration(
+                                  color: _inPrepZone
+                                      ? Colors.white
+                                      : Colors.transparent,
+                                  borderRadius: BorderRadius.circular(12),
+                                ),
+                                alignment: Alignment.center,
+                                child: Text(
+                                  '📖 Zona de Preparación',
+                                  style: TextStyle(
+                                    fontFamily: 'Nunito',
+                                    fontSize: 13,
+                                    fontWeight: FontWeight.w900,
+                                    color: _inPrepZone
+                                        ? const Color(0xFF1E3A8A)
+                                        : Colors.white,
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ),
+                          Expanded(
+                            child: GestureDetector(
+                              onTap: () => setState(() => _inPrepZone = false),
+                              child: AnimatedContainer(
+                                duration: const Duration(milliseconds: 200),
+                                padding: const EdgeInsets.symmetric(vertical: 8),
+                                decoration: BoxDecoration(
+                                  color: !_inPrepZone
+                                      ? Colors.white
+                                      : Colors.transparent,
+                                  borderRadius: BorderRadius.circular(12),
+                                ),
+                                alignment: Alignment.center,
+                                child: Text(
+                                  '🎯 Zona de Ejercicios (${lessons.length})',
+                                  style: TextStyle(
+                                    fontFamily: 'Nunito',
+                                    fontSize: 13,
+                                    fontWeight: FontWeight.w900,
+                                    color: !_inPrepZone
+                                        ? const Color(0xFF1E3A8A)
+                                        : Colors.white,
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ],
               ),
             ),
           ),
-          SliverToBoxAdapter(
-            child: LayoutBuilder(
-              builder: (_, constraints) {
-                final w = constraints.maxWidth;
-                final positions = _nodePositions(w, lessons.length);
-                final h = _totalHeight(lessons.length);
+          if (_inPrepZone)
+            SliverToBoxAdapter(
+              child: UnitPrepZone(
+                unitId: widget.unitId,
+                initialLessonIdx: _selectedPrepLessonIdx,
+                onStartExercises: () => setState(() => _inPrepZone = false),
+              ),
+            )
+          else
+            SliverToBoxAdapter(
+              child: LayoutBuilder(
+                builder: (_, constraints) {
+                  final w = constraints.maxWidth;
+                  final positions = _nodePositions(w, lessons.length);
+                  final h = _totalHeight(lessons.length);
 
-                return Container(
-                  height: h,
-                  decoration: const BoxDecoration(
-                    color: Color(0xFFF0F9FF),
-                    borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
-                  ),
-                  child: Stack(
-                    clipBehavior: Clip.none,
-                    children: [
-                      CustomPaint(
-                        size: Size(w, h),
-                        painter: _PathPainter(
-                          positions: positions,
-                          completed: completed,
-                          lessons: lessons,
-                        ),
-                      ),
-                      ...List.generate(lessons.length, (i) {
-                        final lesson = lessons[i];
-                        final isCompleted = completed.contains(lesson.id);
-                        final isLocked = i > 0 && !completed.contains(lessons[i - 1].id);
-                        final isCurrent = !isCompleted && !isLocked;
-
-                        return Positioned(
-                          left: positions[i].dx - _nodeW / 2,
-                          top: positions[i].dy - _nodeR - (isCurrent ? _bubbleH : 0),
-                          child: SizedBox(
-                            width: _nodeW,
-                            child: _LessonNode(
-                              lesson: lesson,
-                              isCompleted: isCompleted,
-                              isLocked: isLocked,
-                              isCurrent: isCurrent,
-                            )
-                                .animate(delay: Duration(milliseconds: i * 100))
-                                .fadeIn(duration: 350.ms)
-                                .scale(
-                                  begin: const Offset(0.85, 0.85),
-                                  end: const Offset(1, 1),
-                                  duration: 350.ms,
-                                ),
+                  return ClipRRect(
+                    borderRadius:
+                        const BorderRadius.vertical(top: Radius.circular(28)),
+                    child: Stack(
+                      children: [
+                        Positioned.fill(
+                          child: CustomPaint(
+                            painter: AdventureMapLandscapePainter(
+                              nodeCount: lessons.length,
+                            ),
                           ),
-                        );
-                      }),
+                        ),
+                        Column(
+                          children: [
+                        // Tarjeta rápida para ir a prepararse con Lumi antes de los ejercicios
+                        Padding(
+                          padding: const EdgeInsets.fromLTRB(18, 16, 18, 0),
+                          child: GestureDetector(
+                            onTap: () => setState(() => _inPrepZone = true),
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 14,
+                                vertical: 10,
+                              ),
+                              decoration: BoxDecoration(
+                                gradient: const LinearGradient(
+                                  colors: [Color(0xFFFFFBEB), Color(0xFFFEF3C7)],
+                                ),
+                                borderRadius: BorderRadius.circular(16),
+                                border: Border.all(
+                                  color: const Color(0xFFF59E0B),
+                                  width: 1.5,
+                                ),
+                              ),
+                              child: const Row(
+                                children: [
+                                  LumiLionMascot(size: 46, expressionVariant: 1),
+                                  SizedBox(width: 10),
+                                  Expanded(
+                                    child: Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        Text(
+                                          '🦁 ¿Quieres repasar el temario con Lumi antes de jugar?',
+                                          style: TextStyle(
+                                            fontFamily: 'Nunito',
+                                            fontSize: 13,
+                                            fontWeight: FontWeight.w900,
+                                            color: Color(0xFF92400E),
+                                          ),
+                                        ),
+                                        Text(
+                                          'Toca aquí para jugar con Lumi el Leoncito, tablitas y la Mesa Interactiva',
+                                          style: TextStyle(
+                                            fontFamily: 'Nunito',
+                                            fontSize: 11.5,
+                                            fontWeight: FontWeight.w700,
+                                            color: Color(0xFFB45309),
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                  Icon(
+                                    Icons.arrow_forward_ios_rounded,
+                                    size: 15,
+                                    color: Color(0xFFB45309),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                        ),
+                        SizedBox(
+                          height: h,
+                          child: Stack(
+                            clipBehavior: Clip.none,
+                            children: [
+                              CustomPaint(
+                                size: Size(w, h),
+                                painter: _PathPainter(
+                                  positions: positions,
+                                  completed: completed,
+                                  lessons: lessons,
+                                ),
+                              ),
+                              ...List.generate(lessons.length, (i) {
+                                final lesson = lessons[i];
+                                final isCompleted =
+                                    completed.contains(lesson.id);
+                                final isLocked = i > 0 &&
+                                    !completed.contains(lessons[i - 1].id);
+                                final isCurrent = !isCompleted && !isLocked;
+
+                                return Positioned(
+                                  left: positions[i].dx - _nodeW / 2,
+                                  top: positions[i].dy -
+                                      _nodeR -
+                                      (isCurrent ? _bubbleH : 0),
+                                  child: SizedBox(
+                                    width: _nodeW,
+                                    child: _LessonNode(
+                                      lesson: lesson,
+                                      isCompleted: isCompleted,
+                                      isLocked: isLocked,
+                                      isCurrent: isCurrent,
+                                      onOpenPrep: () => setState(() {
+                                        _selectedPrepLessonIdx = i;
+                                        _inPrepZone = true;
+                                      }),
+                                    )
+                                        .animate(
+                                          delay: Duration(milliseconds: i * 100),
+                                        )
+                                        .fadeIn(duration: 350.ms)
+                                        .scale(
+                                          begin: const Offset(0.85, 0.85),
+                                          end: const Offset(1, 1),
+                                          duration: 350.ms,
+                                        ),
+                                  ),
+                                );
+                              }),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
                     ],
-                  ),
-                );
-              },
+                    ),
+                  );
+                },
+              ),
             ),
-          ),
         ],
       ),
     );
@@ -282,12 +486,14 @@ class _LessonNode extends StatelessWidget {
   final bool isCompleted;
   final bool isLocked;
   final bool isCurrent;
+  final VoidCallback onOpenPrep;
 
   const _LessonNode({
     required this.lesson,
     required this.isCompleted,
     required this.isLocked,
     required this.isCurrent,
+    required this.onOpenPrep,
   });
 
   Color get _circleColor => isCompleted
@@ -394,6 +600,27 @@ class _LessonNode extends StatelessWidget {
               ),
             ),
           ],
+          const SizedBox(height: 4),
+          GestureDetector(
+            onTap: onOpenPrep,
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+              decoration: BoxDecoration(
+                color: const Color(0xFFEDE9FE),
+                borderRadius: BorderRadius.circular(10),
+                border: Border.all(color: const Color(0xFF8B5CF6)),
+              ),
+              child: const Text(
+                '📖 Explicación',
+                style: TextStyle(
+                  fontSize: 9.5,
+                  fontWeight: FontWeight.w900,
+                  fontFamily: 'Nunito',
+                  color: Color(0xFF5B21B6),
+                ),
+              ),
+            ),
+          ),
         ],
       ),
     );
@@ -438,15 +665,21 @@ class _BouncingBadge extends StatelessWidget {
               ),
             ],
           ),
-          child: const Text(
-            '¡JUGAR!',
-            style: TextStyle(
-              fontSize: 12,
-              fontWeight: FontWeight.w900,
-              color: Colors.white,
-              fontFamily: 'Nunito',
-              letterSpacing: 0.8,
-            ),
+          child: const Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text('🦁 ', style: TextStyle(fontSize: 12)),
+              Text(
+                '¡JUGAR!',
+                style: TextStyle(
+                  fontSize: 12,
+                  fontWeight: FontWeight.w900,
+                  color: Colors.white,
+                  fontFamily: 'Nunito',
+                  letterSpacing: 0.8,
+                ),
+              ),
+            ],
           ),
         ),
         const CustomPaint(

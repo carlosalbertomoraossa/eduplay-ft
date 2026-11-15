@@ -10,6 +10,7 @@ import 'package:go_router/go_router.dart';
 import '../../../../../core/providers/lesson_progress_provider.dart';
 import '../../../../../core/theme/app_theme.dart';
 import '../../../../../shared/widgets/ep_button.dart';
+import '../../../../../shared/widgets/lumi_lion_mascot.dart';
 import '../../data/curriculum_data.dart';
 import '../../domain/entities/lesson.dart';
 
@@ -35,9 +36,12 @@ class LessonResultScreen extends ConsumerWidget {
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Text(
-                      passed ? '🏆' : '💪',
-                      style: const TextStyle(fontSize: 96),
+                    LumiLionMascot(
+                      size: 112,
+                      expressionVariant: passed ? 1 : 0,
+                      accentColor: passed
+                          ? EduPlayColors.successGreen
+                          : EduPlayColors.primaryBlue,
                     )
                         .animate()
                         .scale(

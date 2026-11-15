@@ -15,7 +15,7 @@ const Map<String, Lesson> grade4Lessons = {
       exercises: [
         Exercise(
           id: 'l401-e1', orderNum: 1, type: ExerciseType.multipleChoice,
-          hint: 'El numerador es las partes que tomaste, el denominador las partes totales',
+          hint: '¡Imagina una pizza! 🍕 Arriba van los pedazos que tomaste y abajo el total de pedazos iguales',
           content: {
             'question': 'Si divides una pizza en 4 partes iguales y comes 1, ¿qué fracción comiste?',
             'options': ['1/2', '1/4', '1/3', '2/4'],
@@ -2133,7 +2133,7 @@ const Map<String, Lesson> grade4Lessons = {
       exercises: [
         Exercise(
           id: 'l439-e1', orderNum: 1, type: ExerciseType.multipleChoice,
-          hint: 'Probabilidad = casos favorables / total de casos posibles',
+          hint: '¡Cuenta las opciones que te sirven (arriba) y el total de caras que pueden salir (abajo)! 🪙',
           content: {
             'question': '¿Cuál es la probabilidad en fracción de sacar "cara" al lanzar una moneda?',
             'options': ['1/2', '1/4', '1/6', '2/1'],

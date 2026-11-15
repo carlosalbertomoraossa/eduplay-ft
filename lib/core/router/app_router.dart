@@ -112,6 +112,7 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         path: '/subjects/:unit_id/lessons',
         builder: (_, state) => LessonsScreen(
           unitId: state.pathParameters['unit_id']!,
+          initialPrepZone: state.uri.queryParameters['zone'] == 'prep',
         ),
       ),
       GoRoute(

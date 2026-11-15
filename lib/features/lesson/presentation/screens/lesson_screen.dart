@@ -11,11 +11,14 @@ import '../../../../../core/di/injection.dart';
 import '../../../../../core/theme/app_theme.dart';
 import '../../../../../shared/widgets/ep_button.dart';
 import '../../../../../shared/widgets/heart_indicator.dart';
+import '../../../../../shared/widgets/lumi_lion_mascot.dart';
+import '../../../../../shared/widgets/playful_world_background.dart';
 import '../../domain/entities/lesson.dart';
 import '../bloc/lesson_bloc.dart';
 import '../widgets/exercise_multiple_choice.dart';
 import '../widgets/exercise_fill_blank.dart';
 import '../widgets/exercise_drag_drop.dart';
+import '../../../subjects/presentation/widgets/unit_prep_zone.dart';
 
 class LessonScreen extends StatelessWidget {
   final String lessonId;
@@ -80,9 +83,11 @@ class _InProgressView extends StatelessWidget {
 
     return Scaffold(
       backgroundColor: EduPlayColors.backgroundLight,
-      body: SafeArea(
-        child: Column(
-          children: [
+      body: PlayfulWorldBackground(
+        theme: PlayfulWorldTheme.magicForest,
+        child: SafeArea(
+          child: Column(
+            children: [
             // Header: progreso y corazones
             Padding(
               padding: const EdgeInsets.fromLTRB(16, 12, 16, 0),
@@ -129,16 +134,54 @@ class _InProgressView extends StatelessWidget {
               ),
             ),
 
-            // Contador de ejercicios
+            // Contador de ejercicios + Botón para abrir la Explicación Interactiva
             Padding(
-              padding: const EdgeInsets.symmetric(vertical: 8),
-              child: Text(
-                '$current de $total',
-                style: const TextStyle(
-                  fontSize: 14,
-                  color: EduPlayColors.textMedium,
-                  fontFamily: 'Nunito',
-                ),
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    '$current de $total',
+                    style: const TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w700,
+                      color: EduPlayColors.textMedium,
+                      fontFamily: 'Nunito',
+                    ),
+                  ),
+                  GestureDetector(
+                    onTap: () =>
+                        _openInteractiveExplanationSheet(context, state.lesson),
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 12,
+                        vertical: 5,
+                      ),
+                      decoration: BoxDecoration(
+                        gradient: const LinearGradient(
+                          colors: [Color(0xFF7C3AED), Color(0xFF2563EB)],
+                        ),
+                        borderRadius: BorderRadius.circular(14),
+                      ),
+                      child: const Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Text('🕹️', style: TextStyle(fontSize: 13)),
+                          SizedBox(width: 5),
+                          Text(
+                            'Explicación Interactiva (Completar · Armar · Buscar)',
+                            style: TextStyle(
+                              fontFamily: 'Nunito',
+                              fontSize: 11.5,
+                              fontWeight: FontWeight.w900,
+                              color: Colors.white,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ],
               ),
             ),
 
@@ -150,6 +193,34 @@ class _InProgressView extends StatelessWidget {
                   .slideX(begin: 0.05, end: 0),
             ),
           ],
+        ),
+      ),
+      ),
+    );
+  }
+
+  void _openInteractiveExplanationSheet(BuildContext context, Lesson lesson) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (ctx) => DraggableScrollableSheet(
+        initialChildSize: 0.88,
+        minChildSize: 0.5,
+        maxChildSize: 0.95,
+        builder: (_, scrollController) => Container(
+          decoration: const BoxDecoration(
+            color: Color(0xFFF0F9FF),
+            borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
+          ),
+          child: SingleChildScrollView(
+            controller: scrollController,
+            child: UnitPrepZone(
+              unitId: lesson.unitId,
+              initialLessonIdx: (lesson.orderNum - 1).clamp(0, 4),
+              onStartExercises: () => Navigator.of(ctx).pop(),
+            ),
+          ),
         ),
       ),
     );
@@ -309,7 +380,10 @@ class _FailedView extends StatelessWidget {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              const Text('💪', style: TextStyle(fontSize: 80))
+              const LumiLionMascot(
+                size: 112,
+                expressionVariant: 1,
+              )
                   .animate()
                   .scale(duration: 500.ms, curve: Curves.elasticOut),
 
@@ -331,7 +405,7 @@ class _FailedView extends StatelessWidget {
               const SizedBox(height: 12),
 
               const Text(
-                'Lumi dice: "¡Practiquemos\njuntos de nuevo!"',
+                '🦁 Lumi el Leoncito dice:\n"¡Practiquemos juntos de nuevo!"',
                 textAlign: TextAlign.center,
                 style: TextStyle(
                   fontSize: 18,

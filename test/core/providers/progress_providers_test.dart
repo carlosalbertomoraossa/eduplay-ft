@@ -1,6 +1,8 @@
 import 'package:edplay_ft/core/providers/game_progress_provider.dart';
 import 'package:edplay_ft/core/providers/lesson_progress_provider.dart';
 import 'package:edplay_ft/features/lesson/presentation/widgets/exercise_visual_aid.dart';
+import 'package:edplay_ft/features/subjects/presentation/widgets/unit_prep_zone.dart';
+import 'package:edplay_ft/shared/widgets/lumi_lion_mascot.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -69,6 +71,141 @@ void main() {
       expect(find.byType(CustomPaint), findsWidgets);
       expect(find.textContaining('Tip:'), findsOneWidget);
       expect(find.textContaining('Divide en 4 partes y toma 3'), findsOneWidget);
+    });
+
+    testWidgets('Tablero Posicional interactivo permite sumar/restar fichas y alternar truco extra',
+        (tester) async {
+      await tester.pumpWidget(
+        const MaterialApp(
+          home: Scaffold(
+            body: ExerciseVisualAid(
+              questionText: 'En el número 537, ¿cuánto vale el dígito 5?',
+              options: ['5', '50', '500', '5.000'],
+            ),
+          ),
+        ),
+      );
+
+      // Carga el número 537 en la tabla posicional y muestra la suma descompuesta
+      expect(find.textContaining('Número: 537'), findsOneWidget);
+      expect(find.textContaining('500'), findsWidgets);
+
+      // Tocar el botón '+' de la primera columna (Centenas) sube 537 → 637
+      await tester.tap(find.text('+').first);
+      await tester.pumpAndSettle();
+      expect(find.textContaining('Número: 637'), findsOneWidget);
+
+      // Tocar '✨ Otro truco' muestra el súper tip interactivo
+      await tester.tap(find.textContaining('Otro truco'));
+      await tester.pumpAndSettle();
+      expect(find.textContaining('Súper Tip:'), findsOneWidget);
+    });
+
+    testWidgets('UnitPrepZone muestra muñeco animado, temario, mesa interactiva y tablita',
+        (tester) async {
+      bool started = false;
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Scaffold(
+            body: SingleChildScrollView(
+              child: UnitPrepZone(
+                unitId: 'unit-201',
+                onStartExercises: () => started = true,
+              ),
+            ),
+          ),
+        ),
+      );
+      await tester.pump(const Duration(milliseconds: 500));
+
+      expect(find.byType(LumiLionMascot), findsWidgets);
+      expect(find.textContaining('Lumi el Leoncito Constructor'), findsOneWidget);
+      expect(find.textContaining('Mesa Interactiva: ¡Arrastra y acomoda!'), findsOneWidget);
+      expect(find.textContaining('Tablita Mágica'), findsOneWidget);
+
+      // Acomodar piezas en la Mesa Interactiva actualiza el contador en vivo
+      await tester.ensureVisible(find.text('Acomodar todo'));
+      await tester.pump();
+      await tester.tap(find.text('Acomodar todo'));
+      await tester.pump(const Duration(milliseconds: 300));
+      expect(find.textContaining('¡Acomodaste'), findsOneWidget);
+
+      // Pasar a la Zona de Ejercicios
+      await tester.ensureVisible(
+        find.text('¡Ya estoy listo! Ir a la Zona de Ejercicios'),
+      );
+      await tester.tap(find.text('¡Ya estoy listo! Ir a la Zona de Ejercicios'));
+      await tester.pump();
+      expect(started, isTrue);
+    });
+
+    testWidgets(
+        'Temario súper interactivo permite voltear tarjetas mágicas, usar laboratorio en vivo y practicar en el mini-reto',
+        (tester) async {
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Scaffold(
+            body: SingleChildScrollView(
+              child: UnitPrepZone(
+                unitId: 'unit-401', // Fracciones en Grado 4°
+                onStartExercises: () {},
+              ),
+            ),
+          ),
+        ),
+      );
+      await tester.pump(const Duration(milliseconds: 500));
+
+      // Verifica el Laboratorio en Vivo de fracciones (barra interactiva + equivalencias)
+      expect(find.textContaining('¡Laboratorio en Vivo de'), findsOneWidget);
+      expect(find.textContaining('Porcentaje:'), findsWidgets);
+
+      // Tocar '3️⃣ Truco Secreto' revela el secreto de Lumi
+      await tester.ensureVisible(find.text('3️⃣ Truco Secreto'));
+      await tester.pump();
+      await tester.tap(find.text('3️⃣ Truco Secreto'));
+      await tester.pump(const Duration(milliseconds: 250));
+      expect(find.textContaining('¡Súper Secreto de Lumi'), findsOneWidget);
+
+      // Voltear la primera Tarjeta Mágica Giratoria
+      expect(find.textContaining('Misterio #1:'), findsOneWidget);
+      await tester.ensureVisible(find.textContaining('Misterio #1:'));
+      await tester.pump();
+      await tester.tap(find.textContaining('Misterio #1:'));
+      await tester.pump(const Duration(milliseconds: 250));
+      expect(find.textContaining('✨ Respuesta:'), findsOneWidget);
+
+      // Cambiar de pregunta en el Mini-Reto de Entrenamiento
+      expect(find.textContaining('Mini-Reto de Entrenamiento (1/'), findsOneWidget);
+      await tester.ensureVisible(find.text('🔄 Otra pregunta de este tema →'));
+      await tester.pump();
+      await tester.tap(find.text('🔄 Otra pregunta de este tema →'));
+      await tester.pump(const Duration(milliseconds: 250));
+      expect(find.textContaining('Mini-Reto de Entrenamiento (2/'), findsOneWidget);
+
+      // Probar los 3 juegos de la explicación: 1. Completar, 2. Armar y 3. Buscar
+      await tester.ensureVisible(find.text('🪄 Completar con Lumi'));
+      await tester.pump();
+      await tester.tap(find.text('🪄 Completar con Lumi'));
+      await tester.pump(const Duration(milliseconds: 250));
+      expect(
+        find.textContaining('¡Genial! Completaste toda la explicación jugando'),
+        findsOneWidget,
+      );
+
+      // Cambiar al modo '🏗️ 2. Armar' y agregar una pieza al lienzo constructor
+      await tester.ensureVisible(find.text('🏗️ 2. Armar'));
+      await tester.pump();
+      await tester.tap(find.text('🏗️ 2. Armar'));
+      await tester.pump(const Duration(milliseconds: 250));
+      expect(find.textContaining('¡Arma un pedido del'), findsOneWidget);
+
+      // Cambiar al modo '🔍 3. Buscar' e investigar fichas con la lupa
+      await tester.ensureVisible(find.text('🔍 3. Buscar'));
+      await tester.pump();
+      await tester.tap(find.text('🔍 3. Buscar'));
+      await tester.pump(const Duration(milliseconds: 250));
+      expect(find.textContaining('Misión Detective:'), findsOneWidget);
     });
   });
 }

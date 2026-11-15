@@ -7,6 +7,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../../../core/theme/app_theme.dart';
+import '../../../../../shared/widgets/lumi_lion_mascot.dart';
 import '../bloc/auth_cubit.dart';
 
 class SplashScreen extends StatefulWidget {
@@ -62,11 +63,22 @@ class _SplashScreenState extends State<SplashScreen> {
                     ),
                   ],
                 ),
-                child: const Center(
-                  child: Text(
-                    '🌟',
-                    style: TextStyle(fontSize: 64),
-                  ),
+                child: const Stack(
+                  alignment: Alignment.center,
+                  children: [
+                    LumiLionMascot(
+                      size: 96,
+                      expressionVariant: 1,
+                    ),
+                    Positioned(
+                      right: 6,
+                      top: 6,
+                      child: Text(
+                        '🌟',
+                        style: TextStyle(fontSize: 22),
+                      ),
+                    ),
+                  ],
                 ),
               )
                   .animate()
