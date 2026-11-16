@@ -872,29 +872,30 @@ class _MascotGuideBanner extends StatelessWidget {
                   mascotRole,
                   style: const TextStyle(
                     fontFamily: 'Nunito',
-                    fontSize: 11.5,
+                    fontSize: 12.5,
                     fontWeight: FontWeight.w700,
-                    color: EduPlayColors.textMedium,
+                    color: Color(0xFF334155),
                   ),
                 ),
                 const SizedBox(height: 8),
                 Container(
-                  padding: const EdgeInsets.all(11),
+                  padding: const EdgeInsets.all(12),
                   decoration: BoxDecoration(
                     color: Colors.white,
                     borderRadius: BorderRadius.circular(14),
                     border: Border.all(
-                      color: accentColor.withValues(alpha: 0.35),
+                      color: accentColor.withValues(alpha: 0.45),
+                      width: 1.5,
                     ),
                   ),
                   child: Text(
                     '«$currentSpeech»',
                     style: const TextStyle(
                       fontFamily: 'Nunito',
-                      fontSize: 13,
-                      fontWeight: FontWeight.w700,
-                      color: EduPlayColors.textDark,
-                      height: 1.32,
+                      fontSize: 15,
+                      fontWeight: FontWeight.w800,
+                      color: Color(0xFF0F172A),
+                      height: 1.38,
                     ),
                   ),
                 ),
@@ -1141,12 +1142,13 @@ class _TopicExplanationCardState extends State<_TopicExplanationCard> {
         }
       }
       if (q.isNotEmpty && ans.isNotEmpty) {
+        final extraHint = (ex.hint != null && ex.hint!.trim().isNotEmpty)
+            ? ex.hint!.trim()
+            : baseExp.secretTrick;
         results.add((
           question: q,
           answer: ans,
-          explanation: (ex.hint != null && ex.hint!.trim().isNotEmpty)
-              ? ex.hint!
-              : baseExp.secretTrick,
+          explanation: 'Respuesta correcta: $ans. $extraHint',
           emoji: emojis[i % emojis.length],
         ));
       }
@@ -1161,6 +1163,33 @@ class _TopicExplanationCardState extends State<_TopicExplanationCard> {
       ));
     }
     return results;
+  }
+
+  ({String prefix, String target, String suffix}) _formatCardSlot(
+    ({String question, String answer, String explanation, String emoji}) card,
+  ) {
+    if (card.question.contains('___')) {
+      final parts = card.question.split('___');
+      return (
+        prefix: '🎯 ${parts.first}',
+        target: card.answer,
+        suffix: parts.length > 1 ? parts.sublist(1).join('___') : '',
+      );
+    }
+    return (
+      prefix: '🎯 En «${card.question}», la respuesta es ',
+      target: card.answer,
+      suffix: '.',
+    );
+  }
+
+  String _formatTreasureTitle(
+    ({String question, String answer, String explanation, String emoji}) card,
+  ) {
+    if (card.question.contains('___')) {
+      return card.question.replaceAll('___', card.answer);
+    }
+    return '${card.question}\n👉 Respuesta: ${card.answer}';
   }
 
   @override
@@ -1275,33 +1304,137 @@ class _TopicExplanationCardState extends State<_TopicExplanationCard> {
           ),
           const SizedBox(height: 14),
 
-          // ── 1. Historieta Paso a Paso + Escena Gráfica Animada ───────────
-          _buildInteractiveStorySteps(explanation, activeExample, cards.length),
+          // ── Barra superior de los 3 Pasos Guiados del Tema ────────────────
+          _buildThreeStepGuideBar(),
           const SizedBox(height: 14),
 
-          // ── 1B. Juegos de la Explicación: ¡Completa, Arma y Busca! ───────
-          _buildPlayToLearnExplanationGames(explanation, cards),
-          const SizedBox(height: 14),
-
-          // ── 2. Máquina Matemática en Vivo (Controles +/- por Tema) ───────
-          _buildLiveTopicPlayground(),
-          const SizedBox(height: 14),
-
-          // ── 3. Simulador Visual con Abaco/Gráfico + Pista de Lumi ────────
-          ExerciseVisualAid(
-            questionText: activeExample.question,
-            hint: activeExample.explanation,
-            compact: true,
-          ),
-          const SizedBox(height: 16),
-
-          // ── 4. Tarjetas Mágicas Giratorias del Tema ──────────────────────
-          _buildInteractiveFlipCards(cards),
-          const SizedBox(height: 16),
-
-          // ── 5. Mini-Reto de Práctica en Vivo ("¡Entrena sin perder ❤️!") ─
-          _buildInteractivePracticeMiniGame(),
+          // ── Contenido único según el Paso Activo ──────────────────────────
+          if (_activeComicStep == 0) ...[
+            // Paso 1: ¿Qué es? (Cuento Visual + Dibujo Interactivo + Ejemplo fácil + Secreto)
+            _buildInteractiveStorySteps(explanation, activeExample, cards.length),
+            const SizedBox(height: 14),
+            _buildStepAdvanceButton(
+              label: '👉 Pasar al Paso 2: ¡Juega y Prueba!',
+              color: const Color(0xFF7C3AED),
+              onTap: () => setState(() => _activeComicStep = 1),
+            ),
+          ] else if (_activeComicStep == 1) ...[
+            // Paso 2: ¡Juega y Prueba! (Simulador Visual + Laboratorio + Juegos)
+            ExerciseVisualAid(
+              questionText: activeExample.question,
+              hint: activeExample.explanation,
+              compact: false,
+            ),
+            const SizedBox(height: 14),
+            _buildLiveTopicPlayground(),
+            const SizedBox(height: 14),
+            _buildPlayToLearnExplanationGames(explanation, cards),
+            const SizedBox(height: 14),
+            _buildStepAdvanceButton(
+              label: '👉 Pasar al Paso 3: ¡Mini-Reto!',
+              color: const Color(0xFF059669),
+              onTap: () => setState(() => _activeComicStep = 2),
+            ),
+          ] else ...[
+            // Paso 3: ¡Mini-Reto! (Tarjetas Mágicas + Mini-Reto sin perder vidas)
+            _buildInteractiveFlipCards(cards),
+            const SizedBox(height: 16),
+            _buildInteractivePracticeMiniGame(),
+          ],
         ],
+      ),
+    );
+  }
+
+  Widget _buildThreeStepGuideBar() {
+    final accent = widget.unitSpec.accentColor;
+    final steps = [
+      (label: '1️⃣ ¿Qué es?', color: accent),
+      (label: '2️⃣ ¡Juega y Prueba!', color: const Color(0xFF7C3AED)),
+      (label: '3️⃣ ¡Mini-Reto!', color: const Color(0xFF059669)),
+    ];
+
+    return Row(
+      children: List.generate(steps.length, (i) {
+        final step = steps[i];
+        final isSel = _activeComicStep == i;
+        return Expanded(
+          child: Padding(
+            padding: EdgeInsets.only(right: i < steps.length - 1 ? 8 : 0),
+            child: GestureDetector(
+              onTap: () => setState(() => _activeComicStep = i),
+              child: AnimatedContainer(
+                duration: const Duration(milliseconds: 200),
+                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 10),
+                decoration: BoxDecoration(
+                  color: isSel ? step.color : Colors.white,
+                  borderRadius: BorderRadius.circular(14),
+                  border: Border.all(
+                    color: isSel
+                        ? step.color
+                        : step.color.withValues(alpha: 0.55),
+                    width: isSel ? 2.2 : 1.6,
+                  ),
+                  boxShadow: isSel
+                      ? [
+                          BoxShadow(
+                            color: step.color.withValues(alpha: 0.28),
+                            blurRadius: 8,
+                            offset: const Offset(0, 3),
+                          ),
+                        ]
+                      : [],
+                ),
+                alignment: Alignment.center,
+                child: FittedBox(
+                  fit: BoxFit.scaleDown,
+                  child: Text(
+                    step.label,
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      fontFamily: 'Nunito',
+                      fontSize: 13.5,
+                      fontWeight: FontWeight.w900,
+                      color: isSel ? Colors.white : const Color(0xFF1E293B),
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ),
+        );
+      }),
+    );
+  }
+
+  Widget _buildStepAdvanceButton({
+    required String label,
+    required Color color,
+    required VoidCallback onTap,
+  }) {
+    return SizedBox(
+      width: double.infinity,
+      child: ElevatedButton(
+        onPressed: onTap,
+        style: ElevatedButton.styleFrom(
+          backgroundColor: color,
+          foregroundColor: Colors.white,
+          elevation: 2,
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+          ),
+        ),
+        child: Text(
+          label,
+          textAlign: TextAlign.center,
+          style: const TextStyle(
+            fontFamily: 'Nunito',
+            fontSize: 15,
+            fontWeight: FontWeight.w900,
+            color: Colors.white,
+          ),
+        ),
       ),
     );
   }
@@ -1314,79 +1447,46 @@ class _TopicExplanationCardState extends State<_TopicExplanationCard> {
     int totalExamples,
   ) {
     final accent = widget.unitSpec.accentColor;
-    final steps = [
-      ('1️⃣ Idea Clave', '🌟'),
-      ('2️⃣ Ejemplo Vivo', '🎯'),
-      ('3️⃣ Truco Secreto', '🔮'),
-    ];
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        // Selector de pasos interactivos + botón para cambiar el ejemplo en vivo
-        Wrap(
-          spacing: 6,
-          runSpacing: 6,
-          alignment: WrapAlignment.spaceBetween,
-          crossAxisAlignment: WrapCrossAlignment.center,
+        // Encabezado del cuento + botón para cambiar el ejemplo en vivo
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            Row(
-              mainAxisSize: MainAxisSize.min,
-              children: List.generate(steps.length, (i) {
-                final isSel = _activeComicStep == i;
-                return Padding(
-                  padding: const EdgeInsets.only(right: 6),
-                  child: GestureDetector(
-                    onTap: () => setState(() => _activeComicStep = i),
-                    child: AnimatedContainer(
-                      duration: const Duration(milliseconds: 180),
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 10,
-                        vertical: 5,
-                      ),
-                      decoration: BoxDecoration(
-                        color: isSel ? accent : accent.withValues(alpha: 0.09),
-                        borderRadius: BorderRadius.circular(12),
-                        border: Border.all(
-                          color: accent.withValues(alpha: isSel ? 1.0 : 0.35),
-                        ),
-                      ),
-                      child: Text(
-                        steps[i].$1,
-                        style: TextStyle(
-                          fontFamily: 'Nunito',
-                          fontSize: 11.5,
-                          fontWeight: FontWeight.w900,
-                          color: isSel ? Colors.white : accent,
-                        ),
-                      ),
-                    ),
-                  ),
-                );
-              }),
+            Flexible(
+              child: Text(
+                '📖 Cuento del Tema (${widget.topicOrder} de 5)',
+                style: TextStyle(
+                  fontFamily: 'Nunito',
+                  fontSize: 13.5,
+                  fontWeight: FontWeight.w900,
+                  color: accent,
+                ),
+              ),
             ),
             GestureDetector(
               onTap: () {
                 setState(() {
                   _exampleVariantIdx = (_exampleVariantIdx + 1) % totalExamples;
-                  _activeComicStep = 1;
                 });
               },
               child: Container(
                 padding:
-                    const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                    const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
                 decoration: BoxDecoration(
                   color: const Color(0xFFEDE9FE),
                   borderRadius: BorderRadius.circular(12),
-                  border: Border.all(color: const Color(0xFF8B5CF6)),
+                  border: Border.all(color: const Color(0xFF7C3AED), width: 1.5),
                 ),
                 child: Text(
                   '🎲 Otro ejemplo (${(_exampleVariantIdx % totalExamples) + 1}/$totalExamples)',
                   style: const TextStyle(
                     fontFamily: 'Nunito',
-                    fontSize: 11.5,
+                    fontSize: 12,
                     fontWeight: FontWeight.w900,
-                    color: Color(0xFF6D28D9),
+                    color: Color(0xFF5B21B6),
                   ),
                 ),
               ),
@@ -1395,164 +1495,149 @@ class _TopicExplanationCardState extends State<_TopicExplanationCard> {
         ),
         const SizedBox(height: 10),
 
-        // Tarjeta 1: ¿Cómo funciona? (tocar la resalta y muestra la misión del tema)
-        GestureDetector(
-          onTap: () => setState(() => _activeComicStep = 0),
-          child: AnimatedContainer(
-            duration: const Duration(milliseconds: 200),
-            width: double.infinity,
-            padding: const EdgeInsets.all(12),
-            decoration: BoxDecoration(
-              color: _activeComicStep == 0
-                  ? accent.withValues(alpha: 0.08)
-                  : const Color(0xFFF8FAFC),
-              borderRadius: BorderRadius.circular(14),
-              border: Border.all(
-                color: _activeComicStep == 0
-                    ? accent
-                    : const Color(0xFFE2E8F0),
-                width: _activeComicStep == 0 ? 2 : 1,
-              ),
+        // Tarjeta 1: ¿Cómo funciona? + Dibujo Interactivo
+        Container(
+          width: double.infinity,
+          padding: const EdgeInsets.all(14),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(
+              color: accent,
+              width: 2,
             ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  children: [
-                    Expanded(
-                      child: Text(
-                        '🌟 ¿Cómo funciona?',
-                        style: TextStyle(
-                          fontFamily: 'Nunito',
-                          fontSize: 13,
-                          fontWeight: FontWeight.w900,
-                          color: accent,
-                        ),
-                      ),
-                    ),
-                    Text(
-                      'Tema ${widget.topicOrder} de 5',
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  Expanded(
+                    child: Text(
+                      '🌟 ¿Cómo funciona?',
                       style: TextStyle(
                         fontFamily: 'Nunito',
-                        fontSize: 11,
-                        fontWeight: FontWeight.w800,
+                        fontSize: 15.5,
+                        fontWeight: FontWeight.w900,
                         color: accent,
+                      ),
+                    ),
+                  ),
+                  Text(
+                    'Tema ${widget.topicOrder} de 5',
+                    style: const TextStyle(
+                      fontFamily: 'Nunito',
+                      fontSize: 12,
+                      fontWeight: FontWeight.w800,
+                      color: Color(0xFF334155),
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 6),
+              Text(
+                explanation.storyExplanation,
+                style: const TextStyle(
+                  fontFamily: 'Nunito',
+                  fontSize: 16,
+                  fontWeight: FontWeight.w800,
+                  color: Color(0xFF0F172A),
+                  height: 1.42,
+                ),
+              ),
+              const SizedBox(height: 12),
+              // Escena Gráfica Interactiva en Canvas (Tocar para animar la explicación)
+              _buildInteractiveStorySceneCanvas(accent),
+            ],
+          ),
+        ),
+        const SizedBox(height: 10),
+
+        // Tarjeta 2: Ejemplo paso a paso dinámico (siempre visible con alto contraste)
+        Container(
+          width: double.infinity,
+          padding: const EdgeInsets.all(14),
+          decoration: BoxDecoration(
+            color: const Color(0xFFFFFBEB),
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(
+              color: const Color(0xFFF59E0B),
+              width: 2,
+            ),
+          ),
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                activeExample.emoji,
+                style: const TextStyle(fontSize: 26),
+              ),
+              const SizedBox(width: 10),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text(
+                      '🎯 Ejemplo paso a paso:',
+                      style: TextStyle(
+                        fontFamily: 'Nunito',
+                        fontSize: 14.5,
+                        fontWeight: FontWeight.w900,
+                        color: Color(0xFF92400E),
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      _exampleVariantIdx == 0
+                          ? '${explanation.stepByStepExample}\n'
+                              '👉 Reto real de este tema: «${activeExample.question}» → Respuesta: ${activeExample.answer}.'
+                          : 'Pregunta del tema: «${activeExample.question}»\n'
+                              '✅ Respuesta paso a paso: ${activeExample.answer} (${activeExample.explanation}).',
+                      style: const TextStyle(
+                        fontFamily: 'Nunito',
+                        fontSize: 15,
+                        fontWeight: FontWeight.w800,
+                        color: Color(0xFF78350F),
+                        height: 1.4,
                       ),
                     ),
                   ],
                 ),
-                const SizedBox(height: 4),
-                Text(
-                  explanation.storyExplanation,
+              ),
+            ],
+          ),
+        ),
+        const SizedBox(height: 10),
+
+        // Tarjeta 3: Truco Secreto de Lumi (siempre visible en Paso 1 con alto contraste)
+        Container(
+          width: double.infinity,
+          padding: const EdgeInsets.all(14),
+          decoration: BoxDecoration(
+            color: const Color(0xFFECFDF5),
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(color: const Color(0xFF10B981), width: 2),
+          ),
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Text('🔮', style: TextStyle(fontSize: 24)),
+              const SizedBox(width: 10),
+              Expanded(
+                child: Text(
+                  '¡Súper Secreto de Lumi para «${widget.topicTitle}»!\n${explanation.secretTrick}',
                   style: const TextStyle(
                     fontFamily: 'Nunito',
-                    fontSize: 13.5,
-                    fontWeight: FontWeight.w700,
-                    color: EduPlayColors.textDark,
-                    height: 1.36,
+                    fontSize: 14.5,
+                    fontWeight: FontWeight.w800,
+                    color: Color(0xFF065F46),
+                    height: 1.38,
                   ),
                 ),
-                const SizedBox(height: 10),
-                // Escena Gráfica Interactiva en Canvas (Tocar para animar la explicación)
-                _buildInteractiveStorySceneCanvas(accent),
-              ],
-            ),
-          ),
-        ),
-        const SizedBox(height: 8),
-
-        // Tarjeta 2: Ejemplo paso a paso dinámico (cambia con "Otro ejemplo")
-        GestureDetector(
-          onTap: () => setState(() => _activeComicStep = 1),
-          child: AnimatedContainer(
-            duration: const Duration(milliseconds: 200),
-            width: double.infinity,
-            padding: const EdgeInsets.all(12),
-            decoration: BoxDecoration(
-              color: _activeComicStep == 1
-                  ? const Color(0xFFFEF3C7).withValues(alpha: 0.85)
-                  : const Color(0xFFFEF3C7).withValues(alpha: 0.45),
-              borderRadius: BorderRadius.circular(14),
-              border: Border.all(
-                color: const Color(0xFFF59E0B)
-                    .withValues(alpha: _activeComicStep == 1 ? 0.9 : 0.4),
-                width: _activeComicStep == 1 ? 2 : 1,
               ),
-            ),
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  activeExample.emoji,
-                  style: const TextStyle(fontSize: 24),
-                ),
-                const SizedBox(width: 10),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const Text(
-                        '🎯 Ejemplo paso a paso:',
-                        style: TextStyle(
-                          fontFamily: 'Nunito',
-                          fontSize: 12.5,
-                          fontWeight: FontWeight.w900,
-                          color: Color(0xFFB45309),
-                        ),
-                      ),
-                      const SizedBox(height: 3),
-                      Text(
-                        _exampleVariantIdx == 0
-                            ? '${explanation.stepByStepExample}\n'
-                                '👉 Reto real de este tema: «${activeExample.question}» → Respuesta: ${activeExample.answer}.'
-                            : 'Pregunta del tema: «${activeExample.question}»\n'
-                                '✅ Respuesta paso a paso: ${activeExample.answer} (${activeExample.explanation}).',
-                        style: const TextStyle(
-                          fontFamily: 'Nunito',
-                          fontSize: 13,
-                          fontWeight: FontWeight.w700,
-                          color: Color(0xFF78350F),
-                          height: 1.34,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ],
-            ),
+            ],
           ),
         ),
-
-        // Tarjeta 3 desplegable o destacada cuando el niño toca "3️⃣ Truco Secreto"
-        if (_activeComicStep == 2) ...[
-          const SizedBox(height: 8),
-          Container(
-            width: double.infinity,
-            padding: const EdgeInsets.all(12),
-            decoration: BoxDecoration(
-              color: const Color(0xFFECFDF5),
-              borderRadius: BorderRadius.circular(14),
-              border: Border.all(color: const Color(0xFF10B981), width: 1.8),
-            ),
-            child: Row(
-              children: [
-                const Text('🔮', style: TextStyle(fontSize: 22)),
-                const SizedBox(width: 10),
-                Expanded(
-                  child: Text(
-                    '¡Súper Secreto de Lumi para «${widget.topicTitle}»!\n${explanation.secretTrick}',
-                    style: const TextStyle(
-                      fontFamily: 'Nunito',
-                      fontSize: 12.5,
-                      fontWeight: FontWeight.w800,
-                      color: Color(0xFF065F46),
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ],
       ],
     );
   }
@@ -1560,7 +1645,15 @@ class _TopicExplanationCardState extends State<_TopicExplanationCard> {
   // ── Escena Gráfica Interactiva dentro de la Explicación ───────────────────
   Widget _buildInteractiveStorySceneCanvas(Color accent) {
     final fam = _topicFamily;
-    final phaseLabels = switch (fam) {
+    final isGrade1Numbers = widget.unitId == 'unit-001' ||
+        (fam == 'numbers' && widget.grade == 1);
+    final phaseLabels = isGrade1Numbers
+        ? [
+            '1️⃣ Contar 1 a 5',
+            '2️⃣ Antes y Después',
+            '3️⃣ 2 Manos = 10',
+          ]
+        : switch (fam) {
       'fractions' => [
           '1️⃣ Todo entero',
           '2️⃣ Partir igual',
@@ -1593,7 +1686,13 @@ class _TopicExplanationCardState extends State<_TopicExplanationCard> {
         ],
     };
 
-    final phaseCaptions = switch (fam) {
+    final phaseCaptions = isGrade1Numbers
+        ? [
+            '✋ Contamos: 1 Sol (uno), 3 lados del Triángulo (tres) y 5 dedos de la Mano (cinco).',
+            '🐸 En la fila del 1 al 10: ANTES del 5 está el 4 y DESPUÉS del 7 sigue el 8.',
+            '👐 Si juntamos 2 manos (5 dedos + 5 dedos) formamos 10 unidades = 1 Decena.',
+          ]
+        : switch (fam) {
       'fractions' => [
           '🍕 Empezamos con 1 unidad completa (100% = todo el círculo y tubo lleno).',
           '🔪 Cortamos la figura en partes exactamente iguales (denominador).',
@@ -1627,25 +1726,25 @@ class _TopicExplanationCardState extends State<_TopicExplanationCard> {
     };
 
     return Container(
-      padding: const EdgeInsets.all(10),
+      padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: accent.withValues(alpha: 0.35), width: 1.5),
+        border: Border.all(color: accent.withValues(alpha: 0.4), width: 1.5),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
             children: [
-              const Text('🎨', style: TextStyle(fontSize: 15)),
+              const Text('🎨', style: TextStyle(fontSize: 17)),
               const SizedBox(width: 6),
               Expanded(
                 child: Text(
                   'Dibujo Interactivo: ¡Toca la imagen o las 3 fases!',
                   style: TextStyle(
                     fontFamily: 'Nunito',
-                    fontSize: 11.5,
+                    fontSize: 13.5,
                     fontWeight: FontWeight.w900,
                     color: accent,
                   ),
@@ -1657,7 +1756,7 @@ class _TopicExplanationCardState extends State<_TopicExplanationCard> {
                 ),
                 child: Container(
                   padding:
-                      const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                      const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
                   decoration: BoxDecoration(
                     color: accent,
                     borderRadius: BorderRadius.circular(10),
@@ -1666,7 +1765,7 @@ class _TopicExplanationCardState extends State<_TopicExplanationCard> {
                     '▶️ Animar dibujo',
                     style: TextStyle(
                       fontFamily: 'Nunito',
-                      fontSize: 10.5,
+                      fontSize: 12,
                       fontWeight: FontWeight.w900,
                       color: Colors.white,
                     ),
@@ -1675,7 +1774,7 @@ class _TopicExplanationCardState extends State<_TopicExplanationCard> {
               ),
             ],
           ),
-          const SizedBox(height: 8),
+          const SizedBox(height: 10),
           GestureDetector(
             onTap: () => setState(
               () => _storyScenePhase = (_storyScenePhase + 1) % 3,
@@ -1684,23 +1783,32 @@ class _TopicExplanationCardState extends State<_TopicExplanationCard> {
               borderRadius: BorderRadius.circular(12),
               child: Container(
                 width: double.infinity,
-                height: 118,
-                color: const Color(0xFFF8FAFC),
+                height: 138,
+                decoration: BoxDecoration(
+                  color: const Color(0xFFEEF2FF),
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(
+                    color: accent.withValues(alpha: 0.35),
+                    width: 1.5,
+                  ),
+                ),
                 child: CustomPaint(
                   painter: _ExplanationConceptScenePainter(
                     family: fam,
                     phase: _storyScenePhase,
                     accentColor: accent,
                     topicOrder: widget.topicOrder,
+                    grade: widget.grade,
+                    unitId: widget.unitId,
                   ),
                 ),
               ),
             ),
           ),
-          const SizedBox(height: 8),
+          const SizedBox(height: 10),
           Wrap(
-            spacing: 6,
-            runSpacing: 6,
+            spacing: 8,
+            runSpacing: 8,
             children: List.generate(3, (i) {
               final isSel = _storyScenePhase == i;
               return GestureDetector(
@@ -1708,35 +1816,37 @@ class _TopicExplanationCardState extends State<_TopicExplanationCard> {
                 child: AnimatedContainer(
                   duration: const Duration(milliseconds: 160),
                   padding:
-                      const EdgeInsets.symmetric(horizontal: 9, vertical: 4),
+                      const EdgeInsets.symmetric(horizontal: 11, vertical: 6),
                   decoration: BoxDecoration(
-                    color: isSel ? accent : accent.withValues(alpha: 0.08),
+                    color: isSel ? accent : Colors.white,
                     borderRadius: BorderRadius.circular(10),
                     border: Border.all(
-                      color: accent.withValues(alpha: isSel ? 1.0 : 0.35),
+                      color: isSel ? accent : accent.withValues(alpha: 0.5),
+                      width: 1.5,
                     ),
                   ),
                   child: Text(
                     phaseLabels[i],
                     style: TextStyle(
                       fontFamily: 'Nunito',
-                      fontSize: 11,
+                      fontSize: 12.5,
                       fontWeight: FontWeight.w900,
-                      color: isSel ? Colors.white : accent,
+                      color: isSel ? Colors.white : const Color(0xFF1E293B),
                     ),
                   ),
                 ),
               );
             }),
           ),
-          const SizedBox(height: 6),
+          const SizedBox(height: 8),
           Text(
             phaseCaptions[_storyScenePhase % 3],
             style: const TextStyle(
               fontFamily: 'Nunito',
-              fontSize: 12,
+              fontSize: 14,
               fontWeight: FontWeight.w800,
-              color: EduPlayColors.textDark,
+              color: Color(0xFF0F172A),
+              height: 1.35,
             ),
           ),
         ],
@@ -1877,116 +1987,97 @@ class _TopicExplanationCardState extends State<_TopicExplanationCard> {
     final fam = _topicFamily;
     final card0 = cards.first;
     final card1 = cards.length > 1 ? cards[1] : cards.first;
+    final card2 = cards.length > 2 ? cards[2] : card0;
 
     // 3 retos de completar dentro de la explicación del tema
-    final slotsSpec = switch (fam) {
-      'fractions' => [
-          (
-            prefix: '🍕 En una fracción, el número de abajo dice en cuántas ',
-            target: 'partes iguales',
-            suffix: ' cortamos todo.',
-          ),
-          (
-            prefix: '✨ El número de arriba indica cuántas partes ',
-            target: 'tomamos',
-            suffix: ' o coloreamos.',
-          ),
-          (
-            prefix: '🎯 En «${card0.question}», el resultado correcto es ',
-            target: card0.answer,
-            suffix: '.',
-          ),
-        ],
-      'geometry' => [
-          (
-            prefix: '🏃 El borde que rodea una figura por fuera se llama ',
-            target: 'Perímetro',
-            suffix: '.',
-          ),
-          (
-            prefix: '🟩 Los cuadritos que rellenan la figura por dentro son el ',
-            target: 'Área',
-            suffix: '.',
-          ),
-          (
-            prefix: '🎯 En «${card0.question}», la respuesta es ',
-            target: card0.answer,
-            suffix: '.',
-          ),
-        ],
-      'algebra' => [
-          (
-            prefix: '🕵️ En álgebra, la letra x representa un ',
-            target: 'número secreto',
-            suffix: ' escondido.',
-          ),
-          (
-            prefix: '⚖️ Para despejar la balanza hacemos la ',
-            target: 'operación contraria',
-            suffix: '.',
-          ),
-          (
-            prefix: '🎯 En «${card0.question}», el valor correcto es ',
-            target: card0.answer,
-            suffix: '.',
-          ),
-        ],
-      'stats' => [
-          (
-            prefix: '🏆 El dato que más se repite en una encuesta se llama ',
-            target: 'Moda',
-            suffix: '.',
-          ),
-          (
-            prefix: '📊 En la gráfica de barras, la opción ganadora tiene la ',
-            target: 'barra más alta',
-            suffix: '.',
-          ),
-          (
-            prefix: '🎯 En «${card0.question}», la respuesta es ',
-            target: card0.answer,
-            suffix: '.',
-          ),
-        ],
-      'operations' => [
-          (
-            prefix: '⚡ Para operar rápido agrupamos cantidades ',
-            target: 'paso a paso',
-            suffix: ' con orden.',
-          ),
-          (
-            prefix: '🎯 En «${card0.question}», el resultado es ',
-            target: card0.answer,
-            suffix: '.',
-          ),
-          (
-            prefix: '🌟 Y en «${card1.question}», nos da ',
-            target: card1.answer,
-            suffix: '.',
-          ),
-        ],
-      _ => [
-          (
-            prefix: '🏠 Cada casilla posicional vale ',
-            target: '10 veces más',
-            suffix: ' que la de su derecha.',
-          ),
-          (
-            prefix: '🎯 En «${card0.question}», la respuesta es ',
-            target: card0.answer,
-            suffix: '.',
-          ),
-          (
-            prefix: '🌟 Y en «${card1.question}», el resultado es ',
-            target: card1.answer,
-            suffix: '.',
-          ),
-        ],
-    };
+    final slotsSpec = (widget.grade == 1 && cards.length >= 3)
+        ? [
+            _formatCardSlot(card0),
+            _formatCardSlot(card1),
+            _formatCardSlot(card2),
+          ]
+        : switch (fam) {
+            'fractions' => [
+                (
+                  prefix:
+                      '🍕 En una fracción, el número de abajo dice en cuántas ',
+                  target: 'partes iguales',
+                  suffix: ' cortamos todo.',
+                ),
+                (
+                  prefix: '✨ El número de arriba indica cuántas partes ',
+                  target: 'tomamos',
+                  suffix: ' o coloreamos.',
+                ),
+                _formatCardSlot(card0),
+              ],
+            'geometry' => [
+                (
+                  prefix:
+                      '🏃 El borde que rodea una figura por fuera se llama ',
+                  target: 'Perímetro',
+                  suffix: '.',
+                ),
+                (
+                  prefix:
+                      '🟩 Los cuadritos que rellenan la figura por dentro son el ',
+                  target: 'Área',
+                  suffix: '.',
+                ),
+                _formatCardSlot(card0),
+              ],
+            'algebra' => [
+                (
+                  prefix: '🕵️ En álgebra, la letra x representa un ',
+                  target: 'número secreto',
+                  suffix: ' escondido.',
+                ),
+                (
+                  prefix: '⚖️ Para despejar la balanza hacemos la ',
+                  target: 'operación contraria',
+                  suffix: '.',
+                ),
+                _formatCardSlot(card0),
+              ],
+            'stats' => [
+                (
+                  prefix:
+                      '🏆 El dato que más se repite en una encuesta se llama ',
+                  target: 'Moda',
+                  suffix: '.',
+                ),
+                (
+                  prefix:
+                      '📊 En la gráfica de barras, la opción ganadora tiene la ',
+                  target: 'barra más alta',
+                  suffix: '.',
+                ),
+                _formatCardSlot(card0),
+              ],
+            'operations' => [
+                (
+                  prefix: '⚡ Para operar rápido agrupamos cantidades ',
+                  target: 'paso a paso',
+                  suffix: ' con orden.',
+                ),
+                _formatCardSlot(card0),
+                _formatCardSlot(card1),
+              ],
+            _ => [
+                (
+                  prefix: '🏠 Cada casilla posicional vale ',
+                  target: '10 veces más',
+                  suffix: ' que la de su derecha.',
+                ),
+                _formatCardSlot(card0),
+                _formatCardSlot(card1),
+              ],
+          };
 
+    final extraDistractor = widget.grade == 1 ? '0' : '999';
     final tokenBank = <String>{
       for (final s in slotsSpec) s.target,
-      '999',
+      extraDistractor,
     }.toList();
 
     final solvedCount = List.generate(
@@ -2353,40 +2444,73 @@ class _TopicExplanationCardState extends State<_TopicExplanationCard> {
             ),
           ],
         ),
-      _ => (
-          missionTitle:
-              '🏗️ ¡Arma el número ${widget.grade <= 2 ? (20 + tOrder * 4) : (120 + tOrder * 15)} con bloques en la torre!',
-          targetValue:
-              widget.grade <= 2 ? (20 + tOrder * 4) : (120 + tOrder * 15),
-          unitName: 'unidades',
-          pieces: [
-            if (widget.grade >= 3)
-              (
-                label: '+1 Centena (100)',
-                val: 100,
-                emoji: '🟪',
-                color: const Color(0xFF7C3AED),
-              ),
-            (
-              label: '+1 Decena (10)',
-              val: 10,
-              emoji: '🟦',
-              color: const Color(0xFF2563EB),
+      _ => widget.grade == 1
+          ? (
+              missionTitle:
+                  '🏗️ ¡Arma el número ${10 + tOrder * 2} combinando estas fichas diferentes!',
+              targetValue: 10 + tOrder * 2,
+              unitName: 'unidades',
+              pieces: [
+                (
+                  label: '+2 Manos (10)',
+                  val: 10,
+                  emoji: '👐',
+                  color: const Color(0xFF7C3AED),
+                ),
+                (
+                  label: '+1 Mano (5)',
+                  val: 5,
+                  emoji: '✋',
+                  color: const Color(0xFFF59E0B),
+                ),
+                (
+                  label: '+Triángulo (3)',
+                  val: 3,
+                  emoji: '🔺',
+                  color: const Color(0xFFEF4444),
+                ),
+                (
+                  label: '+1 Estrella (1)',
+                  val: 1,
+                  emoji: '⭐',
+                  color: const Color(0xFF10B981),
+                ),
+              ],
+            )
+          : (
+              missionTitle:
+                  '🏗️ ¡Arma el número ${widget.grade <= 2 ? (20 + tOrder * 4) : (120 + tOrder * 15)} con bloques en la torre!',
+              targetValue:
+                  widget.grade <= 2 ? (20 + tOrder * 4) : (120 + tOrder * 15),
+              unitName: 'unidades',
+              pieces: [
+                if (widget.grade >= 3)
+                  (
+                    label: '+1 Centena (100)',
+                    val: 100,
+                    emoji: '🟪',
+                    color: const Color(0xFF7C3AED),
+                  ),
+                (
+                  label: '+1 Decena (10)',
+                  val: 10,
+                  emoji: '🟦',
+                  color: const Color(0xFF2563EB),
+                ),
+                (
+                  label: '+5 Unidades (5)',
+                  val: 5,
+                  emoji: '🟧',
+                  color: const Color(0xFFF59E0B),
+                ),
+                (
+                  label: '+1 Unidad (1)',
+                  val: 1,
+                  emoji: '🟩',
+                  color: const Color(0xFF10B981),
+                ),
+              ],
             ),
-            (
-              label: '+5 Unidades (5)',
-              val: 5,
-              emoji: '🟧',
-              color: const Color(0xFFF59E0B),
-            ),
-            (
-              label: '+1 Unidad (1)',
-              val: 1,
-              emoji: '🟩',
-              color: const Color(0xFF10B981),
-            ),
-          ],
-        ),
     };
 
     final currentTotal = _builtPieces.fold<int>(0, (a, b) => a + b);
@@ -2574,122 +2698,217 @@ class _TopicExplanationCardState extends State<_TopicExplanationCard> {
 
     // 6 casillas visuales de búsqueda: 3 verdaderas (tesoros del tema) + 3 distractores
     final List<({String emoji, String title, String clue, bool isTreasure})>
-        searchTiles = switch (fam) {
-      'fractions' => [
-          (
-            emoji: '🍕',
-            title: '1/2 = 50% = 0,5',
-            clue: '¡Correcto! Mitad, 50% y 0,5 valen lo mismo.',
-            isTreasure: true,
-          ),
-          (
-            emoji: '🎯',
-            title: '${c0.question} → ${c0.answer}',
-            clue: '¡Correcto! Es un reto verdadero del tema.',
-            isTreasure: true,
-          ),
-          (
-            emoji: '🚫',
-            title: '1/4 = 40%',
-            clue: '¡Intruso! 1/4 es 25%, no 40%.',
-            isTreasure: false,
-          ),
-          (
-            emoji: '🍰',
-            title: '3/4 = 75% = 0,75',
-            clue: '¡Lo encontraste! 3 cuartos equivalen a 75%.',
-            isTreasure: true,
-          ),
-          (
-            emoji: '🚫',
-            title: '2/2 = La mitad',
-            clue: '¡Intruso! 2/2 es la pizza entera (100%).',
-            isTreasure: false,
-          ),
-          (
-            emoji: '🚫',
-            title: '1/10 = 100%',
-            clue: '¡Intruso! 1/10 es apenas el 10%.',
-            isTreasure: false,
-          ),
-        ],
-      'geometry' => [
-          (
-            emoji: '🏡',
-            title: 'Perímetro = Suma de lados',
-            clue: '¡Correcto! El perímetro rodea toda la figura.',
-            isTreasure: true,
-          ),
-          (
-            emoji: '🌱',
-            title: 'Área rectángulo = Base×Altura',
-            clue: '¡Correcto! Así contamos los cuadritos de adentro.',
-            isTreasure: true,
-          ),
-          (
-            emoji: '🚫',
-            title: 'Ángulo recto = 180°',
-            clue: '¡Intruso! El ángulo recto mide exactamente 90°.',
-            isTreasure: false,
-          ),
-          (
-            emoji: '🎯',
-            title: '${c0.question} → ${c0.answer}',
-            clue: '¡Correcto! Cumple la regla geométrica del tema.',
-            isTreasure: true,
-          ),
-          (
-            emoji: '🚫',
-            title: '1 metro = 10 cm',
-            clue: '¡Intruso! 1 metro tiene 100 centímetros.',
-            isTreasure: false,
-          ),
-          (
-            emoji: '🚫',
-            title: 'Triángulo = 4 lados',
-            clue: '¡Intruso! El triángulo tiene 3 lados.',
-            isTreasure: false,
-          ),
-        ],
-      _ => [
-          (
-            emoji: '💎',
-            title: '${c0.question} → ${c0.answer}',
-            clue: '¡Tesoro encontrado! ${c0.explanation}',
-            isTreasure: true,
-          ),
-          (
-            emoji: '🚫',
-            title: '1 Decena = 100 U',
-            clue: '¡Intruso! 1 Decena vale 10 unidades, no 100.',
-            isTreasure: false,
-          ),
-          (
-            emoji: '🌟',
-            title: '${c1.question} → ${c1.answer}',
-            clue: '¡Tesoro encontrado! ${c1.explanation}',
-            isTreasure: true,
-          ),
-          (
-            emoji: '🚫',
-            title: 'Orden no importa al restar',
-            clue: '¡Intruso! En la resta el mayor siempre va primero.',
-            isTreasure: false,
-          ),
-          (
-            emoji: '🚀',
-            title: '${c2.question} → ${c2.answer}',
-            clue: '¡Tesoro encontrado! ${c2.explanation}',
-            isTreasure: true,
-          ),
-          (
-            emoji: '🚫',
-            title: '5 Centenas = 50',
-            clue: '¡Intruso! 5 Centenas valen 500 unidades.',
-            isTreasure: false,
-          ),
-        ],
-    };
+        searchTiles = widget.grade == 1
+            ? [
+                (
+                  emoji: '💎',
+                  title: _formatTreasureTitle(c0),
+                  clue: '✅ ¡Verdadero! ${c0.explanation}',
+                  isTreasure: true,
+                ),
+                if (widget.unitId == 'unit-001')
+                  (
+                    emoji: '🚫',
+                    title: 'Una mano tiene 8 dedos',
+                    clue: '¡Intruso falso! Una mano tiene 5 dedos, no 8.',
+                    isTreasure: false,
+                  )
+                else if (widget.unitId == 'unit-002' ||
+                    widget.unitId == 'unit-003')
+                  (
+                    emoji: '🚫',
+                    title: '2 + 1 = 5',
+                    clue: '¡Intruso falso! Si tienes 2 y agregas 1, da 3.',
+                    isTreasure: false,
+                  )
+                else
+                  (
+                    emoji: '🚫',
+                    title: 'Un círculo tiene 4 esquinas',
+                    clue: '¡Intruso falso! El círculo es curvo y tiene 0 esquinas.',
+                    isTreasure: false,
+                  ),
+                (
+                  emoji: '🌟',
+                  title: _formatTreasureTitle(c1),
+                  clue: '✅ ¡Verdadero! ${c1.explanation}',
+                  isTreasure: true,
+                ),
+                if (widget.unitId == 'unit-001')
+                  (
+                    emoji: '🚫',
+                    title: 'Un triángulo tiene 4 lados',
+                    clue:
+                        '¡Intruso falso! El triángulo tiene 3 lados (el cuadrado tiene 4).',
+                    isTreasure: false,
+                  )
+                else if (widget.unitId == 'unit-002' ||
+                    widget.unitId == 'unit-003')
+                  (
+                    emoji: '🚫',
+                    title: 'Sumar 0 cambia el número',
+                    clue:
+                        '¡Intruso falso! Sumar 0 deja el número igual (0 + 4 = 4).',
+                    isTreasure: false,
+                  )
+                else
+                  (
+                    emoji: '🚫',
+                    title: 'Una pluma pesa más que una vaca',
+                    clue:
+                        '¡Intruso falso! La pluma es liviana y la vaca es pesada.',
+                    isTreasure: false,
+                  ),
+                (
+                  emoji: '🚀',
+                  title: _formatTreasureTitle(c2),
+                  clue: '✅ ¡Verdadero! ${c2.explanation}',
+                  isTreasure: true,
+                ),
+                if (widget.unitId == 'unit-001')
+                  (
+                    emoji: '🚫',
+                    title: 'Después del 7 sigue el 6',
+                    clue:
+                        '¡Intruso falso! El 6 va ANTES del 7; después del 7 sigue el 8.',
+                    isTreasure: false,
+                  )
+                else if (widget.unitId == 'unit-002' ||
+                    widget.unitId == 'unit-003')
+                  (
+                    emoji: '🚫',
+                    title: '5 − 2 = 4',
+                    clue: '¡Intruso falso! Si a 5 le quitas 2, quedan 3.',
+                    isTreasure: false,
+                  )
+                else
+                  (
+                    emoji: '🚫',
+                    title: 'La semana tiene 10 días',
+                    clue:
+                        '¡Intruso falso! Una semana completa tiene 7 días.',
+                    isTreasure: false,
+                  ),
+              ]
+            : switch (fam) {
+                'fractions' => [
+                    (
+                      emoji: '🍕',
+                      title: '1/2 = 50% = 0,5',
+                      clue: '✅ ¡Verdadero! Mitad, 50% y 0,5 valen lo mismo.',
+                      isTreasure: true,
+                    ),
+                    (
+                      emoji: '🎯',
+                      title: _formatTreasureTitle(c0),
+                      clue: '✅ ¡Verdadero! ${c0.explanation}',
+                      isTreasure: true,
+                    ),
+                    (
+                      emoji: '🚫',
+                      title: '1/4 = 40%',
+                      clue: '¡Intruso falso! 1/4 es 25%, no 40%.',
+                      isTreasure: false,
+                    ),
+                    (
+                      emoji: '🍰',
+                      title: '3/4 = 75% = 0,75',
+                      clue: '✅ ¡Verdadero! 3 cuartos equivalen a 75%.',
+                      isTreasure: true,
+                    ),
+                    (
+                      emoji: '🚫',
+                      title: '2/2 = La mitad',
+                      clue: '¡Intruso falso! 2/2 es la pizza entera (100%).',
+                      isTreasure: false,
+                    ),
+                    (
+                      emoji: '🚫',
+                      title: '1/10 = 100%',
+                      clue: '¡Intruso falso! 1/10 es apenas el 10%.',
+                      isTreasure: false,
+                    ),
+                  ],
+                'geometry' => [
+                    (
+                      emoji: '🏡',
+                      title: 'Perímetro = Suma de lados',
+                      clue: '✅ ¡Verdadero! El perímetro rodea toda la figura.',
+                      isTreasure: true,
+                    ),
+                    (
+                      emoji: '🌱',
+                      title: 'Área rectángulo = Base×Altura',
+                      clue:
+                          '✅ ¡Verdadero! Así contamos los cuadritos de adentro.',
+                      isTreasure: true,
+                    ),
+                    (
+                      emoji: '🚫',
+                      title: 'Ángulo recto = 180°',
+                      clue: '¡Intruso falso! El ángulo recto mide exactamente 90°.',
+                      isTreasure: false,
+                    ),
+                    (
+                      emoji: '🎯',
+                      title: _formatTreasureTitle(c0),
+                      clue: '✅ ¡Verdadero! ${c0.explanation}',
+                      isTreasure: true,
+                    ),
+                    (
+                      emoji: '🚫',
+                      title: '1 metro = 10 cm',
+                      clue: '¡Intruso falso! 1 metro tiene 100 centímetros.',
+                      isTreasure: false,
+                    ),
+                    (
+                      emoji: '🚫',
+                      title: 'Triángulo = 4 lados',
+                      clue: '¡Intruso falso! El triángulo tiene 3 lados.',
+                      isTreasure: false,
+                    ),
+                  ],
+                _ => [
+                    (
+                      emoji: '💎',
+                      title: _formatTreasureTitle(c0),
+                      clue: '✅ ¡Verdadero! ${c0.explanation}',
+                      isTreasure: true,
+                    ),
+                    (
+                      emoji: '🚫',
+                      title: '1 Decena = 100 U',
+                      clue:
+                          '¡Intruso falso! 1 Decena vale 10 unidades, no 100.',
+                      isTreasure: false,
+                    ),
+                    (
+                      emoji: '🌟',
+                      title: _formatTreasureTitle(c1),
+                      clue: '✅ ¡Verdadero! ${c1.explanation}',
+                      isTreasure: true,
+                    ),
+                    (
+                      emoji: '🚫',
+                      title: 'Orden no importa al restar',
+                      clue:
+                          '¡Intruso falso! En la resta el mayor siempre va primero.',
+                      isTreasure: false,
+                    ),
+                    (
+                      emoji: '🚀',
+                      title: _formatTreasureTitle(c2),
+                      clue: '✅ ¡Verdadero! ${c2.explanation}',
+                      isTreasure: true,
+                    ),
+                    (
+                      emoji: '🚫',
+                      title: '5 Centenas = 50',
+                      clue: '¡Intruso falso! 5 Centenas valen 500 unidades.',
+                      isTreasure: false,
+                    ),
+                  ],
+              };
 
     final foundTreasures = _inspectedTileIndices
         .where((idx) => idx < searchTiles.length && searchTiles[idx].isTreasure)
@@ -2705,9 +2924,9 @@ class _TopicExplanationCardState extends State<_TopicExplanationCard> {
                 '🕵️‍♀️ Misión Detective: ¡Busca y toca las 3 fichas verdaderas escondidas! ($foundTreasures/3 encontradas)',
                 style: const TextStyle(
                   fontFamily: 'Nunito',
-                  fontSize: 12.5,
+                  fontSize: 13.5,
                   fontWeight: FontWeight.w900,
-                  color: Color(0xFFC2410C),
+                  color: Color(0xFF9A3412),
                 ),
               ),
             ),
@@ -2718,7 +2937,7 @@ class _TopicExplanationCardState extends State<_TopicExplanationCard> {
                   '🔄 Ocultar',
                   style: TextStyle(
                     fontFamily: 'Nunito',
-                    fontSize: 11,
+                    fontSize: 12,
                     fontWeight: FontWeight.w900,
                     color: Color(0xFFEA580C),
                   ),
@@ -2726,87 +2945,97 @@ class _TopicExplanationCardState extends State<_TopicExplanationCard> {
               ),
           ],
         ),
-        const SizedBox(height: 8),
-        Wrap(
-          spacing: 8,
-          runSpacing: 8,
-          children: List.generate(searchTiles.length, (i) {
-            final tile = searchTiles[i];
-            final inspected = _inspectedTileIndices.contains(i);
-            final bgColor = !inspected
-                ? Colors.white
-                : tile.isTreasure
-                    ? const Color(0xFFECFDF5)
-                    : const Color(0xFFFFFBEB);
-            final borderColor = !inspected
-                ? const Color(0xFFFDBA74)
-                : tile.isTreasure
-                    ? const Color(0xFF10B981)
-                    : const Color(0xFFF59E0B);
+        const SizedBox(height: 10),
+        LayoutBuilder(
+          builder: (context, constraints) {
+            final twoColumns = constraints.maxWidth >= 460;
+            final cardWidth = twoColumns
+                ? (constraints.maxWidth - 10) / 2
+                : constraints.maxWidth;
 
-            return GestureDetector(
-              onTap: () => setState(() => _inspectedTileIndices.add(i)),
-              child: AnimatedContainer(
-                duration: const Duration(milliseconds: 180),
-                width: 155,
-                padding: const EdgeInsets.all(10),
-                decoration: BoxDecoration(
-                  color: bgColor,
-                  borderRadius: BorderRadius.circular(14),
-                  border: Border.all(color: borderColor, width: 1.8),
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
+            return Wrap(
+              spacing: 10,
+              runSpacing: 10,
+              children: List.generate(searchTiles.length, (i) {
+                final tile = searchTiles[i];
+                final inspected = _inspectedTileIndices.contains(i);
+                final bgColor = !inspected
+                    ? Colors.white
+                    : tile.isTreasure
+                        ? const Color(0xFFECFDF5)
+                        : const Color(0xFFFFFBEB);
+                final borderColor = !inspected
+                    ? const Color(0xFFFB923C)
+                    : tile.isTreasure
+                        ? const Color(0xFF10B981)
+                        : const Color(0xFFF59E0B);
+
+                return GestureDetector(
+                  onTap: () => setState(() => _inspectedTileIndices.add(i)),
+                  child: AnimatedContainer(
+                    duration: const Duration(milliseconds: 180),
+                    width: cardWidth,
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      color: bgColor,
+                      borderRadius: BorderRadius.circular(14),
+                      border: Border.all(color: borderColor, width: 1.8),
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
+                        Row(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              inspected
+                                  ? (tile.isTreasure ? '✅' : '🕵️')
+                                  : '🔍',
+                              style: const TextStyle(fontSize: 18),
+                            ),
+                            const SizedBox(width: 8),
+                            Expanded(
+                              child: Text(
+                                tile.title,
+                                style: TextStyle(
+                                  fontFamily: 'Nunito',
+                                  fontSize: 13,
+                                  height: 1.3,
+                                  fontWeight: FontWeight.w900,
+                                  color: !inspected
+                                      ? const Color(0xFF0F172A)
+                                      : tile.isTreasure
+                                          ? const Color(0xFF065F46)
+                                          : const Color(0xFF92400E),
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 6),
                         Text(
                           inspected
-                              ? (tile.isTreasure ? '✅' : '🕵️')
-                              : '🔍',
-                          style: const TextStyle(fontSize: 16),
-                        ),
-                        const SizedBox(width: 6),
-                        Expanded(
-                          child: Text(
-                            tile.title,
-                            maxLines: 2,
-                            overflow: TextOverflow.ellipsis,
-                            style: TextStyle(
-                              fontFamily: 'Nunito',
-                              fontSize: 11.5,
-                              fontWeight: FontWeight.w900,
-                              color: !inspected
-                                  ? EduPlayColors.textDark
-                                  : tile.isTreasure
-                                      ? const Color(0xFF065F46)
-                                      : const Color(0xFF92400E),
-                            ),
+                              ? tile.clue
+                              : '👆 Toca con la lupa para investigar',
+                          style: TextStyle(
+                            fontFamily: 'Nunito',
+                            fontSize: 12,
+                            height: 1.3,
+                            fontWeight: FontWeight.w800,
+                            color: !inspected
+                                ? const Color(0xFFC2410C)
+                                : tile.isTreasure
+                                    ? const Color(0xFF047857)
+                                    : const Color(0xFF92400E),
                           ),
                         ),
                       ],
                     ),
-                    const SizedBox(height: 4),
-                    Text(
-                      inspected
-                          ? tile.clue
-                          : '👆 Toca con la lupa para investigar',
-                      style: TextStyle(
-                        fontFamily: 'Nunito',
-                        fontSize: 10.5,
-                        fontWeight: FontWeight.w700,
-                        color: !inspected
-                            ? const Color(0xFFEA580C)
-                            : tile.isTreasure
-                                ? const Color(0xFF047857)
-                                : const Color(0xFFB45309),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
+                  ),
+                );
+              }),
             );
-          }),
+          },
         ),
         if (foundTreasures >= 3) ...[
           const SizedBox(height: 10),
@@ -3051,22 +3280,28 @@ class _TopicExplanationCardState extends State<_TopicExplanationCard> {
   }
 
   Widget _buildLiveOperationsMachine(Color accent) {
-    final ops = [
-      ('➕ Sumar', '+'),
-      ('➖ Restar', '−'),
-      ('✖️ Multiplicar', '×'),
-      ('➗ Repartir', '÷'),
-    ];
-    final a = _liveValA.clamp(1, 30);
+    final ops = widget.grade == 1
+        ? const [
+            ('➕ Sumar', '+'),
+            ('➖ Restar', '−'),
+          ]
+        : const [
+            ('➕ Sumar', '+'),
+            ('➖ Restar', '−'),
+            ('✖️ Multiplicar', '×'),
+            ('➗ Repartir', '÷'),
+          ];
+    final activeOpIdx = _liveOpIdx.clamp(0, ops.length - 1);
+    final a = _liveValA.clamp(1, widget.grade == 1 ? 20 : 30);
     final b = _liveValB.clamp(1, 12);
     final String resultText;
-    if (_liveOpIdx == 0) {
+    if (activeOpIdx == 0) {
       resultText = '$a + $b = ${a + b} (Juntamos $a y $b)';
-    } else if (_liveOpIdx == 1) {
+    } else if (activeOpIdx == 1) {
       final big = math.max(a, b);
       final small = math.min(a, b);
       resultText = '$big − $small = ${big - small} (A $big le quitamos $small)';
-    } else if (_liveOpIdx == 2) {
+    } else if (activeOpIdx == 2) {
       final groups = a.clamp(1, 8);
       final perGroup = b.clamp(1, 8);
       resultText =
@@ -3086,7 +3321,7 @@ class _TopicExplanationCardState extends State<_TopicExplanationCard> {
           spacing: 6,
           runSpacing: 6,
           children: List.generate(ops.length, (i) {
-            final isSel = _liveOpIdx == i;
+            final isSel = activeOpIdx == i;
             return GestureDetector(
               onTap: () => setState(() => _liveOpIdx = i),
               child: Container(
@@ -3152,12 +3387,12 @@ class _TopicExplanationCardState extends State<_TopicExplanationCard> {
               ),
               const SizedBox(height: 4),
               Text(
-                _liveOpIdx == 2
+                activeOpIdx == 2
                     ? List.generate(
                         a.clamp(1, 5),
                         (_) => '[${"🍓" * b.clamp(1, 5)}]',
                       ).join(' + ')
-                    : '${"🍎" * a.clamp(1, 10)}   ${ops[_liveOpIdx].$2}   ${"🍏" * b.clamp(1, 10)}',
+                    : '${"🍎" * a.clamp(1, 10)}   ${ops[activeOpIdx].$2}   ${"🍏" * b.clamp(1, 10)}',
                 style: const TextStyle(fontSize: 13),
               ),
             ],
@@ -4140,20 +4375,28 @@ class _ExplanationConceptScenePainter extends CustomPainter {
   final int phase;
   final Color accentColor;
   final int topicOrder;
+  final int grade;
+  final String unitId;
 
   _ExplanationConceptScenePainter({
     required this.family,
     required this.phase,
     required this.accentColor,
     required this.topicOrder,
+    required this.grade,
+    required this.unitId,
   });
 
   void _drawLabel(
     Canvas canvas,
     String text,
     Offset center, {
-    Color color = const Color(0xFF1E293B),
-    double fontSize = 11.5,
+    Color color = const Color(0xFF0F172A),
+    double fontSize = 12.5,
+    Color? backgroundColor,
+    Color? borderColor,
+    double maxWidth = 320,
+    bool withPill = true,
   }) {
     final tp = TextPainter(
       text: TextSpan(
@@ -4165,8 +4408,41 @@ class _ExplanationConceptScenePainter extends CustomPainter {
           color: color,
         ),
       ),
+      textAlign: TextAlign.center,
       textDirection: TextDirection.ltr,
-    )..layout();
+    )..layout(maxWidth: maxWidth);
+
+    if (withPill) {
+      const padH = 12.0;
+      const padV = 5.0;
+      final pillRect = Rect.fromCenter(
+        center: center,
+        width: tp.width + padH * 2,
+        height: tp.height + padV * 2,
+      );
+      final pillRRect = RRect.fromRectAndRadius(
+        pillRect,
+        const Radius.circular(10),
+      );
+      final isWhiteText = color == Colors.white;
+      final bg = backgroundColor ??
+          (isWhiteText
+              ? const Color(0xFF5B21B6)
+              : Colors.white.withValues(alpha: 0.96));
+      final border = borderColor ??
+          (isWhiteText
+              ? const Color(0xFF4C1D95)
+              : accentColor.withValues(alpha: 0.55));
+      canvas.drawRRect(pillRRect, Paint()..color = bg);
+      canvas.drawRRect(
+        pillRRect,
+        Paint()
+          ..color = border
+          ..style = PaintingStyle.stroke
+          ..strokeWidth = 1.5,
+      );
+    }
+
     tp.paint(canvas, Offset(center.dx - tp.width / 2, center.dy - tp.height / 2));
   }
 
@@ -4174,6 +4450,7 @@ class _ExplanationConceptScenePainter extends CustomPainter {
   void paint(Canvas canvas, Size size) {
     final w = size.width;
     final h = size.height;
+    final maxLabelW = math.max(120.0, w - 24);
 
     // Fondo decorativo suave
     canvas.drawRRect(
@@ -4187,7 +4464,7 @@ class _ExplanationConceptScenePainter extends CustomPainter {
     if (family == 'fractions') {
       // Pizza circular a la izquierda + Tubo de poción graduado a la derecha
       final cx = w * 0.30;
-      final cy = h * 0.52;
+      final cy = h * 0.44;
       const r = 36.0;
       final slices = phase == 0 ? 1 : 4;
       final activeSlices = phase == 0
@@ -4208,7 +4485,7 @@ class _ExplanationConceptScenePainter extends CustomPainter {
           Paint()
             ..color = isFilled
                 ? const Color(0xFFEA580C)
-                : const Color(0xFFFED7AA).withValues(alpha: 0.5),
+                : const Color(0xFFFED7AA).withValues(alpha: 0.7),
         );
         canvas.drawArc(
           Rect.fromCircle(center: Offset(cx, cy), radius: r),
@@ -4228,12 +4505,15 @@ class _ExplanationConceptScenePainter extends CustomPainter {
             : phase == 1
                 ? 'Cortado en 4 (1/4)'
                 : '3/4 = 0,75 = 75%',
-        Offset(cx, h - 14),
+        Offset(cx, h - 20),
         color: const Color(0xFF9A3412),
+        backgroundColor: Colors.white,
+        borderColor: const Color(0xFFEA580C),
+        maxWidth: math.max(120.0, w * 0.55),
       );
 
       // Tubo de poción mágica a la derecha
-      final tubeRect = Rect.fromLTWH(w * 0.65, 16, 44, h - 38);
+      final tubeRect = Rect.fromLTWH(w * 0.65, 14, 52, h - 52);
       final fillRatio = phase == 0
           ? 1.0
           : phase == 1
@@ -4254,7 +4534,7 @@ class _ExplanationConceptScenePainter extends CustomPainter {
           ),
           const Radius.circular(10),
         ),
-        Paint()..color = const Color(0xFF10B981).withValues(alpha: 0.8),
+        Paint()..color = const Color(0xFF10B981).withValues(alpha: 0.85),
       );
       canvas.drawRRect(
         RRect.fromRectAndRadius(tubeRect, const Radius.circular(10)),
@@ -4268,6 +4548,9 @@ class _ExplanationConceptScenePainter extends CustomPainter {
         '${(fillRatio * 100).round()}%',
         tubeRect.center,
         color: const Color(0xFF064E3B),
+        fontSize: 12,
+        backgroundColor: Colors.white,
+        borderColor: const Color(0xFF047857),
       );
       return;
     }
@@ -4278,7 +4561,7 @@ class _ExplanationConceptScenePainter extends CustomPainter {
       const rows = 3;
       const cell = 22.0;
       final startX = (w - cols * cell) / 2;
-      final startY = (h - rows * cell) / 2 - 4;
+      final startY = (h - rows * cell) / 2 - 12;
 
       for (int r = 0; r < rows; r++) {
         for (int c = 0; c < cols; c++) {
@@ -4323,8 +4606,11 @@ class _ExplanationConceptScenePainter extends CustomPainter {
             : phase == 1
                 ? 'Área (Adentro) = 4 × 3 = 12 cuadritos (cm²)'
                 : 'Borde = 14 cm  ·  Piso = 12 cm²',
-        Offset(w / 2, h - 13),
+        Offset(w / 2, h - 20),
         color: const Color(0xFF0F766E),
+        backgroundColor: Colors.white,
+        borderColor: const Color(0xFF0F766E),
+        maxWidth: maxLabelW,
       );
       return;
     }
@@ -4332,14 +4618,14 @@ class _ExplanationConceptScenePainter extends CustomPainter {
     if (family == 'algebra' || family == 'stats') {
       // Balanza interactiva que se nivela o gráfica con podio
       final cx = w / 2;
-      final baseBottom = h - 22;
+      final baseBottom = h - 38;
       // Pedestal
       final stand = Path()
         ..moveTo(cx - 16, baseBottom)
         ..lineTo(cx + 16, baseBottom)
         ..lineTo(cx, baseBottom - 36)
         ..close();
-      canvas.drawPath(stand, Paint()..color = const Color(0xFF64748B));
+      canvas.drawPath(stand, Paint()..color = const Color(0xFF475569));
 
       final tilt = phase == 0
           ? -0.12
@@ -4365,31 +4651,33 @@ class _ExplanationConceptScenePainter extends CustomPainter {
       // Platillo izquierdo (Caja x)
       canvas.drawRRect(
         RRect.fromRectAndRadius(
-          const Rect.fromLTWH(-98, -28, 36, 26),
-          const Radius.circular(6),
+          const Rect.fromLTWH(-106, -30, 52, 28),
+          const Radius.circular(8),
         ),
-        Paint()..color = const Color(0xFF7C3AED),
+        Paint()..color = const Color(0xFF6D28D9),
       );
       _drawLabel(
         canvas,
-        phase == 2 ? 'x=6' : 'x+4',
-        const Offset(-80, -15),
+        phase == 2 ? 'x = 6' : 'x + 4',
+        const Offset(-80, -16),
         color: Colors.white,
+        withPill: false,
       );
 
       // Platillo derecho (Resultado)
       canvas.drawRRect(
         RRect.fromRectAndRadius(
-          const Rect.fromLTWH(62, -28, 38, 26),
-          const Radius.circular(6),
+          const Rect.fromLTWH(54, -30, 52, 28),
+          const Radius.circular(8),
         ),
-        Paint()..color = const Color(0xFF10B981),
+        Paint()..color = const Color(0xFF059669),
       );
       _drawLabel(
         canvas,
         phase == 2 ? '6' : '10',
-        const Offset(81, -15),
+        const Offset(80, -16),
         color: Colors.white,
+        withPill: false,
       );
       canvas.restore();
 
@@ -4400,20 +4688,26 @@ class _ExplanationConceptScenePainter extends CustomPainter {
             : phase == 1
                 ? 'Quitamos 4 en ambos lados: x = 10 − 4'
                 : '¡Equilibrio perfecto! x vale 6',
-        Offset(cx, h - 11),
+        Offset(cx, h - 18),
         color: const Color(0xFF92400E),
+        backgroundColor: Colors.white,
+        borderColor: const Color(0xFFD97706),
+        maxWidth: maxLabelW,
       );
       return;
     }
 
     if (family == 'operations') {
-      // 3 Cajas visuales que se unen hacia un cofre de resultado
+      // 3 Cajas visuales centradas que se unen hacia un cofre de resultado
       const groups = 3;
+      const boxW = 56.0;
+      const gap = 16.0;
+      final startX = (w - (groups * boxW + (groups - 1) * gap)) / 2;
       for (int g = 0; g < groups; g++) {
-        final gx = 28.0 + g * 68.0;
-        const gy = 22.0;
+        final gx = startX + g * (boxW + gap);
+        const gy = 18.0;
         final box = RRect.fromRectAndRadius(
-          Rect.fromLTWH(gx, gy, 54, 48),
+          Rect.fromLTWH(gx, gy, boxW, 48),
           const Radius.circular(10),
         );
         canvas.drawRRect(
@@ -4432,7 +4726,7 @@ class _ExplanationConceptScenePainter extends CustomPainter {
         );
         // 4 bolitas dentro de cada caja
         for (int d = 0; d < 4; d++) {
-          final dx = gx + 16 + (d % 2) * 20;
+          final dx = gx + 18 + (d % 2) * 20;
           final dy = gy + 15 + (d ~/ 2) * 18;
           canvas.drawCircle(
             Offset(dx, dy),
@@ -4441,50 +4735,207 @@ class _ExplanationConceptScenePainter extends CustomPainter {
           );
         }
       }
-      if (phase >= 1) {
+      _drawLabel(
+        canvas,
+        phase == 0
+            ? '3 cajas con 4 fichas en cada una'
+            : phase == 1
+                ? '4 + 4 + 4  →  3 × 4'
+                : '🎉 ¡3 grupos de 4 = 12 en total!',
+        Offset(w / 2, h - 20),
+        color: const Color(0xFF5B21B6),
+        backgroundColor: Colors.white,
+        borderColor: const Color(0xFF7C3AED),
+        maxWidth: maxLabelW,
+      );
+      return;
+    }
+
+    // Grado 1° ('numbers' o unit-001): escenas visuales variadas sin repetir bloques
+    if (family == 'numbers' && (grade == 1 || unitId == 'unit-001')) {
+      if (phase == 0) {
+        final cards = [
+          (
+            label: '☀️ 1 = Uno',
+            bg: const Color(0xFFFEF3C7),
+            border: const Color(0xFFF59E0B),
+            text: const Color(0xFF78350F),
+          ),
+          (
+            label: '🔺 3 lados',
+            bg: const Color(0xFFFEE2E2),
+            border: const Color(0xFFEF4444),
+            text: const Color(0xFF991B1B),
+          ),
+          (
+            label: '✋ 5 dedos',
+            bg: const Color(0xFFEDE9FE),
+            border: const Color(0xFF7C3AED),
+            text: const Color(0xFF4C1D95),
+          ),
+        ];
+        final cardW = math.min(102.0, (w - 44) / 3);
+        const cardH = 54.0;
+        const gap = 10.0;
+        final startX = (w - (cards.length * cardW + (cards.length - 1) * gap)) / 2;
+        for (int i = 0; i < cards.length; i++) {
+          final c = cards[i];
+          final cx = startX + i * (cardW + gap) + cardW / 2;
+          const cy = 44.0;
+          final rrect = RRect.fromRectAndRadius(
+            Rect.fromCenter(center: Offset(cx, cy), width: cardW, height: cardH),
+            const Radius.circular(12),
+          );
+          canvas.drawRRect(rrect, Paint()..color = c.bg);
+          canvas.drawRRect(
+            rrect,
+            Paint()
+              ..color = c.border
+              ..style = PaintingStyle.stroke
+              ..strokeWidth = 2,
+          );
+          _drawLabel(
+            canvas,
+            c.label,
+            Offset(cx, cy),
+            color: c.text,
+            fontSize: 12,
+            maxWidth: cardW - 8,
+            withPill: false,
+          );
+        }
         _drawLabel(
           canvas,
-          phase == 1 ? '4 + 4 + 4  →  3 × 4' : '🎉 ¡3 grupos de 4 = 12 en total!',
-          Offset(w / 2, h - 18),
-          color: const Color(0xFF5B21B6),
+          '¡Contamos lados, dedos y objetos del 1 al 10!',
+          Offset(w / 2, h - 22),
+          color: const Color(0xFF1E3A8A),
+          backgroundColor: Colors.white,
+          borderColor: const Color(0xFF2563EB),
+          maxWidth: maxLabelW,
+        );
+      } else if (phase == 1) {
+        final chipW = math.min(28.0, (w - 44) / 10);
+        const chipH = 34.0;
+        const gap = 2.5;
+        final startX = (w - (10 * chipW + 9 * gap)) / 2;
+        for (int i = 1; i <= 10; i++) {
+          final x = startX + (i - 1) * (chipW + gap);
+          final isFour = i == 4;
+          final isEight = i == 8;
+          final isRef = i == 5 || i == 7;
+          final bg = isFour
+              ? const Color(0xFFEA580C)
+              : isEight
+                  ? const Color(0xFF059669)
+                  : isRef
+                      ? const Color(0xFFDBEAFE)
+                      : Colors.white;
+          final border = isFour
+              ? const Color(0xFF9A3412)
+              : isEight
+                  ? const Color(0xFF065F46)
+                  : isRef
+                      ? const Color(0xFF2563EB)
+                      : const Color(0xFF94A3B8);
+          final rrect = RRect.fromRectAndRadius(
+            Rect.fromLTWH(x, 26, chipW, chipH),
+            const Radius.circular(7),
+          );
+          canvas.drawRRect(rrect, Paint()..color = bg);
+          canvas.drawRRect(
+            rrect,
+            Paint()
+              ..color = border
+              ..style = PaintingStyle.stroke
+              ..strokeWidth = (isFour || isEight) ? 2 : 1.3,
+          );
+          _drawLabel(
+            canvas,
+            '$i',
+            Offset(x + chipW / 2, 26 + chipH / 2),
+            color: (isFour || isEight)
+                ? Colors.white
+                : const Color(0xFF0F172A),
+            fontSize: 12,
+            withPill: false,
+          );
+        }
+        _drawLabel(
+          canvas,
+          'Antes del 5 va el 4 (−1)  ·  Después del 7 va el 8 (+1)',
+          Offset(w / 2, h - 22),
+          color: const Color(0xFF1E3A8A),
+          backgroundColor: Colors.white,
+          borderColor: const Color(0xFF2563EB),
+          maxWidth: maxLabelW,
         );
       } else {
         _drawLabel(
           canvas,
-          '3 cajas con 4 fichas en cada una',
-          Offset(w / 2, h - 18),
-          color: const Color(0xFF5B21B6),
+          '✋ 5 dedos  +  ✋ 5 dedos  =  👐 10 (1 Decena)',
+          Offset(w / 2, 46),
+          color: Colors.white,
+          fontSize: 13,
+          backgroundColor: const Color(0xFF6D28D9),
+          borderColor: const Color(0xFF4C1D95),
+          maxWidth: maxLabelW,
+        );
+        _drawLabel(
+          canvas,
+          '10 unidades juntas forman 1 Decena (diez)',
+          Offset(w / 2, h - 22),
+          color: const Color(0xFF4C1D95),
+          fontSize: 12.5,
+          backgroundColor: Colors.white,
+          borderColor: const Color(0xFF6D28D9),
+          maxWidth: maxLabelW,
         );
       }
       return;
     }
 
-    // Por defecto: 'numbers' — 10 unidades que se agrupan en 1 decena y 1 centena
-    final boxPaint = Paint()..color = const Color(0xFF10B981);
+    // Por defecto: 'numbers' (grados 2° a 5°) — 10 unidades que se agrupan en 1 decena y 1 centena
+    final boxPaint = Paint()..color = const Color(0xFF059669);
     if (phase == 0) {
+      const cellW = 24.0;
+      const gap = 8.0;
+      final startX = (w - (5 * cellW + 4 * gap)) / 2;
+      const startY = 14.0;
       for (int i = 0; i < 10; i++) {
-        final x = 28.0 + (i % 5) * 26.0;
-        final y = 24.0 + (i ~/ 5) * 26.0;
-        canvas.drawRRect(
-          RRect.fromRectAndRadius(
-            Rect.fromLTWH(x, y, 20, 20),
-            const Radius.circular(5),
-          ),
-          boxPaint,
+        final x = startX + (i % 5) * (cellW + gap);
+        final y = startY + (i ~/ 5) * (cellW + gap);
+        final rrect = RRect.fromRectAndRadius(
+          Rect.fromLTWH(x, y, cellW, cellW),
+          const Radius.circular(6),
+        );
+        canvas.drawRRect(rrect, boxPaint);
+        _drawLabel(
+          canvas,
+          '1',
+          Offset(x + cellW / 2, y + cellW / 2),
+          color: Colors.white,
+          fontSize: 11,
+          withPill: false,
         );
       }
       _drawLabel(
         canvas,
         '10 Unidades sueltas (10 fichitas de 1)',
-        Offset(w / 2, h - 15),
-        color: const Color(0xFF1D4ED8),
+        Offset(w / 2, h - 22),
+        color: const Color(0xFF1E3A8A),
+        backgroundColor: Colors.white,
+        borderColor: const Color(0xFF2563EB),
+        maxWidth: maxLabelW,
       );
     } else if (phase == 1) {
+      const barW = 16.0;
+      const gap = 2.0;
+      final startX = (w - (10 * barW + 9 * gap)) / 2;
       for (int i = 0; i < 10; i++) {
-        final x = 22.0 + i * 14.0;
+        final x = startX + i * (barW + gap);
         canvas.drawRRect(
           RRect.fromRectAndRadius(
-            Rect.fromLTWH(x, 36, 13, 28),
+            Rect.fromLTWH(x, 26, barW, 40),
             const Radius.circular(4),
           ),
           Paint()..color = const Color(0xFF2563EB),
@@ -4492,29 +4943,33 @@ class _ExplanationConceptScenePainter extends CustomPainter {
       }
       _drawLabel(
         canvas,
-        '¡Se pegan las 10 unidades formando 1 barra!',
-        Offset(w / 2, h - 15),
-        color: const Color(0xFF1D4ED8),
+        '¡10 unidades juntas forman 1 Decena (10)!',
+        Offset(w / 2, h - 22),
+        color: const Color(0xFF1E3A8A),
+        backgroundColor: Colors.white,
+        borderColor: const Color(0xFF2563EB),
+        maxWidth: maxLabelW,
       );
     } else {
-      canvas.drawRRect(
-        RRect.fromRectAndRadius(
-          Rect.fromLTWH(w / 2 - 70, 24, 140, 44),
-          const Radius.circular(10),
-        ),
-        Paint()..color = const Color(0xFF7C3AED),
-      );
       _drawLabel(
         canvas,
         '1 Decena = 10 U  ·  10 Decenas = 1 Centena (100)',
         Offset(w / 2, 46),
         color: Colors.white,
+        fontSize: 13,
+        backgroundColor: const Color(0xFF6D28D9),
+        borderColor: const Color(0xFF4C1D95),
+        maxWidth: maxLabelW,
       );
       _drawLabel(
         canvas,
-        '¡Cada casilla a la izquierda vale ×10!',
-        Offset(w / 2, h - 15),
-        color: const Color(0xFF5B21B6),
+        '¡Cada casilla a la izquierda vale 10 veces más (×10)!',
+        Offset(w / 2, h - 22),
+        color: const Color(0xFF4C1D95),
+        fontSize: 12.5,
+        backgroundColor: Colors.white,
+        borderColor: const Color(0xFF6D28D9),
+        maxWidth: maxLabelW,
       );
     }
   }
@@ -4524,7 +4979,9 @@ class _ExplanationConceptScenePainter extends CustomPainter {
       old.family != family ||
       old.phase != phase ||
       old.accentColor != accentColor ||
-      old.topicOrder != topicOrder;
+      old.topicOrder != topicOrder ||
+      old.grade != grade ||
+      old.unitId != unitId;
 }
 
 class _ConceptBuilderCanvasPainter extends CustomPainter {
@@ -4628,7 +5085,7 @@ class _ConceptBuilderCanvasPainter extends CustomPainter {
       tp.paint(canvas, Offset(bx + 18 - tp.width / 2, by + 14 - tp.height / 2));
     }
 
-    // Texto guía en la base del lienzo
+    // Texto guía en la base del lienzo dentro de píldora blanca de alto contraste
     final statusText = pieces.isEmpty
         ? '👆 Toca los botones de abajo (o toca este lienzo) para empezar a armar'
         : 'Construido: $currentTotal / Meta: $targetValue $unitName';
@@ -4637,14 +5094,34 @@ class _ConceptBuilderCanvasPainter extends CustomPainter {
         text: statusText,
         style: const TextStyle(
           fontFamily: 'Nunito',
-          fontSize: 11.5,
+          fontSize: 12,
           fontWeight: FontWeight.w900,
           color: Color(0xFF0F172A),
         ),
       ),
       textDirection: TextDirection.ltr,
-    )..layout();
-    statusTp.paint(canvas, Offset(14, h - 22));
+    )..layout(maxWidth: math.max(120.0, w - 70.0));
+    final pillRect = RRect.fromRectAndRadius(
+      Rect.fromLTWH(
+        10,
+        h - statusTp.height - 12,
+        statusTp.width + 16,
+        statusTp.height + 8,
+      ),
+      const Radius.circular(8),
+    );
+    canvas.drawRRect(
+      pillRect,
+      Paint()..color = Colors.white.withValues(alpha: 0.95),
+    );
+    canvas.drawRRect(
+      pillRect,
+      Paint()
+        ..color = const Color(0xFF0F766E).withValues(alpha: 0.45)
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = 1.2,
+    );
+    statusTp.paint(canvas, Offset(18, h - statusTp.height - 8));
   }
 
   @override
@@ -4793,9 +5270,15 @@ _UnitPrepSpec _buildUnitSpec(String unitId, int grade) {
       mascotSpeeches: [
         isNegatives
             ? '¡Hola! En 5° descubrimos los números bajo cero (−). Imagina un ascensor con sótanos o un termómetro en el nevado del Ruiz 🏔️.'
-            : '¡Hola! Los números se organizan en casillas como casitas: Unidades (1), Decenas (10), Centenas (100) y Miles 🏠.',
-        '¡Cada vez que juntas 10 fichas en una casilla, se transforman en 1 ficha de la casilla de la izquierda! ✨',
-        'En la Mesa Interactiva de abajo puedes arrastrar bloques de números para armar cantidades gigantes.',
+            : unitId == 'unit-001'
+                ? '¡Hola! Hoy aprendemos a contar del 1 al 20 con los dedos de la mano (5), las figuras (3 lados del triángulo) y objetos 🌟.'
+                : '¡Hola! Los números se organizan en casillas como casitas: Unidades (1), Decenas (10), Centenas (100) y Miles 🏠.',
+        unitId == 'unit-001'
+            ? '✋ Recuerda: 1 mano tiene 5 dedos, un triángulo tiene 3 lados y con 2 manos (5 + 5) formas 10 (1 Decena).'
+            : '¡Cada vez que juntas 10 fichas en una casilla, se transforman en 1 ficha de la casilla de la izquierda! ✨',
+        unitId == 'unit-001'
+            ? 'En la Mesa Interactiva de abajo tienes 6 fichas distintas (+1, +2, +3, +4, +5 y +10) para jugar y contar.'
+            : 'En la Mesa Interactiva de abajo puedes arrastrar bloques de números para armar cantidades gigantes.',
       ],
       lessonExplanations: List.generate(math.max(lessons.length, 5), (i) {
         final lTitle = i < lessons.length ? lessons[i].title : title;
@@ -4811,6 +5294,76 @@ _UnitPrepSpec _buildUnitSpec(String unitId, int grade) {
                 '¡Entre dos números negativos, es MAYOR el que está más cerquita del 0!',
           );
         }
+        if (unitId == 'unit-001') {
+          return switch (i) {
+            0 => const _LessonPrepExplanation(
+                storyExplanation:
+                    'En «Números del 1 al 10» contamos cosas de todos los días:\n'
+                    '• 1 = uno, 2 = dos, 3 = tres.\n'
+                    '• Un triángulo 🔺 tiene 3 lados.\n'
+                    '• Una mano ✋ tiene 5 dedos.\n'
+                    '• En orden: ANTES del 5 va el 4, y DESPUÉS del 7 sigue el 8.',
+                exampleEmoji: '✋',
+                stepByStepExample:
+                    'Cuenta los 5 dedos de tu mano (1, 2, 3, 4, 5) y los 3 lados de un triángulo (1, 2, 3). Si vas al 7 y das un paso adelante llegas al 8.',
+                visualPrompt: '¿Cuántos dedos tiene una mano?',
+                secretTrick:
+                    '¡Recuerda estos tres datos clave: 1 mano = 5 dedos, 1 triángulo = 3 lados, antes del 5 va el 4 y después del 7 va el 8!',
+              ),
+            1 => const _LessonPrepExplanation(
+                storyExplanation:
+                    'En «Contar hasta 20» unimos 10 unidades (1 Decena) con más fichitas para llegar al 20:\n'
+                    '• 4 = cuatro, 5 = cinco, 6 = seis.\n'
+                    '• 10 + 6 = 16, y 11 + 4 = 15.\n'
+                    '• Después del 15 sigue el 16, y antes del 20 va el 19.',
+                exampleEmoji: '🔟',
+                stepByStepExample:
+                    'Si tienes 10 fichas y agregas 6 más, cuentas 11, 12, 13, 14, 15, ¡16! Y un paso antes de llegar a 20 está el 19.',
+                visualPrompt: '¿Qué número sigue después del 15?',
+                secretTrick:
+                    '¡10 más cualquier número del 1 al 9 arma los números del 11 al 19 (10 + 6 = 16)!',
+              ),
+            2 => const _LessonPrepExplanation(
+                storyExplanation:
+                    'En «Antes y después» usamos la fila ordenada de números:\n'
+                    '• ANTES significa 1 paso hacia atrás (−1): antes del 9 va el 8, y antes del 7 va el 6.\n'
+                    '• DESPUÉS significa 1 paso hacia adelante (+1): después del 14 va el 15, y después del 12 va el 13.\n'
+                    '• Nombres: 7 = siete, 8 = ocho, 9 = nueve.',
+                exampleEmoji: '🐸',
+                stepByStepExample:
+                    'Si estás parado en el 9 y das 1 salto atrás llegas al 8 (antes). Si estás en el 14 y das 1 salto adelante llegas al 15 (después).',
+                visualPrompt: '¿Qué número va ANTES del 9?',
+                secretTrick:
+                    '¡ANTES = quita 1 (−1) · DESPUÉS = suma 1 (+1)!',
+              ),
+            3 => const _LessonPrepExplanation(
+                storyExplanation:
+                    'En «Comparar números» descubrimos qué cantidad es MAYOR (más grande) o MENOR (más pequeña):\n'
+                    '• 7 es MAYOR que 4, y 16 es MAYOR que 15.\n'
+                    '• 9 es MENOR que 10, y 13 es MENOR que 17.\n'
+                    '• Nombres: 10 = diez, 11 = once, 12 = doce.',
+                exampleEmoji: '🐊',
+                stepByStepExample:
+                    'El número que aparece más tarde al contar es MAYOR: como 7 viene después que 4, entonces 7 es mayor que 4; y 9 viene antes que 10, así que 9 es menor que 10.',
+                visualPrompt: '¿Cuál número es MAYOR: 7 o 4?',
+                secretTrick:
+                    '¡Cuando cuentas 1, 2, 3..., el número que dices más adelante siempre es MAYOR!',
+              ),
+            _ => const _LessonPrepExplanation(
+                storyExplanation:
+                    'En «¡Desafío de números!» juntamos todo lo aprendido hasta el 20:\n'
+                    '• Nombres: 13 = trece, 14 = catorce, 15 = quince.\n'
+                    '• El DOBLE es sumar el mismo número dos veces: el doble de 6 es 6 + 6 = 12.\n'
+                    '• 8 + 7 = 15, y si a 20 le quitas 5 quedan 15 (20 − 5 = 15).',
+                exampleEmoji: '🏆',
+                stepByStepExample:
+                    'Para hallar el doble de 6, junta 6 deditos + 6 deditos = 12. Y entre 12, 18, 15 y 9, el número más grande es 18.',
+                visualPrompt: '¿Cuánto es 8 + 7?',
+                secretTrick:
+                    '¡El DOBLE de un número es sumarlo consigo mismo (doble de 6 = 6 + 6 = 12)!',
+              ),
+          };
+        }
         return _LessonPrepExplanation(
           storyExplanation:
               'En «$lTitle» aprendemos cómo leer, escribir y comparar números según el lugar donde vive cada dígito. ¡Un mismo número vale distinto según su casilla!',
@@ -4818,13 +5371,11 @@ _UnitPrepSpec _buildUnitSpec(String unitId, int grade) {
           stepByStepExample: grade <= 2
               ? 'En el número 347: el 3 vale 300 (3 centenas), el 4 vale 40 (4 decenas) y el 7 vale 7 unidades.'
               : 'En el número 45.320: mira de izquierda a derecha cada casilla para saber su valor o redondearlo.',
-          visualPrompt: grade == 1
-              ? 'En el número 48, ¿cuántas decenas y unidades hay?'
-              : grade == 2
-                  ? 'En el número 537, ¿cuánto vale el dígito 5?'
-                  : grade == 3
-                      ? 'En el número 24.500, ¿cuántas decenas de mil hay?'
-                      : 'En el número 648.320, ¿qué valor representa el dígito 6?',
+          visualPrompt: grade == 2
+              ? 'En el número 537, ¿cuánto vale el dígito 5?'
+              : grade == 3
+                  ? 'En el número 24.500, ¿cuántas decenas de mil hay?'
+                  : 'En el número 648.320, ¿qué valor representa el dígito 6?',
           secretTrick:
               '¡Mira primero la casilla de más a la izquierda: esa es la que manda al comparar dos números!',
         );
@@ -4840,30 +5391,57 @@ _UnitPrepSpec _buildUnitSpec(String unitId, int grade) {
               _BoardPreset('☀️', '+5', 5, Color(0xFFEA580C)),
               _BoardPreset('☀️', '+10', 10, Color(0xFFEF4444)),
             ]
-          : [
-              _BoardPreset('🟪', '+$scale', scale, const Color(0xFF7C3AED)),
-              _BoardPreset('🟪', '+$scale', scale, const Color(0xFF7C3AED)),
-              _BoardPreset(
-                '🟦',
-                '+${math.max(1, scale ~/ 10)}',
-                math.max(1, scale ~/ 10),
-                const Color(0xFF2563EB),
-              ),
-              _BoardPreset(
-                '🟦',
-                '+${math.max(1, scale ~/ 10)}',
-                math.max(1, scale ~/ 10),
-                const Color(0xFF2563EB),
-              ),
-              const _BoardPreset('🟩', '+1', 1, Color(0xFF10B981)),
-              const _BoardPreset('🟩', '+1', 1, Color(0xFF10B981)),
-            ],
+          : unitId == 'unit-001' || grade == 1
+              ? const [
+                  _BoardPreset('☝️', '+1', 1, Color(0xFF10B981)),
+                  _BoardPreset('🍒', '+2', 2, Color(0xFFEC4899)),
+                  _BoardPreset('🔺', '+3', 3, Color(0xFFEF4444)),
+                  _BoardPreset('🍀', '+4', 4, Color(0xFF0D9488)),
+                  _BoardPreset('✋', '+5', 5, Color(0xFFF59E0B)),
+                  _BoardPreset('👐', '+10', 10, Color(0xFF7C3AED)),
+                ]
+              : grade == 2
+                  ? const [
+                      _BoardPreset('🟪', '+100', 100, Color(0xFF7C3AED)),
+                      _BoardPreset('🟦', '+50', 50, Color(0xFF2563EB)),
+                      _BoardPreset('💠', '+20', 20, Color(0xFF06B6D4)),
+                      _BoardPreset('🔶', '+10', 10, Color(0xFFEA580C)),
+                      _BoardPreset('🟨', '+5', 5, Color(0xFFD97706)),
+                      _BoardPreset('🟩', '+1', 1, Color(0xFF10B981)),
+                    ]
+                  : [
+                      _BoardPreset('🟪', '+$scale', scale, const Color(0xFF7C3AED)),
+                      _BoardPreset(
+                        '🟦',
+                        '+${scale ~/ 2}',
+                        scale ~/ 2,
+                        const Color(0xFF2563EB),
+                      ),
+                      _BoardPreset(
+                        '💠',
+                        '+${scale ~/ 10}',
+                        scale ~/ 10,
+                        const Color(0xFF06B6D4),
+                      ),
+                      _BoardPreset(
+                        '🔶',
+                        '+${math.max(10, scale ~/ 20)}',
+                        math.max(10, scale ~/ 20),
+                        const Color(0xFFEA580C),
+                      ),
+                      const _BoardPreset('🟨', '+10', 10, Color(0xFFD97706)),
+                      const _BoardPreset('🟩', '+1', 1, Color(0xFF10B981)),
+                    ],
       sandboxSummaryBuilder: (count, total) =>
           'Suma total dentro de la caja = $total',
       tableTitle: isNegatives
           ? 'Tablita de Enteros Positivos y Negativos'
-          : 'Tablita Mágica de Valor Posicional',
-      tableColumnsHeader: ('Posición / Símbolo', 'Valor en Unidades', 'Ejemplo'),
+          : unitId == 'unit-001'
+              ? 'Tablita de Números y Conteo (1° de Primaria)'
+              : 'Tablita Mágica de Valor Posicional',
+      tableColumnsHeader: unitId == 'unit-001'
+          ? ('Tema / Grupo', 'Lo que debes recordar', 'Ejemplo')
+          : ('Posición / Símbolo', 'Valor en Unidades', 'Ejemplo'),
       tableRows: isNegatives
           ? const [
               _TableRowData(
@@ -4891,48 +5469,91 @@ _UnitPrepSpec _buildUnitSpec(String unitId, int grade) {
                     'Están a la izquierda del 0: representan frío bajo cero, sótanos o deudas.',
               ),
             ]
-          : const [
-              _TableRowData(
-                emoji: '🟩',
-                col1: 'Unidad (U)',
-                col2: 'Vale 1',
-                col3: '7 U = 7',
-                kidExplanation:
-                    'Es una fichita suelta. Cuando juntas 10 unidades, formas 1 decena.',
-              ),
-              _TableRowData(
-                emoji: '🟦',
-                col1: 'Decena (D)',
-                col2: 'Vale 10',
-                col3: '4 D = 40',
-                kidExplanation:
-                    'Es un paquete de 10 unidades. ¡Contamos de 10 en 10: 10, 20, 30, 40...!',
-              ),
-              _TableRowData(
-                emoji: '🟪',
-                col1: 'Centena (C)',
-                col2: 'Vale 100',
-                col3: '5 C = 500',
-                kidExplanation:
-                    'Son 10 decenas juntas (100 unidades). ¡Como una caja grande de 100 fichas!',
-              ),
-              _TableRowData(
-                emoji: '🟧',
-                col1: 'Unidad de Mil (UM)',
-                col2: 'Vale 1.000',
-                col3: '3 UM = 3.000',
-                kidExplanation:
-                    'Son 10 centenas juntas. Se escribe con un puntico de mil: 1.000.',
-              ),
-              _TableRowData(
-                emoji: '🟥',
-                col1: 'Centena de Mil / Millón',
-                col2: '100.000 / 1.000.000',
-                col3: '6 CM = 600.000',
-                kidExplanation:
-                    'Para números gigantes como los habitantes de las ciudades de Colombia.',
-              ),
-            ],
+          : unitId == 'unit-001'
+              ? const [
+                  _TableRowData(
+                    emoji: '🔺',
+                    col1: '1 al 3 y Triángulo',
+                    col2: '1=uno, 2=dos, 3=tres',
+                    col3: 'Triángulo = 3 lados',
+                    kidExplanation:
+                        'Todo triángulo tiene exactamente 3 lados rectos y 3 esquinas.',
+                  ),
+                  _TableRowData(
+                    emoji: '✋',
+                    col1: '4 al 6 y la Mano',
+                    col2: '4=cuatro, 5=cinco, 6=seis',
+                    col3: '1 mano = 5 dedos',
+                    kidExplanation:
+                        'Cada mano tiene 5 dedos. Antes del 5 está el 4.',
+                  ),
+                  _TableRowData(
+                    emoji: '🐸',
+                    col1: '7 al 9: Antes/Después',
+                    col2: '7=siete, 8=ocho, 9=nueve',
+                    col3: 'Después del 7 va 8',
+                    kidExplanation:
+                        'Antes significa 1 menos (−1) y después significa 1 más (+1).',
+                  ),
+                  _TableRowData(
+                    emoji: '👐',
+                    col1: 'La Decena (10)',
+                    col2: '5 dedos + 5 dedos',
+                    col3: '10=diez (1 Decena)',
+                    kidExplanation:
+                        'Cuando juntas 10 unidades sueltas formas 1 Decena (como tus 2 manos).',
+                  ),
+                  _TableRowData(
+                    emoji: '🔟',
+                    col1: 'Del 11 al 20',
+                    col2: '10 + unidades sueltas',
+                    col3: '10 + 6 = 16 · Doble de 6 = 12',
+                    kidExplanation:
+                        '11=once, 12=doce, 13=trece, 14=catorce, 15=quince. El doble es sumar dos veces.',
+                  ),
+                ]
+              : const [
+                  _TableRowData(
+                    emoji: '🟩',
+                    col1: 'Unidad (U)',
+                    col2: 'Vale 1',
+                    col3: '7 U = 7',
+                    kidExplanation:
+                        'Es una fichita suelta. Cuando juntas 10 unidades, formas 1 decena.',
+                  ),
+                  _TableRowData(
+                    emoji: '🟦',
+                    col1: 'Decena (D)',
+                    col2: 'Vale 10',
+                    col3: '4 D = 40',
+                    kidExplanation:
+                        'Es un paquete de 10 unidades. ¡Contamos de 10 en 10: 10, 20, 30, 40...!',
+                  ),
+                  _TableRowData(
+                    emoji: '🟪',
+                    col1: 'Centena (C)',
+                    col2: 'Vale 100',
+                    col3: '5 C = 500',
+                    kidExplanation:
+                        'Son 10 decenas juntas (100 unidades). ¡Como una caja grande de 100 fichas!',
+                  ),
+                  _TableRowData(
+                    emoji: '🟧',
+                    col1: 'Unidad de Mil (UM)',
+                    col2: 'Vale 1.000',
+                    col3: '3 UM = 3.000',
+                    kidExplanation:
+                        'Son 10 centenas juntas. Se escribe con un puntico de mil: 1.000.',
+                  ),
+                  _TableRowData(
+                    emoji: '🟥',
+                    col1: 'Centena de Mil / Millón',
+                    col2: '100.000 / 1.000.000',
+                    col3: '6 CM = 600.000',
+                    kidExplanation:
+                        'Para números gigantes como los habitantes de las ciudades de Colombia.',
+                  ),
+                ],
     );
   }
 
@@ -4947,6 +5568,8 @@ _UnitPrepSpec _buildUnitSpec(String unitId, int grade) {
     final isMultDiv = lower.contains('tabla') ||
         lower.contains('multiplic') ||
         lower.contains('divisi');
+    final isGrade1Sum = grade == 1 && unitId == 'unit-002';
+    final isGrade1Sub = grade == 1 && unitId == 'unit-003';
     return _UnitPrepSpec(
       mascotName: mascot.$1,
       mascotRole: mascot.$2,
@@ -4954,12 +5577,42 @@ _UnitPrepSpec _buildUnitSpec(String unitId, int grade) {
       mascotSpeeches: [
         isMultDiv
             ? '¡Multiplicar es un súper poder para no sumar uno por uno! ⚡ Y dividir es repartir un tesoro en partes iguales.'
-            : '¡Sumar es juntar cosas para tener más, y restar es quitar o descubrir cuánto falta! 🌟',
-        'Arrastra las fichas en la Mesa Interactiva para armar grupos iguales y ver cuánto suman.',
+            : isGrade1Sum
+                ? '¡Sumar (+) es juntar frutas, juguetes o dedos para tener más! Si sumas 0, el número se queda igualito 🌟.'
+                : isGrade1Sub
+                    ? '¡Restar (−) es quitar o comerse galletas para saber cuántas quedan! El número más grande va primero 🍪.'
+                    : '¡Sumar es juntar cosas para tener más, y restar es quitar o descubrir cuánto falta! 🌟',
+        'Arrastra las fichas de la Mesa Interactiva para juntar frutas distintas y ver cuánto suman.',
         'Toca cada fila de la Tablita Mágica abajo para descubrir los trucos secretos de las operaciones.',
       ],
       lessonExplanations: List.generate(math.max(lessons.length, 5), (i) {
         final lTitle = i < lessons.length ? lessons[i].title : title;
+        if (isGrade1Sum) {
+          return _LessonPrepExplanation(
+            storyExplanation:
+                'En «$lTitle» juntamos grupos de cosas hasta llegar a 20. Por ejemplo: 2 mangos + 1 mango = 3 mangos, y si sumas 0 (0 + 4 = 4), ¡no cambia nada!',
+            exampleEmoji: '🥭',
+            stepByStepExample:
+                'Empieza en el número más grande y cuenta hacia adelante: en 6 + 4 = 10, o en 8 + 6 = 14.',
+            visualPrompt:
+                'Tienes 2 mangos y te dan 1 más. ¿Cuánto es 2 + 1?',
+            secretTrick:
+                '¡Sumar (+) es juntar más cosas; sumar 0 deja el número igualito!',
+          );
+        }
+        if (isGrade1Sub) {
+          return _LessonPrepExplanation(
+            storyExplanation:
+                'En «$lTitle» aprendemos a quitar o sacar cosas para saber cuántas quedan. Si tenías 5 galletas y te comiste 2, haces 5 − 2 = 3.',
+            exampleEmoji: '🍪',
+            stepByStepExample:
+                'Pon el número grande primero y cuenta hacia atrás: en 10 − 3 = 7, y en 15 − 7 = 8.',
+            visualPrompt:
+                'Había 5 galletas y te comiste 2. ¿Cuánto es 5 − 2?',
+            secretTrick:
+                '¡Restar (−) es quitar! También puedes contar cuánto le falta al número pequeño para llegar al grande.',
+          );
+        }
         return _LessonPrepExplanation(
           storyExplanation: isMultDiv
               ? 'En «$lTitle» usamos grupos iguales: por ejemplo, 4 cajas con 6 colores cada una es 4 × 6 = 24. Y si repartimos 24 colores entre 4 amigos, a cada uno le tocan 6.'
@@ -4979,26 +5632,28 @@ _UnitPrepSpec _buildUnitSpec(String unitId, int grade) {
           isMultDiv ? 'Zona de Grupos Iguales' : 'Canasta de Operaciones',
       boardPresets: isMultDiv
           ? const [
-              _BoardPreset('🍓', 'Grupo ×2', 2, Color(0xFFEC4899)),
-              _BoardPreset('🍓', 'Grupo ×2', 2, Color(0xFFEC4899)),
-              _BoardPreset('🍊', 'Grupo ×3', 3, Color(0xFFF59E0B)),
-              _BoardPreset('🍊', 'Grupo ×3', 3, Color(0xFFF59E0B)),
-              _BoardPreset('🍇', 'Grupo ×5', 5, Color(0xFF8B5CF6)),
-              _BoardPreset('🍇', 'Grupo ×5', 5, Color(0xFF8B5CF6)),
+              _BoardPreset('🍓', '×2', 2, Color(0xFFEC4899)),
+              _BoardPreset('🍊', '×3', 3, Color(0xFFF59E0B)),
+              _BoardPreset('🍀', '×4', 4, Color(0xFF10B981)),
+              _BoardPreset('🍇', '×5', 5, Color(0xFF8B5CF6)),
+              _BoardPreset('🎲', '×6', 6, Color(0xFF2563EB)),
+              _BoardPreset('🔟', '×10', 10, Color(0xFFEA580C)),
             ]
           : const [
+              _BoardPreset('🍒', '+1', 1, Color(0xFFEC4899)),
+              _BoardPreset('🍋', '+2', 2, Color(0xFFD97706)),
+              _BoardPreset('🍊', '+3', 3, Color(0xFFEA580C)),
               _BoardPreset('🍎', '+5', 5, Color(0xFFEF4444)),
-              _BoardPreset('🍎', '+5', 5, Color(0xFFEF4444)),
+              _BoardPreset('🍍', '+8', 8, Color(0xFF7C3AED)),
               _BoardPreset('🍐', '+10', 10, Color(0xFF10B981)),
-              _BoardPreset('🍐', '+10', 10, Color(0xFF10B981)),
-              _BoardPreset('🍋', '+2', 2, Color(0xFFF59E0B)),
-              _BoardPreset('🍋', '+3', 3, Color(0xFFF59E0B)),
             ],
       sandboxSummaryBuilder: (count, total) =>
           'En la canasta juntaste $count grupos = $total en total',
       tableTitle: isMultDiv
           ? 'Tablita Mágica de Multiplicación y División'
-          : 'Tablita de Estrategias de Suma y Resta',
+          : (isGrade1Sum || isGrade1Sub)
+              ? 'Tablita Fácil de Suma y Resta (Hasta 20)'
+              : 'Tablita de Estrategias de Suma y Resta',
       tableColumnsHeader: ('Truco / Tabla', 'Cómo funciona', 'Ejemplo'),
       tableRows: isMultDiv
           ? const [
@@ -5043,32 +5698,67 @@ _UnitPrepSpec _buildUnitSpec(String unitId, int grade) {
                     'Pregúntate al revés: ¿qué número multiplicado por 6 da 24? ¡Es el 4!',
               ),
             ]
-          : const [
-              _TableRowData(
-                emoji: '➕',
-                col1: 'Amigos del 10',
-                col2: 'Parejas que suman 10',
-                col3: '7 + 3 = 10 · 8 + 2 = 10',
-                kidExplanation:
-                    'Si memorizas las parejas que dan 10, podrás sumar cualquier número rapidísimo.',
-              ),
-              _TableRowData(
-                emoji: '🎒',
-                col1: 'Suma llevando',
-                col2: '10 U forman 1 D',
-                col3: '18 + 7 → 8+7=15 (llevo 1)',
-                kidExplanation:
-                    'Cuando las unidades pasan de 9, dejas las unidades sueltas y subes 1 decena.',
-              ),
-              _TableRowData(
-                emoji: '🎁',
-                col1: 'Resta prestando',
-                col2: '1 D se abre en 10 U',
-                col3: '42 − 15 → 12 − 5 = 7',
-                kidExplanation:
-                    'Si al de arriba no le alcanza, el vecino de las decenas le presta 10 unidades.',
-              ),
-            ],
+          : (isGrade1Sum || isGrade1Sub)
+              ? const [
+                  _TableRowData(
+                    emoji: '➕',
+                    col1: 'Sumar (+) = Juntar',
+                    col2: 'Agregar más elementos',
+                    col3: '2 + 1 = 3 · 5 + 3 = 8',
+                    kidExplanation:
+                        'Cuando juntas cosas o llegan más amigos, siempre sumas.',
+                  ),
+                  _TableRowData(
+                    emoji: '➖',
+                    col1: 'Restar (−) = Quitar',
+                    col2: 'Sacar o comer algo',
+                    col3: '5 − 2 = 3 · 10 − 3 = 7',
+                    kidExplanation:
+                        'Cuando quitas, regalas o pierdes algo, restas poniendo el mayor primero.',
+                  ),
+                  _TableRowData(
+                    emoji: '0️⃣',
+                    col1: 'El Cero (0)',
+                    col2: 'No suma ni quita nada',
+                    col3: '0 + 4 = 4 · 5 − 0 = 5',
+                    kidExplanation:
+                        'Si agregas cero cosas, te quedas con la misma cantidad que tenías.',
+                  ),
+                  _TableRowData(
+                    emoji: '🙌',
+                    col1: 'Amigos del 10',
+                    col2: 'Parejas que suman 10',
+                    col3: '6 + 4 = 10 · 7 + 3 = 10',
+                    kidExplanation:
+                        'Si sabes qué parejas suman 10, ¡sumar y restar hasta 20 es facilísimo!',
+                  ),
+                ]
+              : const [
+                  _TableRowData(
+                    emoji: '➕',
+                    col1: 'Amigos del 10',
+                    col2: 'Parejas que suman 10',
+                    col3: '7 + 3 = 10 · 8 + 2 = 10',
+                    kidExplanation:
+                        'Si memorizas las parejas que dan 10, podrás sumar cualquier número rapidísimo.',
+                  ),
+                  _TableRowData(
+                    emoji: '🎒',
+                    col1: 'Suma llevando',
+                    col2: '10 U forman 1 D',
+                    col3: '18 + 7 → 8+7=15 (llevo 1)',
+                    kidExplanation:
+                        'Cuando las unidades pasan de 9, dejas las unidades sueltas y subes 1 decena.',
+                  ),
+                  _TableRowData(
+                    emoji: '🎁',
+                    col1: 'Resta prestando',
+                    col2: '1 D se abre en 10 U',
+                    col3: '42 − 15 → 12 − 5 = 7',
+                    kidExplanation:
+                        'Si al de arriba no le alcanza, el vecino de las decenas le presta 10 unidades.',
+                  ),
+                ],
     );
   }
 
@@ -5103,12 +5793,12 @@ _UnitPrepSpec _buildUnitSpec(String unitId, int grade) {
       }),
       sandboxTargetLabel: 'Plato de Partes (Suma de porciones)',
       boardPresets: const [
-        _BoardPreset('🍕', '1 cuarto (25%)', 25, Color(0xFFEA580C)),
-        _BoardPreset('🍕', '1 cuarto (25%)', 25, Color(0xFFEA580C)),
-        _BoardPreset('🍕', '1 cuarto (25%)', 25, Color(0xFFEA580C)),
-        _BoardPreset('🍕', '1 cuarto (25%)', 25, Color(0xFFEA580C)),
-        _BoardPreset('🍫', '1 décimo (10%)', 10, Color(0xFF8B5CF6)),
-        _BoardPreset('🍫', '1 décimo (10%)', 10, Color(0xFF8B5CF6)),
+        _BoardPreset('🍫', '10%', 10, Color(0xFF8B5CF6)),
+        _BoardPreset('🍬', '20%', 20, Color(0xFFEC4899)),
+        _BoardPreset('🍕', '25%', 25, Color(0xFFEA580C)),
+        _BoardPreset('🌗', '50%', 50, Color(0xFF2563EB)),
+        _BoardPreset('🍰', '75%', 75, Color(0xFF0D9488)),
+        _BoardPreset('🌕', '100%', 100, Color(0xFF10B981)),
       ],
       sandboxSummaryBuilder: (count, total) =>
           'Tienes $total% de una unidad completa ($count porciones)',
@@ -5172,17 +5862,85 @@ _UnitPrepSpec _buildUnitSpec(String unitId, int grade) {
       lower.contains('mapas') ||
       lower.contains('volumen') ||
       lower.contains('circunferencia')) {
+    final isGrade1Space = grade == 1 && unitId == 'unit-004';
+    final isGrade1Measure = grade == 1 && unitId == 'unit-005';
+    final isGrade1Shapes = grade == 1 && unitId == 'unit-006';
+    final isGrade1Time = grade == 1 && unitId == 'unit-007';
+    final isGrade1Geo =
+        isGrade1Space || isGrade1Measure || isGrade1Shapes || isGrade1Time;
+
     return _UnitPrepSpec(
       mascotName: mascot.$1,
       mascotRole: mascot.$2,
       accentColor: const Color(0xFF0D9488),
-      mascotSpeeches: [
-        '¡La geometría y las medidas están en todo lo que nos rodea: canchas de fútbol, relojes, cajas y bicicletas! 📐',
-        'Recuerda: el PERÍMETRO es el borde de afuera (como una cerca) y el ÁREA es el piso de adentro.',
-        'Mueve y acomoda las figuras en la Mesa Interactiva de abajo para explorar sus lados y medidas.',
-      ],
+      mascotSpeeches: isGrade1Geo
+          ? [
+              isGrade1Space
+                  ? '¡Hoy ubicamos objetos usando palabras mágicas: arriba/abajo, izquierda/derecha, cerca/lejos y dentro/fuera! 🧭'
+                  : isGrade1Measure
+                      ? '¡Comparamos tamaños, pesos y cantidades: largo/corto, pesado/liviano, lleno/vacío, y medimos con palmas y pasos! 🖐️'
+                      : isGrade1Shapes
+                          ? '¡Descubrimos las figuras planas! Círculo (redondo, 0 esquinas), Triángulo (3 lados), Cuadrado (4 lados iguales) y Rectángulo 🔺.'
+                          : '¡Aprendemos el día (mañana, tarde, noche), los 7 días de la semana y a leer el reloj en punto (:00) y media hora (:30)! 🕒',
+              'Mueve las fichas de la Mesa Interactiva para practicar jugando.',
+              'Toca cada fila de la Tablita Mágica abajo para repasar cada concepto de 1°.',
+            ]
+          : [
+              '¡La geometría y las medidas están en todo lo que nos rodea: canchas de fútbol, relojes, cajas y bicicletas! 📐',
+              'Recuerda: el PERÍMETRO es el borde de afuera (como una cerca) y el ÁREA es el piso de adentro.',
+              'Mueve y acomoda las figuras en la Mesa Interactiva de abajo para explorar sus lados y medidas.',
+            ],
       lessonExplanations: List.generate(math.max(lessons.length, 5), (i) {
         final lTitle = i < lessons.length ? lessons[i].title : title;
+        if (isGrade1Space) {
+          return _LessonPrepExplanation(
+            storyExplanation:
+                'En «$lTitle» aprendemos dónde están las cosas: el sol está ARRIBA, el pasto ABAJO; lo que está a tu lado puede ir a la IZQUIERDA o DERECHA; y tus colores van DENTRO de la cartuchera.',
+            exampleEmoji: '🧭',
+            stepByStepExample:
+                'En la fila 1 - 2 - 3: el 1 va a la izquierda del 2 y el 3 a la derecha. Y en una cancha, si el balón cruza la línea queda FUERA.',
+            visualPrompt:
+                'En la fila A - B - C, ¿qué letra está a la izquierda de B?',
+            secretTrick:
+                '¡Usa tu propio cuerpo como guía: mano izquierda, mano derecha, delante de ti y detrás en tu espalda!',
+          );
+        }
+        if (isGrade1Measure) {
+          return _LessonPrepExplanation(
+            storyExplanation:
+                'En «$lTitle» comparamos objetos: qué es más LARGO o CORTO, qué pesa más (PESADO como una sandía) o menos (LIVIANO como una pluma), y si un vaso está LLENO o VACÍO.',
+            exampleEmoji: '🖐️',
+            stepByStepExample:
+                'Sin regla podemos medir un cuaderno con dedos o palmas (cuartas), y el patio largo con pasos al caminar.',
+            visualPrompt: '¿Qué es más pesado: una pluma o una sandía?',
+            secretTrick:
+                '¡En una balanza, el lado más PESADO baja y el más LIVIANO sube!',
+          );
+        }
+        if (isGrade1Shapes) {
+          return _LessonPrepExplanation(
+            storyExplanation:
+                'En «$lTitle» conocemos 4 figuras planas: el CÍRCULO (redondo, 0 lados rectos y 0 esquinas), el TRIÁNGULO (3 lados y 3 esquinas), el CUADRADO (4 lados iguales) y el RECTÁNGULO (2 lados largos y 2 cortos).',
+            exampleEmoji: '🔺',
+            stepByStepExample:
+                'Una moneda o arepa es un círculo; una porción de pizza es un triángulo (3 lados); una puerta o un billete es un rectángulo.',
+            visualPrompt: '¿Cuántos lados y esquinas tiene un triángulo?',
+            secretTrick:
+                '¡Cuenta las puntas (vértices) con tu dedo: el triángulo tiene 3, el cuadrado y el rectángulo tienen 4, y el círculo tiene 0!',
+          );
+        }
+        if (isGrade1Time) {
+          return _LessonPrepExplanation(
+            storyExplanation:
+                'En «$lTitle» ordenamos el día en MAÑANA, TARDE y NOCHE, contamos los 7 DÍAS DE LA SEMANA (de lunes a viernes colegio; sábado y domingo descanso) y leemos el reloj.',
+            exampleEmoji: '🕒',
+            stepByStepExample:
+                'En el reloj: la aguja corta indica la HORA. Si la aguja larga apunta al 12 es en punto (:00, ej. 3:00); si apunta al 6 es y media (:30, media hora = 30 min).',
+            visualPrompt: '¿Qué hora marca el reloj a las 3:30?',
+            secretTrick:
+                '¡Aguja larga en el 12 = en punto (:00)! ¡Aguja larga en el 6 = y media (:30)!',
+          );
+        }
         return _LessonPrepExplanation(
           storyExplanation:
               'En «$lTitle» aprendemos a observar las formas, medir longitudes, superficies, ángulos o el tiempo con precisión.',
@@ -5207,79 +5965,155 @@ _UnitPrepSpec _buildUnitSpec(String unitId, int grade) {
               '¡Fíjate siempre en las unidades: cm es borde (longitud), cm² es piso (área) y cm³ es caja rellena (volumen)!',
         );
       }),
-      sandboxTargetLabel: 'Zona de Construcción Geométrica',
-      boardPresets: const [
-        _BoardPreset('🔺', 'Triángulo (3)', 3, Color(0xFFEF4444)),
-        _BoardPreset('🟦', 'Cuadrado (4)', 4, Color(0xFF2563EB)),
-        _BoardPreset('🟩', 'Rectángulo (4)', 4, Color(0xFF10B981)),
-        _BoardPreset('⬠', 'Pentágono (5)', 5, Color(0xFF8B5CF6)),
-        _BoardPreset('📏', 'Regla 10 cm', 10, Color(0xFFF59E0B)),
-        _BoardPreset('🧊', 'Cubo 6 caras', 6, Color(0xFF0D9488)),
-      ],
+      sandboxTargetLabel: isGrade1Geo
+          ? 'Zona de Figuras y Medidas'
+          : 'Zona de Construcción Geométrica',
+      boardPresets: isGrade1Geo
+          ? const [
+              _BoardPreset('⭕', 'Círculo', 0, Color(0xFF2563EB)),
+              _BoardPreset('🔺', '3 lados', 3, Color(0xFFEF4444)),
+              _BoardPreset('🟦', '4 iguales', 4, Color(0xFF0D9488)),
+              _BoardPreset('🟩', 'Rectáng.', 4, Color(0xFF10B981)),
+              _BoardPreset('✋', 'Palma 5', 5, Color(0xFFF59E0B)),
+              _BoardPreset('👣', '10 pasos', 10, Color(0xFF7C3AED)),
+            ]
+          : const [
+              _BoardPreset('🔺', 'Triángulo', 3, Color(0xFFEF4444)),
+              _BoardPreset('🟦', 'Cuadrado', 4, Color(0xFF2563EB)),
+              _BoardPreset('🟩', 'Rectáng.', 4, Color(0xFF10B981)),
+              _BoardPreset('⬠', 'Pentág.', 5, Color(0xFF8B5CF6)),
+              _BoardPreset('📏', '10 cm', 10, Color(0xFFF59E0B)),
+              _BoardPreset('🧊', '6 caras', 6, Color(0xFF0D9488)),
+            ],
       sandboxSummaryBuilder: (count, total) =>
           'Suma de lados/unidades de las figuras acomodadas = $total',
-      tableTitle: 'Tablita de Figuras, Fórmulas y Equivalencias',
-      tableColumnsHeader: ('Concepto / Figura', 'Regla Mágica', 'Equivalencia'),
-      tableRows: const [
-        _TableRowData(
-          emoji: '🏡',
-          col1: 'Perímetro',
-          col2: 'Suma de todos los lados',
-          col3: 'Borde exterior (cm, m)',
-          kidExplanation:
-              'Imagina que caminas por toda la línea del borde de una cancha y sumas cada lado.',
-        ),
-        _TableRowData(
-          emoji: '🌱',
-          col1: 'Área (Superficie)',
-          col2: 'Base × Altura',
-          col3: 'Cuadritos adentro (cm², m²)',
-          kidExplanation:
-              'En el triángulo es (Base × Altura) ÷ 2 porque un triángulo es la mitad de un rectángulo.',
-        ),
-        _TableRowData(
-          emoji: '📐',
-          col1: 'Ángulos',
-          col2: 'Agudo < 90° · Recto = 90°',
-          col3: 'Obtuso > 90° · Llano = 180°',
-          kidExplanation:
-              'La esquina de una hoja de cuaderno mide exactamente 90° (ángulo recto).',
-        ),
-        _TableRowData(
-          emoji: '📏',
-          col1: 'Medidas y Reloj',
-          col2: '1 m = 100 cm · 1 km = 1.000 m',
-          col3: '1 hora = 60 minutos',
-          kidExplanation:
-              '1 litro tiene 1.000 mililitros y 1 kilogramo tiene 1.000 gramos.',
-        ),
-        _TableRowData(
-          emoji: '🚲',
-          col1: 'Círculo y Volumen',
-          col2: 'Diámetro = 2 × Radio',
-          col3: 'Volumen = Largo×Ancho×Alto',
-          kidExplanation:
-              'El borde del círculo (circunferencia) mide aproximadamente 3,14 (π) veces su diámetro.',
-        ),
-      ],
+      tableTitle: isGrade1Geo
+          ? 'Tablita Fácil de Espacio, Medidas, Figuras y Tiempo (1°)'
+          : 'Tablita de Figuras, Fórmulas y Equivalencias',
+      tableColumnsHeader: ('Concepto / Figura', 'Regla Mágica', 'Ejemplo'),
+      tableRows: isGrade1Geo
+          ? const [
+              _TableRowData(
+                emoji: '🧭',
+                col1: 'Ubicación',
+                col2: 'Arriba/abajo · Izq/der',
+                col3: 'Cerca/lejos · Dentro/fuera',
+                kidExplanation:
+                    'Las nubes están arriba, el pasto abajo y los colores dentro de la cartuchera.',
+              ),
+              _TableRowData(
+                emoji: '🖐️',
+                col1: 'Medir y Comparar',
+                col2: 'Largo/corto · Pesado/liviano',
+                col3: 'Dedos, palmas y pasos',
+                kidExplanation:
+                    'Usamos palmas para objetos medianos y pasos para medir lugares largos.',
+              ),
+              _TableRowData(
+                emoji: '⭕',
+                col1: 'Círculo y Triángulo',
+                col2: 'Círculo: 0 esquinas',
+                col3: 'Triángulo: 3 lados',
+                kidExplanation:
+                    'Una rueda o moneda es círculo; una porción de pizza es triángulo.',
+              ),
+              _TableRowData(
+                emoji: '🟦',
+                col1: 'Cuadrado y Rectángulo',
+                col2: 'Ambos tienen 4 lados',
+                col3: 'Cuadrado: 4 lados iguales',
+                kidExplanation:
+                    'El rectángulo tiene 2 lados largos y 2 cortos, como una puerta o un billete.',
+              ),
+              _TableRowData(
+                emoji: '🕒',
+                col1: 'Semana y Reloj',
+                col2: '1 semana = 7 días',
+                col3: ':00 en punto · :30 y media',
+                kidExplanation:
+                    'En el reloj, aguja larga al 12 es en punto (:00) y al 6 es y media (:30 = 30 min).',
+              ),
+            ]
+          : const [
+              _TableRowData(
+                emoji: '🏡',
+                col1: 'Perímetro',
+                col2: 'Suma de todos los lados',
+                col3: 'Borde exterior (cm, m)',
+                kidExplanation:
+                    'Imagina que caminas por toda la línea del borde de una cancha y sumas cada lado.',
+              ),
+              _TableRowData(
+                emoji: '🌱',
+                col1: 'Área (Superficie)',
+                col2: 'Base × Altura',
+                col3: 'Cuadritos adentro (cm², m²)',
+                kidExplanation:
+                    'En el triángulo es (Base × Altura) ÷ 2 porque un triángulo es la mitad de un rectángulo.',
+              ),
+              _TableRowData(
+                emoji: '📐',
+                col1: 'Ángulos',
+                col2: 'Agudo < 90° · Recto = 90°',
+                col3: 'Obtuso > 90° · Llano = 180°',
+                kidExplanation:
+                    'La esquina de una hoja de cuaderno mide exactamente 90° (ángulo recto).',
+              ),
+              _TableRowData(
+                emoji: '📏',
+                col1: 'Medidas y Reloj',
+                col2: '1 m = 100 cm · 1 km = 1.000 m',
+                col3: '1 hora = 60 minutos',
+                kidExplanation:
+                    '1 litro tiene 1.000 mililitros y 1 kilogramo tiene 1.000 gramos.',
+              ),
+              _TableRowData(
+                emoji: '🚲',
+                col1: 'Círculo y Volumen',
+                col2: 'Diámetro = 2 × Radio',
+                col3: 'Volumen = Largo×Ancho×Alto',
+                kidExplanation:
+                    'El borde del círculo (circunferencia) mide aproximadamente 3,14 (π) veces su diámetro.',
+              ),
+            ],
     );
   }
 
   // 5. Unidades de Estadística, Probabilidad y Álgebra
   final isAlgebra = lower.contains('álgebra') || unitId == 'unit-508';
+  final isGrade1Stats = grade == 1 && unitId == 'unit-008';
   return _UnitPrepSpec(
     mascotName: mascot.$1,
     mascotRole: mascot.$2,
     accentColor: const Color(0xFFD97706),
-    mascotSpeeches: [
-      isAlgebra
-          ? '¡En álgebra jugamos a ser detectives! 🕵️‍♂️ La letra x es un número misterioso que descubrimos equilibrando la balanza.'
-          : '¡Las tablas, pictogramas y gráficas de barras convierten muchos datos sueltos en dibujos súper fáciles de leer! 📊',
-      'Arrastra las fichas en la Mesa Interactiva para organizar tus datos o equilibrar la balanza.',
-      'Revisa la Tablita Mágica para no confundir nunca la Moda, la Mediana y el Promedio.',
-    ],
+    mascotSpeeches: isGrade1Stats
+        ? const [
+            '¡En Datos y Pictogramas contamos dibujitos (como 🥭 o ⭐) para descubrir qué prefiere la mayoría! 📊',
+            'Cada dibujo en un pictograma vale 1 voto o 1 elemento. ¡Solo cuenta de 1 en 1!',
+            'Arrastra los votos en la Mesa Interactiva para comparar cuál tiene MÁS y cuál tiene MENOS.',
+          ]
+        : [
+            isAlgebra
+                ? '¡En álgebra jugamos a ser detectives! 🕵️‍♂️ La letra x es un número misterioso que descubrimos equilibrando la balanza.'
+                : '¡Las tablas, pictogramas y gráficas de barras convierten muchos datos sueltos en dibujos súper fáciles de leer! 📊',
+            'Arrastra las fichas en la Mesa Interactiva para organizar tus datos o equilibrar la balanza.',
+            'Revisa la Tablita Mágica para no confundir nunca la Moda, la Mediana y el Promedio.',
+          ],
     lessonExplanations: List.generate(math.max(lessons.length, 5), (i) {
       final lTitle = i < lessons.length ? lessons[i].title : title;
+      if (isGrade1Stats) {
+        return _LessonPrepExplanation(
+          storyExplanation:
+              'En «$lTitle» contamos dibujos repetidos (pictogramas) y barras de colores para comparar cantidades: cuál tiene MÁS, cuál tiene MENOS y cuántos votos hay en total.',
+          exampleEmoji: '🥭',
+          stepByStepExample:
+              'Si Mango tiene 🥭🥭🥭🥭🥭 (5) y Guayaba tiene 🍐🍐🍐 (3), el favorito es Mango (tiene MÁS) y en total hay 5 + 3 = 8 votos.',
+          visualPrompt:
+              'En la gráfica de barras con datos 5 y 3, ¿cuál tiene más?',
+          secretTrick:
+              '¡Cuenta cada dibujo señalándolo con el dedo: 1 dibujo = 1 voto! La fila o barra más larga es la ganadora.',
+        );
+      }
       return _LessonPrepExplanation(
         storyExplanation: isAlgebra
             ? 'En «$lTitle» usamos una letra (como x o n) para guardar el puesto de un número secreto en una igualdad.'
@@ -5308,18 +6142,20 @@ _UnitPrepSpec _buildUnitSpec(String unitId, int grade) {
             _BoardPreset('⚖️', '+5', 5, Color(0xFFEF4444)),
           ]
         : const [
-            _BoardPreset('⚽', 'Fútbol (4)', 4, Color(0xFF10B981)),
-            _BoardPreset('🏀', 'Básquet (3)', 3, Color(0xFFF59E0B)),
-            _BoardPreset('🚴', 'Ciclismo (5)', 5, Color(0xFF2563EB)),
-            _BoardPreset('🏊', 'Natación (2)', 2, Color(0xFF06B6D4)),
-            _BoardPreset('🎲', 'Dado (6)', 6, Color(0xFF8B5CF6)),
-            _BoardPreset('🪙', 'Moneda (2)', 2, Color(0xFFEA580C)),
+            _BoardPreset('⚽', 'Fútbol', 4, Color(0xFF10B981)),
+            _BoardPreset('🏀', 'Básquet', 3, Color(0xFFF59E0B)),
+            _BoardPreset('🚴', 'Cicla', 5, Color(0xFF2563EB)),
+            _BoardPreset('🏊', 'Nado', 2, Color(0xFF06B6D4)),
+            _BoardPreset('🎲', 'Dado 6', 6, Color(0xFF8B5CF6)),
+            _BoardPreset('🪙', 'Moneda', 1, Color(0xFFEA580C)),
           ],
     sandboxSummaryBuilder: (count, total) =>
         'Total acumulado en la zona = $total puntos ($count fichas)',
     tableTitle: isAlgebra
         ? 'Tablita de Detectives de Ecuaciones (Álgebra)'
-        : 'Tablita de Estadística y Probabilidad',
+        : isGrade1Stats
+            ? 'Tablita Fácil de Datos y Pictogramas (1°)'
+            : 'Tablita de Estadística y Probabilidad',
     tableColumnsHeader: ('Concepto', '¿Qué significa?', 'Truco rápido'),
     tableRows: isAlgebra
         ? const [
@@ -5348,39 +6184,66 @@ _UnitPrepSpec _buildUnitSpec(String unitId, int grade) {
                   '3x significa "3 por x". Para despejarla, divides entre 3.',
             ),
           ]
-        : const [
-            _TableRowData(
-              emoji: '🏆',
-              col1: 'La Moda',
-              col2: 'El dato que más se repite',
-              col3: 'La barra más alta',
-              kidExplanation:
-                  'Como cuando algo "está de moda": es la respuesta con más votos.',
-            ),
-            _TableRowData(
-              emoji: '🧍',
-              col1: 'La Mediana',
-              col2: 'El dato del centro',
-              col3: 'Ordena de menor a mayor',
-              kidExplanation:
-                  'En 3, 5, 9: el número que queda justo en la mitad es el 5.',
-            ),
-            _TableRowData(
-              emoji: '🤝',
-              col1: 'El Promedio (Media)',
-              col2: 'Repartir en partes iguales',
-              col3: 'Suma todo ÷ Cantidad',
-              kidExplanation:
-                  'De 4, 6 y 8: sumas 4+6+8 = 18 y divides entre 3 datos = 6.',
-            ),
-            _TableRowData(
-              emoji: '🎲',
-              col1: 'Probabilidad',
-              col2: 'Casos a favor / Total',
-              col3: 'Moneda: 1/2 · Dado: 1/6',
-              kidExplanation:
-                  'Seguro = siempre pasa; Posible = puede pasar; Imposible = nunca pasa.',
-            ),
-          ],
+        : isGrade1Stats
+            ? const [
+                _TableRowData(
+                  emoji: '🥭',
+                  col1: 'Contar dibujos',
+                  col2: '1 dibujo = 1 objeto o voto',
+                  col3: '🥭🥭🥭🥭 = 4 mangos',
+                  kidExplanation:
+                      'En un pictograma cada figurita representa un voto: solo cuéntalas con tu dedo.',
+                ),
+                _TableRowData(
+                  emoji: '📊',
+                  col1: 'Comparar MÁS y MENOS',
+                  col2: 'La barra más alta gana',
+                  col3: '7 votos > 4 votos > 2 votos',
+                  kidExplanation:
+                      'El dibujo o barra más larga tiene MÁS votos; la más cortita tiene MENOS.',
+                ),
+                _TableRowData(
+                  emoji: '➕',
+                  col1: 'Total de votos',
+                  col2: 'Sumar todas las opciones',
+                  col3: '5 + 3 = 8 niños en total',
+                  kidExplanation:
+                      'Si te preguntan cuántos niños votaron en total, suma todos los grupos.',
+                ),
+              ]
+            : const [
+                _TableRowData(
+                  emoji: '🏆',
+                  col1: 'La Moda',
+                  col2: 'El dato que más se repite',
+                  col3: 'La barra más alta',
+                  kidExplanation:
+                      'Como cuando algo "está de moda": es la respuesta con más votos.',
+                ),
+                _TableRowData(
+                  emoji: '🧍',
+                  col1: 'La Mediana',
+                  col2: 'El dato del centro',
+                  col3: 'Ordena de menor a mayor',
+                  kidExplanation:
+                      'En 3, 5, 9: el número que queda justo en la mitad es el 5.',
+                ),
+                _TableRowData(
+                  emoji: '🤝',
+                  col1: 'El Promedio (Media)',
+                  col2: 'Repartir en partes iguales',
+                  col3: 'Suma todo ÷ Cantidad',
+                  kidExplanation:
+                      'De 4, 6 y 8: sumas 4+6+8 = 18 y divides entre 3 datos = 6.',
+                ),
+                _TableRowData(
+                  emoji: '🎲',
+                  col1: 'Probabilidad',
+                  col2: 'Casos a favor / Total',
+                  col3: 'Moneda: 1/2 · Dado: 1/6',
+                  kidExplanation:
+                      'Seguro = siempre pasa; Posible = puede pasar; Imposible = nunca pasa.',
+                ),
+              ],
   );
 }

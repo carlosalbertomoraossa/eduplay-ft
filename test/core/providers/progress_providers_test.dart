@@ -156,32 +156,18 @@ void main() {
       );
       await tester.pump(const Duration(milliseconds: 500));
 
+      // Paso 1 (1️⃣ ¿Qué es?): muestra el Súper Secreto de Lumi directamente
+      expect(find.textContaining('¡Súper Secreto de Lumi'), findsOneWidget);
+
+      // Pasar al Paso 2 (2️⃣ ¡Juega y Prueba!)
+      await tester.ensureVisible(find.text('2️⃣ ¡Juega y Prueba!'));
+      await tester.pump();
+      await tester.tap(find.text('2️⃣ ¡Juega y Prueba!'));
+      await tester.pump(const Duration(milliseconds: 250));
+
       // Verifica el Laboratorio en Vivo de fracciones (barra interactiva + equivalencias)
       expect(find.textContaining('¡Laboratorio en Vivo de'), findsOneWidget);
       expect(find.textContaining('Porcentaje:'), findsWidgets);
-
-      // Tocar '3️⃣ Truco Secreto' revela el secreto de Lumi
-      await tester.ensureVisible(find.text('3️⃣ Truco Secreto'));
-      await tester.pump();
-      await tester.tap(find.text('3️⃣ Truco Secreto'));
-      await tester.pump(const Duration(milliseconds: 250));
-      expect(find.textContaining('¡Súper Secreto de Lumi'), findsOneWidget);
-
-      // Voltear la primera Tarjeta Mágica Giratoria
-      expect(find.textContaining('Misterio #1:'), findsOneWidget);
-      await tester.ensureVisible(find.textContaining('Misterio #1:'));
-      await tester.pump();
-      await tester.tap(find.textContaining('Misterio #1:'));
-      await tester.pump(const Duration(milliseconds: 250));
-      expect(find.textContaining('✨ Respuesta:'), findsOneWidget);
-
-      // Cambiar de pregunta en el Mini-Reto de Entrenamiento
-      expect(find.textContaining('Mini-Reto de Entrenamiento (1/'), findsOneWidget);
-      await tester.ensureVisible(find.text('🔄 Otra pregunta de este tema →'));
-      await tester.pump();
-      await tester.tap(find.text('🔄 Otra pregunta de este tema →'));
-      await tester.pump(const Duration(milliseconds: 250));
-      expect(find.textContaining('Mini-Reto de Entrenamiento (2/'), findsOneWidget);
 
       // Probar los 3 juegos de la explicación: 1. Completar, 2. Armar y 3. Buscar
       await tester.ensureVisible(find.text('🪄 Completar con Lumi'));
@@ -206,6 +192,133 @@ void main() {
       await tester.tap(find.text('🔍 3. Buscar'));
       await tester.pump(const Duration(milliseconds: 250));
       expect(find.textContaining('Misión Detective:'), findsOneWidget);
+
+      // Pasar al Paso 3 (3️⃣ ¡Mini-Reto!)
+      await tester.ensureVisible(find.text('3️⃣ ¡Mini-Reto!'));
+      await tester.pump();
+      await tester.tap(find.text('3️⃣ ¡Mini-Reto!'));
+      await tester.pump(const Duration(milliseconds: 250));
+
+      // Voltear la primera Tarjeta Mágica Giratoria
+      expect(find.textContaining('Misterio #1:'), findsOneWidget);
+      await tester.ensureVisible(find.textContaining('Misterio #1:'));
+      await tester.pump();
+      await tester.tap(find.textContaining('Misterio #1:'));
+      await tester.pump(const Duration(milliseconds: 250));
+      expect(find.textContaining('✨ Respuesta:'), findsOneWidget);
+
+      // Cambiar de pregunta en el Mini-Reto de Entrenamiento
+      expect(find.textContaining('Mini-Reto de Entrenamiento (1/'), findsOneWidget);
+      await tester.ensureVisible(find.text('🔄 Otra pregunta de este tema →'));
+      await tester.pump();
+      await tester.tap(find.text('🔄 Otra pregunta de este tema →'));
+      await tester.pump(const Duration(milliseconds: 250));
+      expect(find.textContaining('Mini-Reto de Entrenamiento (2/'), findsOneWidget);
+    });
+
+    testWidgets(
+        'Grado 1° (unit-001) define 5 dedos y 3 lados, muestra respuestas completas en Buscar y piezas únicas en la Mesa',
+        (tester) async {
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Scaffold(
+            body: SingleChildScrollView(
+              child: UnitPrepZone(
+                unitId: 'unit-001',
+                onStartExercises: () {},
+              ),
+            ),
+          ),
+        ),
+      );
+      await tester.pump(const Duration(milliseconds: 500));
+
+      // Paso 1 define explícitamente dedos de una mano y lados de un triángulo
+      expect(find.textContaining('5 dedos'), findsWidgets);
+      expect(find.textContaining('3 lados'), findsWidgets);
+
+      // Piezas de la Mesa Interactiva son 6 valores distintos sin repeticiones
+      for (final label in ['+1', '+2', '+3', '+4', '+5', '+10']) {
+        expect(find.text(label), findsOneWidget);
+      }
+
+      // Ir al Paso 2 -> 3. Buscar y validar textos completos e intrusos de 1°
+      await tester.ensureVisible(find.text('2️⃣ ¡Juega y Prueba!'));
+      await tester.pump();
+      await tester.tap(find.text('2️⃣ ¡Juega y Prueba!'));
+      await tester.pump(const Duration(milliseconds: 250));
+
+      await tester.ensureVisible(find.text('🔍 3. Buscar'));
+      await tester.pump();
+      await tester.tap(find.text('🔍 3. Buscar'));
+      await tester.pump(const Duration(milliseconds: 250));
+
+      expect(
+        find.textContaining('¿Cuántos dedos tiene una mano?\n👉 Respuesta: 5'),
+        findsOneWidget,
+      );
+      expect(
+        find.textContaining('¿Cuántos lados tiene un triángulo?\n👉 Respuesta: 3'),
+        findsOneWidget,
+      );
+      expect(find.text('Una mano tiene 8 dedos'), findsOneWidget);
+      expect(find.text('Un triángulo tiene 4 lados'), findsOneWidget);
+      expect(find.text('1 Decena = 100 U'), findsNothing);
+      expect(find.text('5 Centenas = 50'), findsNothing);
+    });
+
+    testWidgets(
+        'Tips de 1° en ExerciseVisualAid coinciden con cada temática y evitan conceptos avanzados falsos',
+        (tester) async {
+      final grade1Questions = <String>[
+        'Relaciona cada número con su nombre',
+        'Relaciona cada suma con su resultado',
+        '¿Cuántos lados tiene un triángulo?',
+        '¿Qué forma plana tiene una arepa redonda o una moneda?',
+        'El número después del 7 es ___',
+        '¿Cuál número es MAYOR: 7 o 4?',
+      ];
+
+      for (final q in grade1Questions) {
+        await tester.pumpWidget(
+          MaterialApp(
+            home: Scaffold(
+              body: SingleChildScrollView(
+                child: ExerciseVisualAid(
+                  questionText: q,
+                  options: const ['A', 'B', 'C'],
+                ),
+              ),
+            ),
+          ),
+        );
+        await tester.pump();
+
+        expect(find.textContaining('Multiplicar es'), findsNothing, reason: q);
+        expect(find.textContaining('3,14'), findsNothing, reason: q);
+        expect(
+          find.textContaining('largo por el ancho'),
+          findsNothing,
+          reason: q,
+        );
+        expect(find.textContaining('bajo cero'), findsNothing, reason: q);
+      }
+
+      // Verificar tip y visual específicos para pregunta de triángulo de 1°
+      await tester.pumpWidget(
+        const MaterialApp(
+          home: Scaffold(
+            body: SingleChildScrollView(
+              child: ExerciseVisualAid(
+                questionText: '¿Cuántos lados tiene un triángulo?',
+                options: ['2', '3', '4'],
+              ),
+            ),
+          ),
+        ),
+      );
+      await tester.pump();
+      expect(find.textContaining('3 lados'), findsWidgets);
     });
   });
 }

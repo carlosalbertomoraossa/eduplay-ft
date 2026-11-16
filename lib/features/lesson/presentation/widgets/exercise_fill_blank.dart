@@ -144,28 +144,30 @@ class _ExerciseFillBlankState extends State<ExerciseFillBlank> {
                   ),
                   decoration: BoxDecoration(
                     color: isSelected
-                        ? EduPlayColors.energyYellow.withValues(alpha: 0.2)
+                        ? const Color(0xFFFEF3C7)
                         : isDisabled
                             ? EduPlayColors.backgroundLight
                             : Colors.white,
                     borderRadius: BorderRadius.circular(14),
                     border: Border.all(
                       color: isSelected
-                          ? EduPlayColors.energyYellow
+                          ? const Color(0xFFD97706)
                           : isDisabled
                               ? const Color(0xFFE2E8F0)
                               : const Color(0xFFCBD5E1),
-                      width: isSelected ? 2 : 1.5,
+                      width: isSelected ? 2.2 : 1.5,
                     ),
                   ),
                   child: Text(
                     option,
                     style: TextStyle(
                       fontSize: 18,
-                      fontWeight: FontWeight.w700,
-                      color: isDisabled
-                          ? EduPlayColors.textMedium
-                          : EduPlayColors.textDark,
+                      fontWeight: FontWeight.w800,
+                      color: isSelected
+                          ? const Color(0xFF78350F)
+                          : isDisabled
+                              ? EduPlayColors.textMedium
+                              : EduPlayColors.textDark,
                       fontFamily: 'Nunito',
                     ),
                   ),
@@ -198,12 +200,12 @@ class _BlankSlot extends StatelessWidget {
       constraints: const BoxConstraints(minWidth: 80),
       decoration: BoxDecoration(
         color: filled
-            ? EduPlayColors.energyYellow.withValues(alpha: 0.2)
+            ? const Color(0xFFFEF3C7)
             : EduPlayColors.backgroundLight,
         borderRadius: BorderRadius.circular(10),
         border: Border.all(
-          color: filled ? EduPlayColors.energyYellow : const Color(0xFFCBD5E1),
-          width: filled ? 2 : 1.5,
+          color: filled ? const Color(0xFFD97706) : const Color(0xFF94A3B8),
+          width: filled ? 2.2 : 1.5,
         ),
       ),
       child: Center(
@@ -212,7 +214,7 @@ class _BlankSlot extends StatelessWidget {
           style: TextStyle(
             fontSize: 22,
             fontWeight: FontWeight.w800,
-            color: filled ? EduPlayColors.textDark : EduPlayColors.textMedium,
+            color: filled ? const Color(0xFF78350F) : const Color(0xFF475569),
             fontFamily: 'Nunito',
           ),
         ),

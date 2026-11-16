@@ -104,11 +104,12 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
               right: 24,
               child: TextButton(
                 onPressed: () => context.go('/auth/login'),
-                child: const Text(
+                child: Text(
                   'Saltar',
                   style: TextStyle(
-                    color: Colors.white70,
+                    color: Colors.white.withValues(alpha: 0.95),
                     fontSize: 16,
+                    fontWeight: FontWeight.w700,
                     fontFamily: 'Nunito',
                   ),
                 ),
@@ -194,9 +195,10 @@ class _OnboardingPageView extends StatelessWidget {
               Text(
                 page.subtitle,
                 textAlign: TextAlign.center,
-                style: const TextStyle(
+                style: TextStyle(
                   fontSize: 18,
-                  color: Colors.white70,
+                  color: Colors.white.withValues(alpha: 0.95),
+                  fontWeight: FontWeight.w700,
                   fontFamily: 'Nunito',
                   height: 1.5,
                 ),

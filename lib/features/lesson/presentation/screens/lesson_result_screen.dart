@@ -197,7 +197,7 @@ class _StatsCard extends StatelessWidget {
             emoji: '⭐',
             value: '+${result.xpEarned} XP',
             label: 'Experiencia',
-            valueColor: EduPlayColors.energyYellow,
+            valueColor: const Color(0xFFD97706),
           ),
           _Divider(),
           _StatItem(
@@ -344,7 +344,7 @@ class _LevelUpBanner extends StatelessWidget {
                   style: TextStyle(
                     fontSize: 15,
                     fontWeight: FontWeight.w800,
-                    color: EduPlayColors.adventurePurple,
+                    color: Color(0xFF5B21B6),
                     fontFamily: 'Nunito',
                   ),
                 ),
@@ -352,7 +352,7 @@ class _LevelUpBanner extends StatelessWidget {
                   'Ahora eres nivel $newLevel',
                   style: const TextStyle(
                     fontSize: 13,
-                    color: EduPlayColors.adventurePurple,
+                    color: Color(0xFF5B21B6),
                     fontFamily: 'Nunito',
                   ),
                 ),

@@ -213,13 +213,72 @@ class _InProgressView extends StatelessWidget {
             color: Color(0xFFF0F9FF),
             borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
           ),
-          child: SingleChildScrollView(
-            controller: scrollController,
-            child: UnitPrepZone(
-              unitId: lesson.unitId,
-              initialLessonIdx: (lesson.orderNum - 1).clamp(0, 4),
-              onStartExercises: () => Navigator.of(ctx).pop(),
-            ),
+          child: Column(
+            children: [
+              Container(
+                padding: const EdgeInsets.fromLTRB(16, 12, 16, 10),
+                decoration: const BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
+                  border: Border(
+                    bottom: BorderSide(color: Color(0xFFE2E8F0)),
+                  ),
+                ),
+                child: Row(
+                  children: [
+                    const LumiLionMascot(size: 38),
+                    const SizedBox(width: 10),
+                    const Expanded(
+                      child: Text(
+                        '💡 Explicación Fácil de Lumi',
+                        style: TextStyle(
+                          fontFamily: 'Nunito',
+                          fontSize: 16,
+                          fontWeight: FontWeight.w900,
+                          color: Color(0xFF1E3A8A),
+                        ),
+                      ),
+                    ),
+                    GestureDetector(
+                      onTap: () => Navigator.of(ctx).pop(),
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 12,
+                          vertical: 7,
+                        ),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFEFF6FF),
+                          borderRadius: BorderRadius.circular(12),
+                          border: Border.all(
+                            color: const Color(0xFF3B82F6),
+                            width: 1.5,
+                          ),
+                        ),
+                        child: const Text(
+                          '✖ Volver al ejercicio',
+                          style: TextStyle(
+                            fontFamily: 'Nunito',
+                            fontSize: 13,
+                            fontWeight: FontWeight.w900,
+                            color: Color(0xFF1D4ED8),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              Expanded(
+                child: SingleChildScrollView(
+                  controller: scrollController,
+                  child: UnitPrepZone(
+                    unitId: lesson.unitId,
+                    initialLessonIdx: (lesson.orderNum - 1).clamp(0, 4),
+                    onStartExercises: () => Navigator.of(ctx).pop(),
+                  ),
+                ),
+              ),
+            ],
           ),
         ),
       ),

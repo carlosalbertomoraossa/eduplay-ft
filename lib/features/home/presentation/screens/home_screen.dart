@@ -310,15 +310,15 @@ class _StreakBanner extends StatelessWidget {
           ),
         ],
       ),
-      child: const Row(
+      child: Row(
         children: [
-          Text('🔥', style: TextStyle(fontSize: 32)),
-          SizedBox(width: 10),
+          const Text('🔥', style: TextStyle(fontSize: 32)),
+          const SizedBox(width: 10),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
+                const Text(
                   '${_MockChildData.streak} días seguidos',
                   style: TextStyle(
                     fontSize: 17,
@@ -332,8 +332,9 @@ class _StreakBanner extends StatelessWidget {
                       ? '¡Ya completaste tu lección de hoy!'
                       : '¡Completa una lección para mantener tu racha!',
                   style: TextStyle(
-                    fontSize: 12,
-                    color: Colors.white70,
+                    fontSize: 12.5,
+                    fontWeight: FontWeight.w700,
+                    color: Colors.white.withValues(alpha: 0.95),
                     fontFamily: 'Nunito',
                   ),
                 ),

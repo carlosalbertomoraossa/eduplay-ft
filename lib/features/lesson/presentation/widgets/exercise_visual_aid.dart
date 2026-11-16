@@ -337,6 +337,15 @@ class _ExerciseVisualAidState extends State<ExerciseVisualAid> {
   static _VisualTopic _detectTopic(String q, List<String> options) {
     final lower = q.toLowerCase();
 
+    // 0. Enteros negativos / bajo cero (antes de valor posicional)
+    if (RegExp(r'(?:^|[\s(])-\d').hasMatch(q) ||
+        lower.contains('negativo') ||
+        lower.contains('bajo cero') ||
+        lower.contains('°c') ||
+        lower.contains('opuesto')) {
+      return _VisualTopic.numberLineSequence;
+    }
+
     // 1. Valor posicional / lectura, escritura, descomposición y comparación de números
     final isPlaceDecomposition =
         RegExp(r'\b[1-9]00(?:\.\d{3})*\s*\+\s*(?:[1-9]0|___)').hasMatch(q) ||
@@ -374,20 +383,39 @@ class _ExerciseVisualAidState extends State<ExerciseVisualAid> {
       return _VisualTopic.placeValue;
     }
 
-    // 2. Reloj y tiempo
+    // 2. Reloj, calendario y momentos del día
     if (lower.contains('reloj') ||
         lower.contains('manecilla') ||
         RegExp(r'\b\d{1,2}:\d{2}\b').hasMatch(lower) ||
         lower.contains('en punto') ||
         lower.contains('y media') ||
         lower.contains('minutos tiene') ||
-        lower.contains('horas tiene')) {
+        lower.contains('horas tiene') ||
+        lower.contains('momento del día') ||
+        lower.contains('desayun') ||
+        lower.contains('almorz') ||
+        lower.contains('pijama') ||
+        lower.contains('ayer') ||
+        lower.contains('mañana') ||
+        lower.contains('tarde') ||
+        lower.contains('noche') ||
+        lower.contains('semana') ||
+        lower.contains('lunes') ||
+        lower.contains('martes') ||
+        lower.contains('miércoles') ||
+        lower.contains('miercoles') ||
+        lower.contains('jueves') ||
+        lower.contains('viernes') ||
+        lower.contains('sábado') ||
+        lower.contains('sabado') ||
+        lower.contains('domingo') ||
+        lower.contains('calendario') ||
+        lower.contains('meses')) {
       return _VisualTopic.clock;
     }
 
     // 3. Ángulos
-    if (lower.contains('ángulo') ||
-        lower.contains('angulo') ||
+    if (RegExp(r'(?:^|[\s¿¡(])[áa]ngulos?(?=$|[\s?!),.;:])').hasMatch(lower) ||
         lower.contains('90°') ||
         lower.contains('180°') ||
         lower.contains('agudo') ||
@@ -397,10 +425,8 @@ class _ExerciseVisualAidState extends State<ExerciseVisualAid> {
       return _VisualTopic.angle;
     }
 
-    // 4. Círculo y circunferencia
+    // 4. Círculo y circunferencia (solo radio, diámetro, circunferencia o π)
     if (lower.contains('circunferencia') ||
-        lower.contains('círculo') ||
-        lower.contains('circulo') ||
         lower.contains('radio') ||
         lower.contains('diámetro') ||
         lower.contains('diametro') ||
@@ -411,16 +437,20 @@ class _ExerciseVisualAidState extends State<ExerciseVisualAid> {
     // 5. Volumen y sólidos 3D
     if (lower.contains('volumen') ||
         lower.contains('cm³') ||
+        lower.contains('m³') ||
         lower.contains('cubo') ||
         lower.contains('prisma') ||
+        lower.contains('pirámide') ||
+        lower.contains('piramide') ||
         lower.contains('cilindro') ||
-        lower.contains('cono') ||
+        RegExp(r'(?:^|[\s¿¡(])conos?(?=$|[\s?!),.;:])').hasMatch(lower) ||
         lower.contains('esfera') ||
+        lower.contains('arista') ||
         lower.contains('caras')) {
       return _VisualTopic.solid3D;
     }
 
-    // 6. Plano cartesiano y coordenadas / orientación
+    // 6. Plano cartesiano, coordenadas y orientación espacial
     if (lower.contains('plano cartesiano') ||
         lower.contains('coordenada') ||
         lower.contains('eje x') ||
@@ -428,15 +458,30 @@ class _ExerciseVisualAidState extends State<ExerciseVisualAid> {
         RegExp(r'\(\s*\d+\s*,\s*\d+\s*\)').hasMatch(lower) ||
         lower.contains('norte') ||
         lower.contains('derecha') ||
-        lower.contains('izquierda')) {
+        lower.contains('izquierda') ||
+        lower.contains('derecho') ||
+        lower.contains('izquierdo') ||
+        lower.contains('arriba') ||
+        lower.contains('abajo') ||
+        lower.contains('encima') ||
+        lower.contains('debajo') ||
+        lower.contains('cerca') ||
+        lower.contains('lejos') ||
+        lower.contains('delante') ||
+        lower.contains('detrás') ||
+        lower.contains('detras') ||
+        lower.contains('dentro') ||
+        lower.contains('fuera') ||
+        lower.contains('posición') ||
+        lower.contains('posicion') ||
+        (lower.contains('entre ') && lower.contains('fila'))) {
       return _VisualTopic.cartesian;
     }
 
     // 7. Figuras planas, área y perímetro
     if (lower.contains('perímetro') ||
         lower.contains('perimetro') ||
-        lower.contains('área') ||
-        lower.contains('area') ||
+        RegExp(r'(?:^|[\s¿¡(])[áa]reas?(?=$|[\s?!),.;:])').hasMatch(lower) ||
         lower.contains('cm²') ||
         lower.contains('m²') ||
         lower.contains('triángulo') ||
@@ -444,6 +489,10 @@ class _ExerciseVisualAidState extends State<ExerciseVisualAid> {
         lower.contains('rectángulo') ||
         lower.contains('rectangulo') ||
         lower.contains('cuadrado') ||
+        lower.contains('círculo') ||
+        lower.contains('circulo') ||
+        lower.contains('redond') ||
+        lower.contains('forma plana') ||
         lower.contains('pentágono') ||
         lower.contains('hexágono') ||
         lower.contains('vértice') ||
@@ -466,20 +515,34 @@ class _ExerciseVisualAidState extends State<ExerciseVisualAid> {
       return _VisualTopic.fraction;
     }
 
-    // 9. Estadística y probabilidad
+    // 9. Estadística, pictogramas y probabilidad
     if (lower.contains('gráfica') ||
         lower.contains('grafica') ||
         lower.contains('pictograma') ||
+        (lower.contains('tabla') &&
+            !lower.contains('multiplic') &&
+            !RegExp(r'tablas?\s+(?:de\s+multiplicar|del?\s+\d)')
+                .hasMatch(lower)) ||
         lower.contains('moda') ||
         lower.contains('mediana') ||
         lower.contains('promedio') ||
-        lower.contains('media') ||
+        RegExp(r'\bmedia\b').hasMatch(lower) ||
         lower.contains('frecuencia') ||
         lower.contains('encuesta') ||
+        lower.contains('votos') ||
+        lower.contains('votaron') ||
+        lower.contains('prefieren') ||
+        lower.contains('favorita') ||
         lower.contains('probabilidad') ||
-        lower.contains('dado') ||
+        lower.contains('seguro') ||
+        lower.contains('imposible') ||
+        lower.contains('posible') ||
+        lower.contains('lanzar una moneda') ||
+        lower.contains('cara o sello') ||
+        RegExp(r'\bdados?\b').hasMatch(lower) ||
         lower.contains('ruleta') ||
-        lower.contains('bolas')) {
+        lower.contains('bolas') ||
+        RegExp(r'(🥭|🍌|🐶|🐱|⭐|🍎|🎈|⚽|🍦|🫓|🥟|🧆)').hasMatch(q)) {
       return _VisualTopic.statistics;
     }
 
@@ -495,7 +558,7 @@ class _ExerciseVisualAidState extends State<ExerciseVisualAid> {
       return _VisualTopic.percentDecimalMoney;
     }
 
-    // 11. Medición (longitud, masa, capacidad)
+    // 11. Medición (longitud, masa, capacidad y comparaciones)
     if (lower.contains('regla') ||
         lower.contains('centímetro') ||
         lower.contains('kilómetro') ||
@@ -504,6 +567,25 @@ class _ExerciseVisualAidState extends State<ExerciseVisualAid> {
         lower.contains('mililitro') ||
         lower.contains('kilogramo') ||
         lower.contains('gramo') ||
+        lower.contains('más largo') ||
+        lower.contains('más corto') ||
+        lower.contains('más larga') ||
+        lower.contains('más corta') ||
+        lower.contains('más alto') ||
+        lower.contains('más alta') ||
+        lower.contains('más bajo') ||
+        lower.contains('más pesado') ||
+        lower.contains('más pesada') ||
+        lower.contains('más liviano') ||
+        lower.contains('liviana') ||
+        lower.contains('balanza de brazos') ||
+        lower.contains('lleno') ||
+        lower.contains('vacío') ||
+        lower.contains('cabe más') ||
+        lower.contains('capacidad') ||
+        lower.contains('cuartas') ||
+        lower.contains('palmas') ||
+        lower.contains('mides con') ||
         RegExp(r'\b\d+\s*(cm|mm|m|km|kg|g|l|ml)\b').hasMatch(lower)) {
       return _VisualTopic.measurement;
     }
@@ -518,16 +600,24 @@ class _ExerciseVisualAidState extends State<ExerciseVisualAid> {
       return _VisualTopic.algebra;
     }
 
-    // 13. Recta numérica, enteros negativos y secuencias
-    if (lower.contains('negativo') ||
-        lower.contains('bajo cero') ||
-        lower.contains('°c') ||
-        lower.contains('recta') ||
+    // 13. Recta numérica, comparación, nombres de números y secuencias
+    if (lower.contains('recta') ||
         lower.contains('secuencia') ||
         lower.contains('patrón') ||
+        lower.contains('patron') ||
         lower.contains('antes del') ||
         lower.contains('después del') ||
-        lower.contains('opuesto')) {
+        lower.contains('sigue después') ||
+        lower.contains('va antes') ||
+        lower.contains('va después') ||
+        lower.contains('menor que') ||
+        lower.contains('mayor que') ||
+        lower.contains('número es mayor') ||
+        lower.contains('número es menor') ||
+        lower.contains('número más grande') ||
+        lower.contains('número más pequeño') ||
+        (lower.contains('número') && lower.contains('nombre')) ||
+        lower.contains('dedos tiene una mano')) {
       return _VisualTopic.numberLineSequence;
     }
 
@@ -683,10 +773,10 @@ class _ExerciseVisualAidState extends State<ExerciseVisualAid> {
                 displayedTip,
                 style: TextStyle(
                   fontFamily: 'Nunito',
-                  fontSize: widget.compact ? 12 : 13,
-                  fontWeight: FontWeight.w700,
+                  fontSize: widget.compact ? 14 : 15,
+                  fontWeight: FontWeight.w800,
                   color: const Color(0xFF78350F),
-                  height: 1.32,
+                  height: 1.38,
                 ),
               ),
             ],
@@ -696,21 +786,171 @@ class _ExerciseVisualAidState extends State<ExerciseVisualAid> {
     );
   }
 
+  bool get _isAreaOrPerimeter {
+    final lower = widget.questionText.toLowerCase();
+    return lower.contains('perímetro') ||
+        lower.contains('perimetro') ||
+        RegExp(r'(?:^|[\s¿¡(])[áa]reas?(?=$|[\s?!),.;:])').hasMatch(lower) ||
+        lower.contains('cm²') ||
+        lower.contains('m²');
+  }
+
+  bool get _isVolumeQuestion {
+    final lower = widget.questionText.toLowerCase();
+    return lower.contains('volumen') ||
+        lower.contains('cm³') ||
+        lower.contains('m³');
+  }
+
+  bool get _isCoordinateQuestion {
+    final lower = widget.questionText.toLowerCase();
+    return lower.contains('plano cartesiano') ||
+        lower.contains('coordenada') ||
+        lower.contains('eje x') ||
+        lower.contains('eje y') ||
+        RegExp(r'\(\s*\d+\s*,\s*\d+\s*\)').hasMatch(lower);
+  }
+
+  bool get _isMetricUnitMeasurement {
+    final lower = widget.questionText.toLowerCase();
+    return lower.contains('kg') ||
+        lower.contains('kilogramo') ||
+        lower.contains('gramo') ||
+        lower.contains('litro') ||
+        lower.contains('mililitro') ||
+        lower.contains('ml') ||
+        lower.contains('centímetro') ||
+        lower.contains('kilómetro') ||
+        lower.contains('milímetro') ||
+        RegExp(r'\b\d+\s*(cm|mm|m|km|kg|g|l|ml)\b').hasMatch(lower);
+  }
+
+  bool get _isExplicitClock {
+    final lower = widget.questionText.toLowerCase();
+    return lower.contains('reloj') ||
+        lower.contains('manecilla') ||
+        RegExp(r'\b\d{1,2}:\d{2}\b').hasMatch(lower) ||
+        lower.contains('en punto') ||
+        lower.contains('y media') ||
+        lower.contains('minutos tiene') ||
+        lower.contains('horas tiene');
+  }
+
+  bool get _isCalendarOrDayPart {
+    final lower = widget.questionText.toLowerCase();
+    return lower.contains('momento del día') ||
+        lower.contains('desayun') ||
+        lower.contains('almorz') ||
+        lower.contains('pijama') ||
+        lower.contains('ayer') ||
+        lower.contains('mañana') ||
+        lower.contains('tarde') ||
+        lower.contains('noche') ||
+        lower.contains('semana') ||
+        lower.contains('lunes') ||
+        lower.contains('martes') ||
+        lower.contains('miércoles') ||
+        lower.contains('miercoles') ||
+        lower.contains('jueves') ||
+        lower.contains('viernes') ||
+        lower.contains('sábado') ||
+        lower.contains('sabado') ||
+        lower.contains('domingo') ||
+        lower.contains('calendario') ||
+        lower.contains('meses');
+  }
+
+  bool get _isNegativeQuestion {
+    final lower = widget.questionText.toLowerCase();
+    return RegExp(r'(?:^|[\s(])-\d').hasMatch(widget.questionText) ||
+        lower.contains('negativo') ||
+        lower.contains('bajo cero') ||
+        lower.contains('°c') ||
+        lower.contains('opuesto');
+  }
+
+  bool get _isMultiplicationQuestion {
+    final lower = widget.questionText.toLowerCase();
+    return widget.questionText.contains('×') ||
+        lower.contains('multiplic') ||
+        lower.contains('tabla del') ||
+        lower.contains('producto') ||
+        lower.contains('triple') ||
+        lower.contains('veces') ||
+        RegExp(r'\b\d+\s+por\s+\d+\b').hasMatch(lower) ||
+        (!lower.contains('relaciona cada') &&
+            RegExp(
+              r'cada\s+(caja|paquete|bolsa|bolsita|niño|amigo|fila|árbol|día|semana|sobre|bus|canasta|grupo)',
+            ).hasMatch(lower));
+  }
+
+  bool get _isDivisionQuestion {
+    final lower = widget.questionText.toLowerCase();
+    return widget.questionText.contains('÷') ||
+        lower.contains('repart') ||
+        lower.contains('divid');
+  }
+
+  bool get _isSubtractionQuestion {
+    final lower = widget.questionText.toLowerCase();
+    return widget.questionText.contains('-') ||
+        lower.contains('resta') ||
+        lower.contains('queda') ||
+        lower.contains('menos') ||
+        lower.contains('más cara') ||
+        lower.contains('diferencia') ||
+        lower.contains('regal') ||
+        lower.contains('comió') ||
+        lower.contains('comio') ||
+        lower.contains('gast') ||
+        lower.contains('perdi') ||
+        lower.contains('quit') ||
+        lower.contains('sacó') ||
+        lower.contains('saco') ||
+        lower.contains('se fueron') ||
+        lower.contains('faltan');
+  }
+
   String _topicTitle() {
+    final lower = widget.questionText.toLowerCase();
     return switch (_topic) {
       _VisualTopic.placeValue => '🧮 Ábaco y Tabla Posicional (+ / −)',
       _VisualTopic.fraction => '🍕 Fábrica de Fracciones (Toca las partes)',
-      _VisualTopic.clock => '🕒 Reloj Interactivo (Mueve los minutos)',
+      _VisualTopic.clock =>
+        (!_isExplicitClock && _isCalendarOrDayPart)
+            ? '📅 Días y Momentos del Día'
+            : '🕒 Reloj Interactivo (Mueve los minutos)',
       _VisualTopic.angle => '📐 Explorador de Ángulos',
       _VisualTopic.circle => '⭕ Círculo: Radio y Diámetro',
-      _VisualTopic.solid3D => '🧊 Cubo 3D y Volumen',
-      _VisualTopic.polygonAreaPerimeter => '📏 Figura Geométrica (Área / Perímetro)',
-      _VisualTopic.cartesian => '📍 Mapa Cartesiano (Toca un punto)',
-      _VisualTopic.statistics => '📊 Gráfica de Barras (Toca cada barra)',
-      _VisualTopic.measurement => '⚖️ Tabla de Medidas y Equivalencias',
+      _VisualTopic.solid3D =>
+        _isVolumeQuestion
+            ? '🧊 Cubo 3D y Volumen'
+            : '🧊 Cuerpos en 3D (Caras y Vértices)',
+      _VisualTopic.polygonAreaPerimeter =>
+        _isAreaOrPerimeter
+            ? '📏 Figura Geométrica (Área / Perímetro)'
+            : '🔺 Formas Planas (Lados y Esquinas)',
+      _VisualTopic.cartesian =>
+        _isCoordinateQuestion
+            ? '📍 Mapa Cartesiano (Toca un punto)'
+            : '🧭 Brújula Espacial y Posición',
+      _VisualTopic.statistics =>
+        (lower.contains('pictograma') ||
+                lower.contains('tabla') ||
+                RegExp(r'(🥭|🍌|🐶|🐱|⭐|🍎|🎈|⚽|🍦|🫓|🥟|🧆)')
+                    .hasMatch(widget.questionText))
+            ? '📊 Conteo de Datos y Pictogramas'
+            : '📊 Gráfica de Barras (Toca cada barra)',
+      _VisualTopic.measurement =>
+        _isMetricUnitMeasurement
+            ? '⚖️ Tabla de Medidas y Equivalencias'
+            : '📏 Comparar Tamaño, Peso y Capacidad',
       _VisualTopic.percentDecimalMoney => '💯 Bloques de Porcentaje y Decimal',
       _VisualTopic.algebra => '⚖️ Balanza de Ecuaciones',
-      _VisualTopic.numberLineSequence => '🐸 Saltos en la Recta Numérica',
+      _VisualTopic.numberLineSequence =>
+        _isNegativeQuestion
+            ? '🌡️ Enteros y Recta Numérica'
+            : '🐸 Recta Numérica y Orden',
       _VisualTopic.arithmetic => '🧮 Laboratorio de Operaciones',
     };
   }
@@ -1011,8 +1251,8 @@ class _ExerciseVisualAidState extends State<ExerciseVisualAid> {
                 friendlyName,
                 style: TextStyle(
                   fontFamily: 'Nunito',
-                  fontSize: 8.5,
-                  fontWeight: FontWeight.w700,
+                  fontSize: 10.5,
+                  fontWeight: FontWeight.w800,
                   color: color,
                 ),
                 overflow: TextOverflow.ellipsis,
@@ -1050,13 +1290,13 @@ class _ExerciseVisualAidState extends State<ExerciseVisualAid> {
               height: compact ? 12 : 16,
               child: Center(
                 child: digit == 0
-                    ? Text(
+                    ? const Text(
                         'vacío',
                         style: TextStyle(
                           fontFamily: 'Nunito',
-                          fontSize: 7.5,
-                          fontWeight: FontWeight.w600,
-                          color: EduPlayColors.textMedium.withValues(alpha: 0.6),
+                          fontSize: 10,
+                          fontWeight: FontWeight.w700,
+                          color: Color(0xFF475569),
                         ),
                       )
                     : Wrap(
@@ -1120,9 +1360,9 @@ class _ExerciseVisualAidState extends State<ExerciseVisualAid> {
               _formatColombianInt(posVal),
               style: TextStyle(
                 fontFamily: 'Nunito',
-                fontSize: compact ? 8 : 9,
-                fontWeight: FontWeight.w800,
-                color: digit > 0 ? color : EduPlayColors.textMedium,
+                fontSize: compact ? 10.5 : 11.5,
+                fontWeight: FontWeight.w900,
+                color: digit > 0 ? color : const Color(0xFF475569),
               ),
               overflow: TextOverflow.ellipsis,
             ),
@@ -1245,8 +1485,62 @@ class _ExerciseVisualAidState extends State<ExerciseVisualAid> {
     );
   }
 
-  // 3. Reloj Analógico Interactivo
+  // 3. Reloj Analógico Interactivo / Días y Momentos del Día
   Widget _buildInteractiveClock() {
+    if (!_isExplicitClock && _isCalendarOrDayPart) {
+      final lower = widget.questionText.toLowerCase();
+      final isMoment =
+          lower.contains('momento') ||
+          lower.contains('mañana') ||
+          lower.contains('tarde') ||
+          lower.contains('noche') ||
+          lower.contains('desayun') ||
+          lower.contains('almorz') ||
+          lower.contains('pijama');
+      final items = isMoment
+          ? const [
+              ('🌅 Mañana', 'Sale el sol y desayunas'),
+              ('☀️ Tarde', 'Almuerzas, juegas y estudias'),
+              ('🌙 Noche', 'Sale la luna y vas a dormir'),
+            ]
+          : const [
+              ('Lun', 'Día 1 de la semana'),
+              ('Mar', 'Día 2 de la semana'),
+              ('Mié', 'Día 3 (mitad de clases)'),
+              ('Jue', 'Día 4 de la semana'),
+              ('Vie', 'Día 5 (último día de cole)'),
+              ('Sáb', 'Día 6 (fin de semana)'),
+              ('Dom', 'Día 7 (descanso en familia)'),
+            ];
+      final idx = _selectedUnitIdx % items.length;
+      return Column(
+        children: [
+          Wrap(
+            spacing: 6,
+            runSpacing: 6,
+            alignment: WrapAlignment.center,
+            children: List.generate(items.length, (i) {
+              return _MiniChipButton(
+                label: items[i].$1,
+                active: i == idx,
+                onTap: () => setState(() => _selectedUnitIdx = i),
+              );
+            }),
+          ),
+          const SizedBox(height: 6),
+          Text(
+            '📅 ${items[idx].$1}: ${items[idx].$2}',
+            style: const TextStyle(
+              fontFamily: 'Nunito',
+              fontSize: 12,
+              fontWeight: FontWeight.w800,
+              color: Color(0xFF1E3A8A),
+            ),
+          ),
+        ],
+      );
+    }
+
     final match =
         RegExp(r'(\d{1,2}):(\d{2})').firstMatch(widget.questionText);
     int baseHour = 3;
@@ -1435,6 +1729,7 @@ class _ExerciseVisualAidState extends State<ExerciseVisualAid> {
 
   // 6. Sólido 3D Interactivo (Volumen = largo × ancho × alto)
   Widget _buildInteractiveSolid3D() {
+    final isVolume = _isVolumeQuestion;
     final nums = RegExp(r'\d+')
         .allMatches(widget.questionText)
         .map((m) => int.tryParse(m.group(0)!) ?? 0)
@@ -1452,7 +1747,9 @@ class _ExerciseVisualAidState extends State<ExerciseVisualAid> {
             width: 74,
             height: 68,
             child: CustomPaint(
-              painter: _InteractiveCubePainter(highlightFaces: _showAreaGrid),
+              painter: _InteractiveCubePainter(
+                highlightFaces: isVolume && _showAreaGrid,
+              ),
             ),
           ),
         ),
@@ -1462,9 +1759,13 @@ class _ExerciseVisualAidState extends State<ExerciseVisualAid> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                _showAreaGrid
-                    ? 'Dimensiones: $l × $w × $h → V = ${l * w * h} cm³'
-                    : 'Cubo/Prisma: 6 caras · 12 aristas · 8 vértices',
+                isVolume
+                    ? (_showAreaGrid
+                        ? 'Dimensiones: $l × $w × $h → V = ${l * w * h} cm³'
+                        : 'Cubo/Prisma: 6 caras · 12 aristas · 8 vértices')
+                    : (_showAreaGrid
+                        ? 'Cuerpos que ruedan: Esfera (balón) · Cilindro · Cono'
+                        : 'Cuerpos con caras planas: Cubo (6 caras) · Pirámide'),
                 style: const TextStyle(
                   fontFamily: 'Nunito',
                   fontSize: 12.5,
@@ -1476,15 +1777,15 @@ class _ExerciseVisualAidState extends State<ExerciseVisualAid> {
               Row(
                 children: [
                   _MiniChipButton(
-                    label: 'Ver Volumen',
-                    active: _showAreaGrid,
-                    onTap: () => setState(() => _showAreaGrid = true),
+                    label: isVolume ? 'Ver Volumen' : 'Caras planas',
+                    active: isVolume ? _showAreaGrid : !_showAreaGrid,
+                    onTap: () => setState(() => _showAreaGrid = isVolume),
                   ),
                   const SizedBox(width: 6),
                   _MiniChipButton(
-                    label: 'Caras y Vértices',
-                    active: !_showAreaGrid,
-                    onTap: () => setState(() => _showAreaGrid = false),
+                    label: isVolume ? 'Caras y Vértices' : 'Los que ruedan',
+                    active: isVolume ? !_showAreaGrid : _showAreaGrid,
+                    onTap: () => setState(() => _showAreaGrid = !isVolume),
                   ),
                 ],
               ),
@@ -1495,9 +1796,15 @@ class _ExerciseVisualAidState extends State<ExerciseVisualAid> {
     );
   }
 
-  // 7. Polígono Interactivo (Alternar Área vs Perímetro con medidas de la pregunta)
+  // 7. Polígono Interactivo (Formas planas en 1° o Área vs Perímetro en 3°-5°)
   Widget _buildInteractivePolygon() {
     final lower = widget.questionText.toLowerCase();
+    final isAreaPerim = _isAreaOrPerimeter;
+    final isCircle =
+        lower.contains('círculo') ||
+        lower.contains('circulo') ||
+        lower.contains('redond') ||
+        lower.contains('moneda');
     final isTriangle =
         lower.contains('triángulo') || lower.contains('triangulo');
     final nums = RegExp(r'\d+')
@@ -1507,6 +1814,86 @@ class _ExerciseVisualAidState extends State<ExerciseVisualAid> {
         .toList();
     final b = nums.isNotEmpty ? nums[0] : 5;
     final h = nums.length > 1 ? nums[1] : b;
+
+    if (!isAreaPerim) {
+      final String shapeTitle;
+      final String shapeSubtitle;
+      if (isCircle) {
+        shapeTitle = 'Círculo: 0 lados rectos y 0 esquinas';
+        shapeSubtitle = 'Tiene un borde curvo y cerrado, como una moneda o arepa.';
+      } else if (isTriangle) {
+        shapeTitle = 'Triángulo: 3 lados y 3 vértices (esquinas)';
+        shapeSubtitle = 'Cuenta sus 3 bordes rectos y sus 3 puntas.';
+      } else if (lower.contains('rectángulo') || lower.contains('rectangulo')) {
+        shapeTitle = 'Rectángulo: 4 lados y 4 esquinas';
+        shapeSubtitle = 'Tiene 2 lados largos y 2 lados cortos.';
+      } else if (lower.contains('pentágono') || lower.contains('pentagono')) {
+        shapeTitle = 'Pentágono: 5 lados y 5 vértices';
+        shapeSubtitle = 'Cuenta sus 5 bordes rectos alrededor.';
+      } else if (lower.contains('hexágono') || lower.contains('hexagono')) {
+        shapeTitle = 'Hexágono: 6 lados y 6 vértices';
+        shapeSubtitle = 'Como las celdas de un panal de abejas (6 lados).';
+      } else {
+        shapeTitle = 'Cuadrado: 4 lados iguales y 4 esquinas';
+        shapeSubtitle = 'Todos sus 4 bordes miden exactamente lo mismo.';
+      }
+
+      return Row(
+        children: [
+          if (isCircle)
+            Container(
+              width: 62,
+              height: 62,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: const Color(0xFFDBEAFE),
+                border: Border.all(
+                  color: const Color(0xFF2563EB),
+                  width: 3,
+                ),
+              ),
+            )
+          else
+            SizedBox(
+              width: 78,
+              height: 66,
+              child: CustomPaint(
+                painter: _InteractivePolygonPainter(
+                  isTriangle: isTriangle,
+                  showGrid: false,
+                ),
+              ),
+            ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  shapeTitle,
+                  style: const TextStyle(
+                    fontFamily: 'Nunito',
+                    fontSize: 13,
+                    fontWeight: FontWeight.w800,
+                    color: Color(0xFF1E3A8A),
+                  ),
+                ),
+                const SizedBox(height: 3),
+                Text(
+                  shapeSubtitle,
+                  style: const TextStyle(
+                    fontFamily: 'Nunito',
+                    fontSize: 11.5,
+                    fontWeight: FontWeight.w600,
+                    color: EduPlayColors.textMedium,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      );
+    }
 
     return Row(
       children: [
@@ -1566,8 +1953,45 @@ class _ExerciseVisualAidState extends State<ExerciseVisualAid> {
     );
   }
 
-  // 8. Plano Cartesiano Interactivo (Toca cualquier punto de la cuadrícula)
+  // 8. Plano Cartesiano Interactivo o Brújula Espacial
   Widget _buildInteractiveCartesian() {
+    if (!_isCoordinateQuestion) {
+      const dirs = [
+        ('⬆️ Arriba', 'Hacia lo alto / encima'),
+        ('⬇️ Abajo', 'Debajo del objeto'),
+        ('⬅️ Izquierda', 'Al lado izquierdo'),
+        ('➡️ Derecha', 'Al lado derecho'),
+        ('📦 Dentro / Fuera', 'Adentro o afuera de un lugar'),
+      ];
+      final idx = _selectedUnitIdx % dirs.length;
+      return Column(
+        children: [
+          Wrap(
+            spacing: 6,
+            runSpacing: 6,
+            alignment: WrapAlignment.center,
+            children: List.generate(dirs.length, (i) {
+              return _MiniChipButton(
+                label: dirs[i].$1,
+                active: i == idx,
+                onTap: () => setState(() => _selectedUnitIdx = i),
+              );
+            }),
+          ),
+          const SizedBox(height: 6),
+          Text(
+            '🧭 ${dirs[idx].$1}: ${dirs[idx].$2}',
+            style: const TextStyle(
+              fontFamily: 'Nunito',
+              fontSize: 12,
+              fontWeight: FontWeight.w800,
+              color: Color(0xFF1E3A8A),
+            ),
+          ),
+        ],
+      );
+    }
+
     return Row(
       children: [
         SizedBox(
@@ -1693,7 +2117,11 @@ class _ExerciseVisualAidState extends State<ExerciseVisualAid> {
         ),
         const SizedBox(height: 4),
         Text(
-          'Barra seleccionada: ${values[idx]} · Mayor frecuencia (Moda): $maxVal',
+          (widget.questionText.toLowerCase().contains('moda') ||
+                  widget.questionText.toLowerCase().contains('mediana') ||
+                  widget.questionText.toLowerCase().contains('promedio'))
+              ? 'Barra seleccionada: ${values[idx]} · Mayor frecuencia (Moda): $maxVal'
+              : 'Dato seleccionado: ${values[idx]} · El grupo más grande tiene $maxVal',
           style: const TextStyle(
             fontFamily: 'Nunito',
             fontSize: 11.5,
@@ -1708,8 +2136,34 @@ class _ExerciseVisualAidState extends State<ExerciseVisualAid> {
   // 10. Convertidor de Unidades Interactivo (Longitud, Masa, Capacidad)
   Widget _buildInteractiveMeasurement() {
     final lower = widget.questionText.toLowerCase();
+    final isMetric = _isMetricUnitMeasurement;
     final List<(String, String)> pairs;
-    if (lower.contains('kg') ||
+    if (!isMetric) {
+      if (lower.contains('pesad') ||
+          lower.contains('livian') ||
+          lower.contains('balanza')) {
+        pairs = const [
+          ('🐘 Más pesado', 'Baja el platillo'),
+          ('🪶 Más liviano', 'Sube el platillo'),
+          ('⚖️ Iguales', 'Los dos quedan parejos'),
+        ];
+      } else if (lower.contains('lleno') ||
+          lower.contains('vacío') ||
+          lower.contains('cabe más') ||
+          lower.contains('capacidad')) {
+        pairs = const [
+          ('🥛 Lleno', 'Hasta el borde'),
+          ('🫙 Vacío', 'No tiene nada'),
+          ('🪣 Más grande', 'Le cabe más líquido'),
+        ];
+      } else {
+        pairs = const [
+          ('✏️ Largo / Corto', 'Compara desde la misma punta'),
+          ('🦒 Alto / Bajo', 'Mide de los pies a la punta'),
+          ('✋ Palmas / Pasos', 'Mide con tus manos o pies'),
+        ];
+      }
+    } else if (lower.contains('kg') ||
         lower.contains('kilogramo') ||
         lower.contains('gramo')) {
       pairs = const [
@@ -1734,23 +2188,25 @@ class _ExerciseVisualAidState extends State<ExerciseVisualAid> {
 
     return Column(
       children: [
-        Row(
-          mainAxisAlignment: MainAxisAlignment.center,
+        Wrap(
+          spacing: 6,
+          runSpacing: 6,
+          alignment: WrapAlignment.center,
           children: List.generate(pairs.length, (i) {
             final isSel = i == idx;
-            return Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 4),
-              child: _MiniChipButton(
-                label: '${pairs[i].$1} = ${pairs[i].$2}',
-                active: isSel,
-                onTap: () => setState(() => _selectedUnitIdx = i),
-              ),
+            return _MiniChipButton(
+              label: isMetric ? '${pairs[i].$1} = ${pairs[i].$2}' : pairs[i].$1,
+              active: isSel,
+              onTap: () => setState(() => _selectedUnitIdx = i),
             );
           }),
         ),
         const SizedBox(height: 6),
         Text(
-          '📏 Equivalencia activa: ${pairs[idx].$1} equivale exactamente a ${pairs[idx].$2}',
+          isMetric
+              ? '📏 Equivalencia activa: ${pairs[idx].$1} equivale exactamente a ${pairs[idx].$2}'
+              : '📏 Pista visual: ${pairs[idx].$1} → ${pairs[idx].$2}',
+          textAlign: TextAlign.center,
           style: const TextStyle(
             fontFamily: 'Nunito',
             fontSize: 12,
@@ -1845,20 +2301,23 @@ class _ExerciseVisualAidState extends State<ExerciseVisualAid> {
 
   // 13. Recta Numérica Interactiva
   Widget _buildInteractiveNumberLine() {
+    final isNeg = _isNegativeQuestion;
     final nums = RegExp(r'-?\d+')
         .allMatches(widget.questionText)
         .map((m) => int.tryParse(m.group(0)!) ?? 0)
         .toList();
-    final start = nums.isNotEmpty ? nums.first : 0;
-    final current = start + _numberLineStep;
+    final start = nums.isNotEmpty ? nums.first : (isNeg ? 0 : 3);
+    final rawCurrent = start + _numberLineStep;
+    final current = isNeg ? rawCurrent : math.max(0, rawCurrent);
+    final windowStart = isNeg ? (current - 3) : math.max(0, current - 3);
 
     return Column(
       children: [
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
           children: List.generate(7, (i) {
-            final val = start - 3 + i + _numberLineStep;
-            final isCenter = i == 3;
+            final val = windowStart + i;
+            final isCenter = val == current;
             return Container(
               padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 4),
               decoration: BoxDecoration(
@@ -1888,7 +2347,9 @@ class _ExerciseVisualAidState extends State<ExerciseVisualAid> {
           children: [
             _MiniChipButton(
               label: '← Retroceder (−1)',
-              onTap: () => setState(() => _numberLineStep--),
+              onTap: (!isNeg && current <= 0)
+                  ? null
+                  : () => setState(() => _numberLineStep--),
             ),
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 10),
@@ -1919,34 +2380,69 @@ class _ExerciseVisualAidState extends State<ExerciseVisualAid> {
         .map((m) => int.tryParse(m.group(0)!.replaceAll('.', '')) ?? 0)
         .where((n) => n > 0)
         .toList();
+    final lower = widget.questionText.toLowerCase();
+
+    if (lower.contains('doble') && nums.length == 1) {
+      final n = nums.first;
+      return Row(
+        children: [
+          Expanded(
+            child: Container(
+              padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 10),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(10),
+                border: Border.all(
+                  color: EduPlayColors.primaryBlue.withValues(alpha: 0.35),
+                ),
+              ),
+              child: Text(
+                _arithmeticStepRevealed
+                    ? '🔍 El doble es sumar dos veces: $n + $n = ${n * 2}'
+                    : 'Datos del problema:  $n  +  $n',
+                textAlign: TextAlign.center,
+                style: const TextStyle(
+                  fontFamily: 'Nunito',
+                  fontSize: 12.5,
+                  fontWeight: FontWeight.w800,
+                  color: Color(0xFF1E3A8A),
+                ),
+              ),
+            ),
+          ),
+          const SizedBox(width: 8),
+          _MiniChipButton(
+            label: _arithmeticStepRevealed ? 'Ver datos' : 'Ver estrategia',
+            active: _arithmeticStepRevealed,
+            onTap: () => setState(
+              () => _arithmeticStepRevealed = !_arithmeticStepRevealed,
+            ),
+          ),
+        ],
+      );
+    }
 
     if (nums.length >= 2) {
       final a = nums[0];
       final b = nums[1];
-      final lower = widget.questionText.toLowerCase();
       String op = '+';
-      String explanation = 'Suma unidades con unidades y decenas con decenas';
-      if (widget.questionText.contains('×') ||
-          lower.contains('por ') ||
-          lower.contains('cada') ||
-          lower.contains('veces')) {
+      String explanation = (a <= 20 && b <= 20)
+          ? 'Guarda el ${math.max(a, b)} en tu cabecita y cuenta ${math.min(a, b)} pasitos más'
+          : 'Suma unidades con unidades y decenas con decenas';
+      if (_isMultiplicationQuestion) {
         op = '×';
-        explanation =
-            'Descompón: $a × $b = ($a × ${b ~/ 10 * 10}) + ($a × ${b % 10})';
-      } else if (widget.questionText.contains('÷') ||
-          lower.contains('repart') ||
-          lower.contains('divid')) {
+        explanation = b < 10
+            ? 'Grupos iguales: $a veces $b = ${a * b}'
+            : 'Descompón: $a × $b = ($a × ${b ~/ 10 * 10}) + ($a × ${b % 10})';
+      } else if (_isDivisionQuestion) {
         op = '÷';
         explanation =
             'Busca qué número multiplicado por $b se acerca a $a sin pasarse';
-      } else if (widget.questionText.contains('-') ||
-          lower.contains('resta') ||
-          lower.contains('queda') ||
-          lower.contains('menos') ||
-          lower.contains('más cara') ||
-          lower.contains('diferencia')) {
+      } else if (_isSubtractionQuestion) {
         op = '−';
-        explanation = 'Calcula la diferencia entre $a y $b paso a paso';
+        explanation = (a <= 20 && b <= 20)
+            ? 'Cuenta hacia atrás desde $a o mira cuánto le falta a $b para llegar a $a'
+            : 'Calcula la diferencia entre $a y $b paso a paso';
       }
 
       return Row(
@@ -2027,25 +2523,57 @@ class _ExerciseVisualAidState extends State<ExerciseVisualAid> {
           }
           return '¡Imagina una rica pizza! 🍕 El número de abajo cuenta en cuántos pedazos iguales se partió toda la pizza, y el de arriba cuántos pedazos tomaste.';
         }(),
-      _VisualTopic.clock =>
-        '¡El secreto de las agujas! ⏰ La aguja cortita es tranquila y dice la HORA. La aguja larga es rápida y cuenta los MINUTOS de 5 en 5 alrededor del reloj.',
+      _VisualTopic.clock => () {
+          if (!_isExplicitClock && _isCalendarOrDayPart) {
+            if (lower.contains('semana') ||
+                lower.contains('lunes') ||
+                lower.contains('martes') ||
+                lower.contains('miércoles') ||
+                lower.contains('miercoles') ||
+                lower.contains('jueves') ||
+                lower.contains('viernes') ||
+                lower.contains('sábado') ||
+                lower.contains('sabado') ||
+                lower.contains('domingo') ||
+                lower.contains('ayer')) {
+              return '¡Canta los 7 días de la semana en orden! 📅 Lunes, Martes, Miércoles, Jueves, Viernes, Sábado y Domingo.';
+            }
+            return '¡Piensa en tu día paso a paso! ☀️ En la MAÑANA sale el sol y desayunas, en la TARDE juegas y haces tareas, y en la NOCHE sale la luna y duermes.';
+          }
+          return '¡El secreto de las agujas! ⏰ La aguja cortita es tranquila y dice la HORA. La aguja larga es rápida y cuenta los MINUTOS de 5 en 5 alrededor del reloj.';
+        }(),
       _VisualTopic.angle =>
         '¡Haz el ángulo con tus brazos! 💪 Como la esquina de tu cuaderno = 90° (recto). Más cerradito = agudo (< 90°). Muy abierto = obtuso (> 90°).',
       _VisualTopic.circle =>
         '¡Piensa en una rueda de bicicleta! 🚲 Un rayo del centro al borde es el RADIO. Si cruzas todo el círculo pasando por el centro es el DIÁMETRO (¡mide 2 radios!).',
       _VisualTopic.solid3D =>
-        '¡Imagina que llenas una caja con cubitos de armar! 🧱 Para saber cuántos cubitos caben adentro sin contarlos uno por uno, multiplica: largo × ancho × alto.',
+        _isVolumeQuestion
+            ? '¡Imagina que llenas una caja con cubitos de armar! 🧱 Para saber cuántos cubitos caben adentro sin contarlos uno por uno, multiplica: largo × ancho × alto.'
+            : '¡Los cuerpos 3D tienen volumen como una caja o un balón! 🧊 Mira si tienen caras planas (como un dado) o curvas para rodar (como una pelota).',
       _VisualTopic.polygonAreaPerimeter => () {
-          if (lower.contains('perímetro') || lower.contains('perimetro')) {
-            return '¡El PERÍMETRO es como la cerca que rodea un jardín! 🏡 Solo tienes que caminar por todo el borde y sumar lo que miden todos sus lados.';
-          }
-          if (lower.contains('área') || lower.contains('area')) {
+          if (_isAreaOrPerimeter) {
+            if (lower.contains('perímetro') || lower.contains('perimetro')) {
+              return '¡El PERÍMETRO es como la cerca que rodea un jardín! 🏡 Solo tienes que caminar por todo el borde y sumar lo que miden todos sus lados.';
+            }
             return '¡El ÁREA es el pasto que cubre el piso por dentro! 🌱 Cuenta cuántos cuadritos caben adentro multiplicando el largo por el ancho.';
           }
-          return '¡Cuenta con tu dedito las esquinas (vértices) y los bordes rectos (lados) de la figura! 📐';
+          if (lower.contains('círculo') ||
+              lower.contains('circulo') ||
+              lower.contains('redond') ||
+              lower.contains('moneda')) {
+            return '¡Un círculo es totalmente redondito como una moneda o arepa! ⭕ No tiene bordes rectos ni esquinas.';
+          }
+          return '¡Cuenta con tu dedito las esquinas (vértices) y los bordes rectos (lados) de la figura! 📐 Un triángulo tiene 3 lados y un cuadrado tiene 4 iguales.';
         }(),
-      _VisualTopic.cartesian =>
-        '¡Primero caminas y luego subes en ascensor! 🚀 El primer número te dice cuántos pasos das a la derecha (→) y el segundo cuántos pisos subes (↑).',
+      _VisualTopic.cartesian => () {
+          if (!_isCoordinateQuestion) {
+            if (lower.contains('izquierd') || lower.contains('derech')) {
+              return '¡Mira tus dos manos! 🖐️🤚 Con la mano que escribes o saludas te guías rápido: IZQUIERDA (←) a un lado y DERECHA (→) al otro.';
+            }
+            return '¡Imagina dónde estás tú frente al dibujo! 🧭 Mira bien si está ARRIBA o ABAJO, DENTRO o FUERA, CERCA o LEJOS.';
+          }
+          return '¡Primero caminas y luego subes en ascensor! 🚀 El primer número te dice cuántos pasos das a la derecha (→) y el segundo cuántos pisos subes (↑).';
+        }(),
       _VisualTopic.statistics => () {
           if (lower.contains('moda')) {
             return '¡La MODA es el campeón que más se repite! 🏆 Mira en la gráfica cuál es la barra más alta de todas.';
@@ -2053,8 +2581,14 @@ class _ExerciseVisualAidState extends State<ExerciseVisualAid> {
           if (lower.contains('mediana')) {
             return '¡Haz una fila del más pequeño al más grande! 🧍‍♂️🧍‍♀️ El número que quede justo en toda la mitad de la fila es la MEDIANA.';
           }
-          if (lower.contains('promedio') || lower.contains('media')) {
+          if (lower.contains('promedio') ||
+              RegExp(r'\bmedia\b').hasMatch(lower)) {
             return '¡El PROMEDIO es repartir en partes iguales! 🤝 Suma todos los puntos y luego divídelo entre la cantidad de datos.';
+          }
+          if (lower.contains('seguro') ||
+              lower.contains('imposible') ||
+              lower.contains('posible')) {
+            return '¡Piensa si puede pasar de verdad! 🎲 SEGURO pasa siempre, POSIBLE puede pasar a veces, e IMPOSIBLE nunca puede pasar.';
           }
           if (lower.contains('probabilidad') ||
               lower.contains('dado') ||
@@ -2062,10 +2596,31 @@ class _ExerciseVisualAidState extends State<ExerciseVisualAid> {
               lower.contains('bolas')) {
             return '¡Cuenta tus oportunidades de ganar! 🎲 Pon arriba cuántas opciones te sirven a ti y abajo el total de opciones que existen.';
           }
+          if (RegExp(r'(🥭|🍌|🐶|🐱|⭐|🍎|🎈|⚽|🍦|🫓|🥟|🧆)')
+                  .hasMatch(widget.questionText) ||
+              lower.contains('pictograma') ||
+              lower.contains('votos')) {
+            return '¡Cuenta uno por uno cada dibujito señalándolo con tu dedo! 📊 Así sabrás qué grupo tiene más o menos.';
+          }
           return '¡Toca cada barra de colores para comparar! 📊 Entre más alta sea la barra, mayor es la cantidad.';
         }(),
-      _VisualTopic.measurement =>
-        '¡Palabra mágica! ✨ "Kilo" significa MIL (1 km = 1.000 m, 1 kg = 1.000 g) y "Centi" significa CIEN (1 metro tiene 100 centímetros).',
+      _VisualTopic.measurement => () {
+          if (!_isMetricUnitMeasurement) {
+            if (lower.contains('pesad') ||
+                lower.contains('livian') ||
+                lower.contains('balanza')) {
+              return '¡Imagina que sostienes un objeto en cada mano! ⚖️ El más PESADO hace bajar la balanza; el más LIVIANO sube.';
+            }
+            if (lower.contains('lleno') ||
+                lower.contains('vacío') ||
+                lower.contains('cabe más') ||
+                lower.contains('capacidad')) {
+              return '¡Fíjate en cuánta agua cabe adentro! 🥛 Un recipiente más grande tiene mayor capacidad y le cabe más.';
+            }
+            return '¡Para comparar tamaños, pon los objetos pegados en la misma línea de salida! 📏 Así ves cuál llega más lejos o es más alto.';
+          }
+          return '¡Palabra mágica! ✨ "Kilo" significa MIL (1 km = 1.000 m, 1 kg = 1.000 g) y "Centi" significa CIEN (1 metro tiene 100 centímetros).';
+        }(),
       _VisualTopic.percentDecimalMoney => () {
           if (lower.contains('descuento')) {
             return '¡Un descuento es plata que te ahorras! 🏷️ Primero calcula esa parte del precio y luego réstala de lo que costaba antes.';
@@ -2074,26 +2629,50 @@ class _ExerciseVisualAidState extends State<ExerciseVisualAid> {
         }(),
       _VisualTopic.algebra =>
         '¡La letra x es un número misterioso con antifaz! 🎭 Como la balanza está en equilibrio, descúbrelo haciendo la operación contraria (si suma, resta; si multiplica, divide).',
-      _VisualTopic.numberLineSequence =>
-        '¡Salta como una ranita en la recta! 🐸 Cuando sumas o sube el calor vas a la derecha (+); cuando restas o hace frío bajo cero vas a la izquierda (−).',
+      _VisualTopic.numberLineSequence => () {
+          if (_isNegativeQuestion) {
+            return '¡Salta como una ranita en la recta! 🐸 Arriba del 0 los números crecen (+); cuando hace frío bajo cero vas hacia la izquierda (−).';
+          }
+          if (lower.contains('mayor') ||
+              lower.contains('menor') ||
+              lower.contains('más grande') ||
+              lower.contains('más pequeño')) {
+            return '¡El número MÁS GRANDE está más a la derecha en la recta! ➡️ Piensa en la boquita de cocodrilo 🐊 que siempre se come al número mayor.';
+          }
+          if (lower.contains('nombre') || lower.contains('dedos tiene')) {
+            return '¡Cuenta despacito con tus dedos y lee bien cada palabra! 🖐️ Cada número tiene su propio nombre y orden.';
+          }
+          if (lower.contains('secuencia') ||
+              lower.contains('patrón') ||
+              lower.contains('patron')) {
+            return '¡Descubre el ritmo de los saltos! 🔍 Mira dos números seguidos para saber de cuánto en cuánto avanzan o retroceden.';
+          }
+          return '¡Salta de 1 en 1 como una ranita en la recta! 🐸 El número que va ANTES está a la izquierda (−1) y el que va DESPUÉS está a la derecha (+1).';
+        }(),
       _VisualTopic.arithmetic => () {
-          if (widget.questionText.contains('×') ||
-              lower.contains('por ') ||
-              lower.contains('cada') ||
-              lower.contains('veces')) {
+          final nums = RegExp(r'\d+(?:\.\d{3})*')
+              .allMatches(widget.questionText)
+              .map((m) => int.tryParse(m.group(0)!.replaceAll('.', '')) ?? 0)
+              .where((n) => n > 0)
+              .toList();
+          final maxNum = nums.isEmpty ? 0 : nums.reduce(math.max);
+          if (lower.contains('doble')) {
+            return '¡El DOBLE es sumar un número consigo mismo! ✨ Por ejemplo, el doble de 6 es 6 + 6 = 12 (como tus dos manos juntas).';
+          }
+          if (_isMultiplicationQuestion) {
             return '¡Multiplicar es sumar rápido el mismo grupo varias veces! ⚡ Si un número termina en 0, multiplica los demás y ponle el 0 al final.';
           }
-          if (widget.questionText.contains('÷') ||
-              lower.contains('repart') ||
-              lower.contains('divid')) {
+          if (_isDivisionQuestion) {
             return '¡Dividir es repartir dulces en partes iguales! 🍬 Pregúntate: ¿qué número multiplicado por el divisor me da el total?';
           }
-          if (widget.questionText.contains('-') ||
-              lower.contains('resta') ||
-              lower.contains('queda') ||
-              lower.contains('menos') ||
-              lower.contains('diferencia')) {
+          if (_isSubtractionQuestion) {
+            if (maxNum > 0 && maxNum <= 20) {
+              return '¡Cuenta hacia atrás o mira cuánto te falta! 🎯 También puedes quitar con tus deditos uno por uno para saber cuánto queda.';
+            }
             return '¡Para restar sin equivocarte, empieza por las unidades! 🎯 También puedes contar cuánto le falta al número pequeño para alcanzar al grande.';
+          }
+          if (maxNum > 0 && maxNum <= 20) {
+            return '¡Guarda el número más grande en tu cabecita y sigue contando con tus dedos! 🌟 Por ejemplo, en 8 + 3 piensas: 8... ¡9, 10, 11!';
           }
           return '¡Suma primero las unidades y luego las decenas! 🌟 Si las unidades pasan de 9, formas 1 decena nueva y la llevas a la siguiente columna.';
         }(),
@@ -2108,29 +2687,39 @@ class _ExerciseVisualAidState extends State<ExerciseVisualAid> {
       _VisualTopic.fraction =>
         'Toca los pedazos de la pizza o de la barra azul arriba hasta pintar $_activeSlices de $_totalSlices partes y compáralo con las opciones.',
       _VisualTopic.clock =>
-        'Toca el botón "+15 min" o "+30 min" en el reloj de arriba y mira a qué número apunta cada manecilla.',
+        (!_isExplicitClock && _isCalendarOrDayPart)
+            ? 'Toca las tarjetas de arriba en orden de izquierda a derecha para ver qué va antes y qué va después.'
+            : 'Toca el botón "+15 min" o "+30 min" en el reloj de arriba y mira a qué número apunta cada manecilla.',
       _VisualTopic.angle =>
         'Toca los botones 45°, 90°, 130° y 180° arriba para ver cómo se abre el abanico amarillo en el transportador.',
       _VisualTopic.circle =>
         'Toca "Ver Radio (r)" y "Ver Diámetro (2r)" arriba: verás que el diámetro es el doble del radio. Para el borde completo multiplica el diámetro por 3,14.',
       _VisualTopic.solid3D =>
-        'Toca el cubo 3D arriba para ver la multiplicación de sus 3 medidas (largo × ancho × alto) o contar sus 6 caras y 8 esquinas.',
+        _isVolumeQuestion
+            ? 'Toca el cubo 3D arriba para ver la multiplicación de sus 3 medidas (largo × ancho × alto) o contar sus 6 caras y 8 esquinas.'
+            : 'Toca los botones arriba para distinguir cuerpos con caras planas (como cajas y dados) de cuerpos redondos que pueden rodar.',
       _VisualTopic.polygonAreaPerimeter =>
-        'Toca los botones "Ver Área (interior)" y "Ver Perímetro (borde)" arriba para ver la fórmula resuelta con los números de tu ejercicio.',
+        _isAreaOrPerimeter
+            ? 'Toca los botones "Ver Área (interior)" y "Ver Perímetro (borde)" arriba para ver la fórmula resuelta con los números de tu ejercicio.'
+            : 'Mira el dibujo de arriba y cuenta con tu dedito cada borde recto (lado) y cada esquina puntuda (vértice).',
       _VisualTopic.cartesian =>
-        'Toca la cuadrícula del mapa arriba para mover el punto rojo y ver cómo cambian los números (X horizontal, Y vertical).',
+        _isCoordinateQuestion
+            ? 'Toca la cuadrícula del mapa arriba para mover el punto rojo y ver cómo cambian los números (X horizontal, Y vertical).'
+            : 'Toca los botones de la brújula arriba (⬆️ arriba, ⬇️ abajo, ⬅️ izquierda, ➡️ derecha) para ubicar cada dirección.',
       _VisualTopic.statistics =>
         'Toca cada barra de la gráfica arriba: la barra dorada te muestra enseguida el valor más alto.',
       _VisualTopic.measurement =>
-        'Toca los botones de equivalencia arriba: si pasas de una medida grande a una pequeña multiplicas; de pequeña a grande divides.',
+        _isMetricUnitMeasurement
+            ? 'Toca los botones de equivalencia arriba: si pasas de una medida grande a una pequeña multiplicas; de pequeña a grande divides.'
+            : 'Toca los botones arriba para comparar objetos largos vs cortos, pesados vs livianos o llenos vs vacíos.',
       _VisualTopic.percentDecimalMoney =>
         'Toca los 10 bloquecitos verdes arriba: cada bloque vale 10% (o 0,1). ¡Cuenta cuántos bloques necesitas!',
       _VisualTopic.algebra =>
         'Toca el botón "Despejar x" arriba: si a la x le suman un número, réstalo; si la multiplican por un número, divide entre ese número.',
       _VisualTopic.numberLineSequence =>
-        'Usa los botones "← Retroceder" y "Avanzar →" arriba para dar saltos de 1 en 1 y ver a qué número llegas.',
+        'Usa los botones "← Retroceder" y "Avanzar →" arriba para dar saltos de 1 en 1 y ver qué número va antes o después.',
       _VisualTopic.arithmetic =>
-        'Toca el botón "Ver estrategia" arriba a la derecha para ver cómo partir los números del problema en pasos súper fáciles.',
+        'Revisa con calma las cantidades del problema arriba y cuenta paso a paso antes de elegir tu respuesta.',
     };
   }
 }
