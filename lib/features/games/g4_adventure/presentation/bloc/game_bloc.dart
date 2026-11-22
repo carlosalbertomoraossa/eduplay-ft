@@ -25,6 +25,9 @@ class GameBloc extends Bloc<GameEvent, GameState> {
     on<GameRestarted>(_onRestarted);
     on<GamePaused>(_onPaused);
     on<GameResumed>(_onResumed);
+    on<PlayerDamaged>(_onPlayerDamaged);
+    on<EnemyDefeated>(_onEnemyDefeated);
+    on<HeartCollected>(_onHeartCollected);
   }
 
   void _onStarted(GameStarted event, Emitter<GameState> emit) {
@@ -152,6 +155,47 @@ class GameBloc extends Bloc<GameEvent, GameState> {
 
   void _onResumed(GameResumed event, Emitter<GameState> emit) {
     // Reanudar desde el mismo estado
+  }
+
+  void _onPlayerDamaged(PlayerDamaged event, Emitter<GameState> emit) {
+    final current = state;
+    if (current is! GameInProgress) return;
+    if (current.waitingForAnswer) return;
+
+    final newLives = current.lives - 1;
+    final updated = current.copyWith(
+      lives: newLives,
+      streakCount: 0,
+      scoreMultiplier: 1,
+      clearLastAnswer: true,
+    );
+
+    if (newLives <= 0) {
+      emit(GameOver(_buildResult(updated)));
+    } else {
+      emit(updated);
+    }
+  }
+
+  void _onEnemyDefeated(EnemyDefeated event, Emitter<GameState> emit) {
+    final current = state;
+    if (current is! GameInProgress) return;
+
+    emit(current.copyWith(
+      score: current.score + event.bonusPoints * current.scoreMultiplier,
+      clearLastAnswer: true,
+    ));
+  }
+
+  void _onHeartCollected(HeartCollected event, Emitter<GameState> emit) {
+    final current = state;
+    if (current is! GameInProgress) return;
+    if (current.lives >= _maxLives) return;
+
+    emit(current.copyWith(
+      lives: current.lives + 1,
+      clearLastAnswer: true,
+    ));
   }
 
   LevelComplete _buildLevelComplete(GameInProgress state) => LevelComplete(

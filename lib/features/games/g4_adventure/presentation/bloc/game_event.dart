@@ -38,3 +38,14 @@ class GameRestarted extends GameEvent {
   @override
   List<Object?> get props => [level];
 }
+
+class PlayerDamaged extends GameEvent {}
+
+class EnemyDefeated extends GameEvent {
+  final int bonusPoints;
+  EnemyDefeated({this.bonusPoints = 25});
+  @override
+  List<Object?> get props => [bonusPoints];
+}
+
+class HeartCollected extends GameEvent {}

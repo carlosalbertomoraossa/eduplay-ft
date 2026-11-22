@@ -261,5 +261,85 @@ void main() {
         isA<GameInitial>(),
       ],
     );
+
+    blocTest<GameBloc, GameState>(
+      'PlayerDamaged reduce vidas y resetea racha sin afectar preguntas',
+      build: () => GameBloc(),
+      seed: () => GameInProgress(
+        score: 300,
+        lives: 3,
+        currentLevel: 1,
+        questionsAnswered: 2,
+        correctAnswersCount: 2,
+        streakCount: 2,
+        scoreMultiplier: 2,
+        questions: _mockQuestions(10),
+      ),
+      act: (bloc) => bloc.add(PlayerDamaged()),
+      expect: () => [
+        isA<GameInProgress>()
+          .having((s) => s.lives, 'lives', 2)
+          .having((s) => s.streakCount, 'streak', 0)
+          .having((s) => s.scoreMultiplier, 'multiplier', 1)
+          .having((s) => s.questionsAnswered, 'answered', 2),
+      ],
+    );
+
+    blocTest<GameBloc, GameState>(
+      'PlayerDamaged con 1 vida emite GameOver',
+      build: () => GameBloc(),
+      seed: () => GameInProgress(
+        score: 100,
+        lives: 1,
+        currentLevel: 1,
+        questionsAnswered: 1,
+        correctAnswersCount: 1,
+        streakCount: 1,
+        scoreMultiplier: 1,
+        questions: _mockQuestions(10),
+      ),
+      act: (bloc) => bloc.add(PlayerDamaged()),
+      expect: () => [
+        isA<GameOver>(),
+      ],
+    );
+
+    blocTest<GameBloc, GameState>(
+      'EnemyDefeated suma puntos con multiplicador',
+      build: () => GameBloc(),
+      seed: () => GameInProgress(
+        score: 100,
+        lives: 3,
+        currentLevel: 1,
+        questionsAnswered: 3,
+        correctAnswersCount: 3,
+        streakCount: 3,
+        scoreMultiplier: 2,
+        questions: _mockQuestions(10),
+      ),
+      act: (bloc) => bloc.add(EnemyDefeated(bonusPoints: 25)),
+      expect: () => [
+        isA<GameInProgress>().having((s) => s.score, 'score', 150),
+      ],
+    );
+
+    blocTest<GameBloc, GameState>(
+      'HeartCollected suma 1 vida sin pasar de maxLives (5)',
+      build: () => GameBloc(),
+      seed: () => GameInProgress(
+        score: 100,
+        lives: 3,
+        currentLevel: 1,
+        questionsAnswered: 1,
+        correctAnswersCount: 1,
+        streakCount: 1,
+        scoreMultiplier: 1,
+        questions: _mockQuestions(10),
+      ),
+      act: (bloc) => bloc.add(HeartCollected()),
+      expect: () => [
+        isA<GameInProgress>().having((s) => s.lives, 'lives', 4),
+      ],
+    );
   });
 }

@@ -14,6 +14,7 @@ import '../../g4_adventure_game.dart';
 import '../bloc/game_bloc.dart';
 import '../bloc/game_event.dart';
 import '../bloc/game_state.dart';
+import '../overlays/controls_overlay.dart';
 import '../overlays/game_complete_overlay.dart';
 import '../overlays/game_over_overlay.dart';
 import '../overlays/hud_overlay.dart';
@@ -45,7 +46,10 @@ class _GamePlayScreenState extends ConsumerState<GamePlayScreen> {
   void initState() {
     super.initState();
     _gameBloc = getIt<GameBloc>();
-    _game = G4AdventureGame(gameBloc: _gameBloc);
+    _game = G4AdventureGame(
+      gameBloc: _gameBloc,
+      initialLevel: widget.level,
+    );
 
     // Esperar primer frame para que el GameWidget monte el canvas antes de
     // emitir GameStarted (garantiza que el stream listener de _game está activo)
@@ -106,9 +110,12 @@ class _GamePlayScreenState extends ConsumerState<GamePlayScreen> {
           children: [
             GameWidget<G4AdventureGame>(
               game: _game,
+              autofocus: true,
               overlayBuilderMap: {
-                G4AdventureGame.overlayHud: (context, _) =>
-                    HudOverlay(gameBloc: _gameBloc),
+                G4AdventureGame.overlayHud: (context, game) =>
+                    HudOverlay(gameBloc: _gameBloc, game: game),
+                G4AdventureGame.overlayControls: (context, game) =>
+                    ControlsOverlay(game: game),
                 G4AdventureGame.overlayQuestion: (context, _) =>
                     QuestionOverlay(gameBloc: _gameBloc),
                 G4AdventureGame.overlayGameOver: (context, _) =>

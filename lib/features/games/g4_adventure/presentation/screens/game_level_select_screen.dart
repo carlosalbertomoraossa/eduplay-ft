@@ -7,16 +7,16 @@ import 'package:go_router/go_router.dart';
 import '../../../../../core/providers/game_progress_provider.dart';
 import '../../../../../core/theme/app_theme.dart';
 
-// Metadatos de cada nivel: nombre temático y dificultad (1-3 estrellas)
+// Metadatos de cada caverna: bioma subterráneo, tema matemático y dificultad (1-3 estrellas)
 const List<_LevelMeta> _levels = [
-  _LevelMeta(1, 'Fracciones\nBásicas', 1, Color(0xFF4CAF50)),
-  _LevelMeta(2, 'Fracciones\nEquivalentes', 1, Color(0xFF4CAF50)),
-  _LevelMeta(3, 'Multiplicación', 2, Color(0xFF2196F3)),
-  _LevelMeta(4, 'División', 2, Color(0xFF2196F3)),
-  _LevelMeta(5, 'Decimales\nIntro', 2, Color(0xFF9C27B0)),
-  _LevelMeta(6, 'Decimales\nAvanzado', 3, Color(0xFF9C27B0)),
-  _LevelMeta(7, 'Repaso\nMixto', 3, Color(0xFFFF5722)),
-  _LevelMeta(8, '¡Boss!\nTodo el grado', 3, Color(0xFFE91E63)),
+  _LevelMeta(1, 'El Pozo de Cristal', 'Fracciones Básicas', 1, Color(0xFF0D9488)),
+  _LevelMeta(2, 'Cueva de los Hongos', 'Fracciones Equivalentes', 1, Color(0xFF0891B2)),
+  _LevelMeta(3, 'Galerías del Eco', 'Multiplicación', 2, Color(0xFF2563EB)),
+  _LevelMeta(4, 'Abismo de Ámbar', 'División', 2, Color(0xFFD97706)),
+  _LevelMeta(5, 'Ruinas de Amatista', 'Decimales Intro', 2, Color(0xFF7C3AED)),
+  _LevelMeta(6, 'Gruta de Luciérnagas', 'Decimales Avanzado', 3, Color(0xFF65A30D)),
+  _LevelMeta(7, 'Santuario del Eclipse', 'Repaso Mixto', 3, Color(0xFFE11D48)),
+  _LevelMeta(8, 'Trono de la Sombra', '¡Jefe Final!', 3, Color(0xFF9333EA)),
 ];
 
 class GameLevelSelectScreen extends ConsumerWidget {
@@ -181,16 +181,31 @@ class _LevelCard extends StatelessWidget {
                 ],
               ),
               const Spacer(),
-              // Nombre del nivel
+              // Nombre del bioma y tema matemático
               Text(
-                meta.name,
+                meta.biomeName,
                 style: const TextStyle(
                   color: Colors.white,
-                  fontWeight: FontWeight.w700,
-                  fontSize: 13,
+                  fontWeight: FontWeight.w800,
+                  fontSize: 13.5,
                   fontFamily: 'Nunito',
-                  height: 1.2,
+                  height: 1.15,
                 ),
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+              ),
+              const SizedBox(height: 2),
+              Text(
+                meta.topic,
+                style: TextStyle(
+                  color: Colors.white.withValues(alpha: 0.82),
+                  fontWeight: FontWeight.w600,
+                  fontSize: 11.5,
+                  fontFamily: 'Nunito',
+                  height: 1.15,
+                ),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
               ),
               const SizedBox(height: 6),
               // Estrellas ganadas o dificultad
@@ -227,9 +242,16 @@ class _LevelCard extends StatelessWidget {
 
 class _LevelMeta {
   final int level;
-  final String name;
+  final String biomeName;
+  final String topic;
   final int stars;
   final Color color;
 
-  const _LevelMeta(this.level, this.name, this.stars, this.color);
+  const _LevelMeta(
+    this.level,
+    this.biomeName,
+    this.topic,
+    this.stars,
+    this.color,
+  );
 }

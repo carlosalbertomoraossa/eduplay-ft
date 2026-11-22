@@ -52,6 +52,7 @@ class _ExerciseVisualAidState extends State<ExerciseVisualAid> {
   bool _showExtraTip = false;
   int _activeSlices = 1;
   int _totalSlices = 4;
+  int? _fractionQuantityTotal;
   int _extraMinutes = 0;
   double _interactiveAngle = 90;
   bool _showDiameter = false;
@@ -93,6 +94,8 @@ class _ExerciseVisualAidState extends State<ExerciseVisualAid> {
         final parsed = _parseFractionFromQuestion(q);
         _totalSlices = parsed.$2;
         _activeSlices = parsed.$1;
+        _fractionQuantityTotal =
+            _parseFractionQuantityTotal(q, widget.options, _totalSlices);
 
       case _VisualTopic.clock:
         _extraMinutes = 0;
@@ -332,6 +335,45 @@ class _ExerciseVisualAidState extends State<ExerciseVisualAid> {
     if (lower.contains('cuarto') || lower.contains('cuarta parte')) return (1, 4);
     if (lower.contains('quinto') || lower.contains('quinta parte')) return (1, 5);
     return (1, 4);
+  }
+
+  /// Detecta si la pregunta pide una fracción DE UNA CANTIDAD (ej. "la mitad de 12",
+  /// "1/3 de 15", "la cuarta parte de 20", "1/2 de ... 1.800 km") en lugar de
+  /// representar una fracción de una figura/pizza.
+  static int? _parseFractionQuantityTotal(
+    String q,
+    List<String> options,
+    int denominator,
+  ) {
+    // Si las opciones son fracciones (ej. "1/2", "3/4"), se pide la fracción, no una cantidad
+    if (options.isNotEmpty && options.any((o) => o.contains('/'))) {
+      return null;
+    }
+    final lower = q.toLowerCase();
+
+    // Caso 1: "mitad / tercera parte / cuarta parte / quinta parte / a/b de N"
+    final direct = RegExp(
+      r'(?:mitad|tercera\s+parte|cuarta\s+parte|quinta\s+parte|tercio|cuarto|quinto|\d+\s*/\s*\d+)\s+de\s+(\d+(?:\.\d{3})*)',
+    ).firstMatch(lower);
+    if (direct != null) {
+      final n = int.tryParse(direct.group(1)!.replaceAll('.', ''));
+      if (n != null && n >= denominator) return n;
+    }
+
+    // Caso 2: Problema contextual con fracción y una cantidad total (ej. "mide 1.800 km")
+    final stripped = q.replaceAll(RegExp(r'\d+\s*/\s*\d+'), ' ');
+    final nums = RegExp(r'\b\d+(?:\.\d{3})*\b')
+        .allMatches(stripped)
+        .map((m) => int.tryParse(m.group(0)!.replaceAll('.', '')) ?? -1)
+        .where((n) => n >= denominator && n % denominator == 0)
+        .toList();
+    if (nums.isNotEmpty &&
+        !lower.contains('partes') &&
+        !lower.contains('pedazos') &&
+        !lower.contains('equivalente')) {
+      return nums.reduce(math.max);
+    }
+    return null;
   }
 
   static _VisualTopic _detectTopic(String q, List<String> options) {
@@ -915,7 +957,9 @@ class _ExerciseVisualAidState extends State<ExerciseVisualAid> {
     final lower = widget.questionText.toLowerCase();
     return switch (_topic) {
       _VisualTopic.placeValue => '🧮 Ábaco y Tabla Posicional (+ / −)',
-      _VisualTopic.fraction => '🍕 Fábrica de Fracciones (Toca las partes)',
+      _VisualTopic.fraction => _fractionQuantityTotal != null
+          ? '🧺 Repartir en Partes Iguales (Toca los grupos)'
+          : '🍕 Fábrica de Fracciones (Toca las partes)',
       _VisualTopic.clock =>
         (!_isExplicitClock && _isCalendarOrDayPart)
             ? '📅 Días y Momentos del Día'
@@ -1372,8 +1416,14 @@ class _ExerciseVisualAidState extends State<ExerciseVisualAid> {
     );
   }
 
-  // 2. Fracciones Interactivas (Toca la barra o pizza para colorear partes)
+  // 2. Fracciones Interactivas:
+  // - Si es fracción de una cantidad ("la mitad de 12", "1/3 de 15", "1/2 de 1.800"),
+  //   muestra el reparto en grupos iguales con bolitas contables o barra proporcional.
+  // - Si es fracción de un entero/figura, muestra la Fábrica de Fracciones (pizza + barra).
   Widget _buildInteractiveFraction() {
+    if (_fractionQuantityTotal != null) {
+      return _buildFractionOfQuantity(_fractionQuantityTotal!);
+    }
     return Column(
       children: [
         Row(
@@ -1480,6 +1530,163 @@ class _ExerciseVisualAidState extends State<ExerciseVisualAid> {
               ),
             ),
           ],
+        ),
+      ],
+    );
+  }
+
+  /// Visual interactivo para "fracción de una cantidad" (ej. "la mitad de 12",
+  /// "1/3 de 15", "1/2 de 1.800"). Muestra el total real repartido en grupos
+  /// iguales para que el estudiante cuente las bolitas sin revelar el número final.
+  Widget _buildFractionOfQuantity(int total) {
+    final groups = _totalSlices.clamp(2, 6);
+    final selectedGroups = _activeSlices.clamp(1, groups);
+    final perGroupExact = total % groups == 0 ? total ~/ groups : null;
+    final showDots = perGroupExact != null && total <= 36;
+    final totalLabel = _formatColombianInt(total);
+
+    return Column(
+      children: [
+        // Encabezado con la cantidad total real del problema
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 3),
+              decoration: BoxDecoration(
+                color: const Color(0xFF1E3A8A),
+                borderRadius: BorderRadius.circular(10),
+              ),
+              child: Text(
+                'Total: $totalLabel  →  $groups grupos iguales',
+                style: const TextStyle(
+                  fontFamily: 'Nunito',
+                  fontSize: 11.5,
+                  fontWeight: FontWeight.w900,
+                  color: Colors.white,
+                ),
+              ),
+            ),
+            Text(
+              'Tomamos $selectedGroups de $groups',
+              style: const TextStyle(
+                fontFamily: 'Nunito',
+                fontSize: 11.5,
+                fontWeight: FontWeight.w800,
+                color: Color(0xFF1E3A8A),
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 8),
+
+        // Cajas interactivas representando los grupos iguales
+        Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: List.generate(groups, (i) {
+            final isSelected = i < selectedGroups;
+            return Expanded(
+              child: GestureDetector(
+                onTap: () => setState(() => _activeSlices = i + 1),
+                child: AnimatedContainer(
+                  duration: const Duration(milliseconds: 180),
+                  margin: const EdgeInsets.symmetric(horizontal: 3),
+                  padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 8),
+                  decoration: BoxDecoration(
+                    color: isSelected
+                        ? const Color(0xFFDBEAFE)
+                        : Colors.white,
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(
+                      color: isSelected
+                          ? const Color(0xFF2563EB)
+                          : const Color(0xFF94A3B8),
+                      width: isSelected ? 2.2 : 1.3,
+                    ),
+                  ),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        'Grupo ${i + 1}',
+                        style: TextStyle(
+                          fontFamily: 'Nunito',
+                          fontSize: 10.5,
+                          fontWeight: FontWeight.w800,
+                          color: isSelected
+                              ? const Color(0xFF1D4ED8)
+                              : const Color(0xFF64748B),
+                        ),
+                      ),
+                      const SizedBox(height: 6),
+                      if (showDots)
+                        Wrap(
+                          alignment: WrapAlignment.center,
+                          spacing: 4,
+                          runSpacing: 4,
+                          children: List.generate(
+                            perGroupExact,
+                            (_) => Container(
+                              width: total <= 16 ? 13 : 10,
+                              height: total <= 16 ? 13 : 10,
+                              decoration: BoxDecoration(
+                                color: isSelected
+                                    ? const Color(0xFFF59E0B)
+                                    : const Color(0xFFCBD5E1),
+                                shape: BoxShape.circle,
+                                border: Border.all(
+                                  color: isSelected
+                                      ? const Color(0xFFB45309)
+                                      : const Color(0xFF94A3B8),
+                                  width: 1.2,
+                                ),
+                              ),
+                            ),
+                          ),
+                        )
+                      else
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 8,
+                            vertical: 4,
+                          ),
+                          decoration: BoxDecoration(
+                            color: isSelected
+                                ? const Color(0xFF2563EB)
+                                : const Color(0xFFE2E8F0),
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          child: Text(
+                            '$totalLabel ÷ $groups',
+                            style: TextStyle(
+                              fontFamily: 'Nunito',
+                              fontSize: 11,
+                              fontWeight: FontWeight.w900,
+                              color: isSelected
+                                  ? Colors.white
+                                  : const Color(0xFF475569),
+                            ),
+                          ),
+                        ),
+                    ],
+                  ),
+                ),
+              ),
+            );
+          }),
+        ),
+        const SizedBox(height: 6),
+        Text(
+          showDots
+              ? '👆 Cuenta las bolitas naranjas en ${selectedGroups == 1 ? "el grupo pintado" : "los $selectedGroups grupos pintados"}'
+              : '👆 Divide $totalLabel en $groups partes iguales y toma $selectedGroups',
+          textAlign: TextAlign.center,
+          style: const TextStyle(
+            fontFamily: 'Nunito',
+            fontSize: 11.5,
+            fontWeight: FontWeight.w800,
+            color: Color(0xFF1E3A8A),
+          ),
         ),
       ],
     );
@@ -2518,6 +2725,16 @@ class _ExerciseVisualAidState extends State<ExerciseVisualAid> {
           return '¡Cada casilla es un equipo! 🧮 10 Unidades forman 1 Decena (10), y 10 Decenas forman 1 Centena (100). ¡Usa los botones + y − para armar el número!';
         }(),
       _VisualTopic.fraction => () {
+          if (_fractionQuantityTotal != null) {
+            final totalStr = _formatColombianInt(_fractionQuantityTotal!);
+            if (_totalSlices == 2 && _activeSlices == 1) {
+              return '¡Calcular la MITAD es repartir en 2 grupos iguales! 🧺 Reparte los $totalStr en 2 grupos iguales y cuenta cuántos quedan en 1 grupo (es dividir $totalStr ÷ 2).';
+            }
+            if (_activeSlices == 1) {
+              return '¡Reparte los $totalStr en $_totalSlices grupos iguales! 🧺 Cuenta cuántos quedan en 1 grupo (es lo mismo que dividir $totalStr ÷ $_totalSlices).';
+            }
+            return '¡En dos pasos fáciles! 🧺 Primero reparte $totalStr en $_totalSlices grupos iguales ($totalStr ÷ $_totalSlices) y luego cuenta $_activeSlices de esos grupos.';
+          }
           if (lower.contains('equivalente')) {
             return '¡Dos fracciones son gemelas (equivalentes) si pintan exactamente el mismo tamaño de pizza, aunque esté cortada en más pedacitos! 🍕';
           }
@@ -2684,8 +2901,9 @@ class _ExerciseVisualAidState extends State<ExerciseVisualAid> {
     return switch (_topic) {
       _VisualTopic.placeValue =>
         'Usa los botones + y − del ábaco arriba: cada ficha en C vale 100, en D vale 10 y en U vale 1. Ahora mismo tienes armado el ${_formatColombianInt(totalNum)}. ¡Prueba cambiar las fichas!',
-      _VisualTopic.fraction =>
-        'Toca los pedazos de la pizza o de la barra azul arriba hasta pintar $_activeSlices de $_totalSlices partes y compáralo con las opciones.',
+      _VisualTopic.fraction => _fractionQuantityTotal != null
+          ? 'Toca los grupos de arriba para resaltar $_activeSlices de $_totalSlices cajas y cuenta cuántas bolitas (o qué parte de ${_formatColombianInt(_fractionQuantityTotal!)}) hay en total.'
+          : 'Toca los pedazos de la pizza o de la barra azul arriba hasta pintar $_activeSlices de $_totalSlices partes y compáralo con las opciones.',
       _VisualTopic.clock =>
         (!_isExplicitClock && _isCalendarOrDayPart)
             ? 'Toca las tarjetas de arriba en orden de izquierda a derecha para ver qué va antes y qué va después.'
