@@ -12,6 +12,7 @@ import '../../features/auth/presentation/screens/parent_register_screen.dart';
 import '../../features/auth/presentation/screens/splash_screen.dart';
 import '../../features/gamification/presentation/screens/achievements_screen.dart';
 import '../../features/gamification/presentation/screens/leaderboard_screen.dart';
+import '../../features/gamification/presentation/screens/lumi_wardrobe_screen.dart';
 import '../../features/home/presentation/screens/home_screen.dart';
 import '../../features/lesson/domain/entities/lesson.dart';
 import '../../features/lesson/presentation/screens/lesson_result_screen.dart';
@@ -36,7 +37,13 @@ const _publicRoutes = {
   '/auth/select-child',
 };
 const _parentRoutes = {'/parent/dashboard', '/parent/settings'};
-const _childRoutes = {'/home', '/achievements', '/leaderboard', '/settings'};
+const _childRoutes = {
+  '/home',
+  '/achievements',
+  '/leaderboard',
+  '/lumi-wardrobe',
+  '/settings',
+};
 
 bool _isPublic(String location) => _publicRoutes.contains(location);
 bool _isParent(String location) =>
@@ -135,6 +142,10 @@ final appRouterProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: '/leaderboard',
         builder: (_, __) => const LeaderboardScreen(),
+      ),
+      GoRoute(
+        path: '/lumi-wardrobe',
+        builder: (_, __) => const LumiWardrobeScreen(),
       ),
       GoRoute(
         path: '/parent/dashboard',

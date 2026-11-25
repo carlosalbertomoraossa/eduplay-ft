@@ -7,6 +7,8 @@ import 'package:flame/game.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
+import '../../../core/providers/lumi_customization_provider.dart';
+import 'data/game_audio_service.dart';
 import 'data/level_map_data.dart';
 import 'presentation/bloc/game_bloc.dart';
 import 'presentation/bloc/game_event.dart';
@@ -36,11 +38,15 @@ class G4AdventureGame extends FlameGame with KeyboardEvents {
 
   final GameBloc gameBloc;
   final int initialLevel;
+  final LumiOutfit outfit;
+  final VoidCallback? onStarCollected;
+  final VoidCallback? onQuestionAnswered;
 
   // Notificadores ligeros para el HUD (bioma, dirección al próximo sello, hint)
   final ValueNotifier<String> biomeNameNotifier = ValueNotifier<String>('');
   final ValueNotifier<int> targetDirectionNotifier = ValueNotifier<int>(1);
   final ValueNotifier<int> sealsClearedNotifier = ValueNotifier<int>(0);
+  final ValueNotifier<int> starsCollectedNotifier = ValueNotifier<int>(0);
   final ValueNotifier<String?> toastMessageNotifier = ValueNotifier<String?>(null);
 
   StreamSubscription<GameState>? _stateSub;
@@ -57,6 +63,7 @@ class G4AdventureGame extends FlameGame with KeyboardEvents {
   final List<EnemyComponent> _enemies = [];
   final List<TotemComponent> _totems = [];
   final List<HeartPickupComponent> _hearts = [];
+  final List<StarCoinComponent> _stars = [];
 
   TotemComponent? _activeTotem;
   bool _portalTrialActive = false;
@@ -87,6 +94,9 @@ class G4AdventureGame extends FlameGame with KeyboardEvents {
   G4AdventureGame({
     required this.gameBloc,
     this.initialLevel = 1,
+    this.outfit = const LumiOutfit(),
+    this.onStarCollected,
+    this.onQuestionAnswered,
   });
 
   // ── API para controles táctiles (ControlsOverlay) ──────────────────────────
@@ -175,6 +185,7 @@ class G4AdventureGame extends FlameGame with KeyboardEvents {
     _enemies.clear();
     _totems.clear();
     _hearts.clear();
+    _stars.clear();
     _activeTotem = null;
     _portalTrialActive = false;
     _lastProcessedAttackId = -1;
@@ -186,6 +197,7 @@ class G4AdventureGame extends FlameGame with KeyboardEvents {
     _background.updateTheme(_mapData.biome);
     biomeNameNotifier.value = _mapData.biome.name;
     sealsClearedNotifier.value = 0;
+    starsCollectedNotifier.value = 0;
 
     // 1. Plataformas
     for (final p in _mapData.platforms) {
@@ -274,9 +286,13 @@ class G4AdventureGame extends FlameGame with KeyboardEvents {
       await world.add(comp);
     }
 
-    // 8. Protagonista
+    // 7b. Estrellitas doradas guía sobre hongos, plataformas y anillos
+    await _spawnGuideStars();
+
+    // 8. Protagonista (con el outfit personalizado del Armario de Lumi)
     final player = PlayerComponent(
       startPosition: Vector2(_mapData.spawnX, _mapData.spawnY),
+      outfit: outfit,
     )
       ..onSpawnParticles = _spawnParticles
       ..onSpawnSlash = _spawnSlash
@@ -522,8 +538,22 @@ class G4AdventureGame extends FlameGame with KeyboardEvents {
         heart.collected = true;
         heart.removeFromParent();
         _spawnParticles(heart.position, const Color(0xFFFB7185), 12);
+        GameAudioService.playStar();
         gameBloc.add(HeartCollected());
         _showToast('¡+1 Vida recuperada!');
+      }
+    }
+
+    // 4b. Recoger estrellitas doradas guía
+    for (final star in _stars) {
+      if (star.collected) continue;
+      if (pRect.overlaps(star.pickupRect)) {
+        star.collected = true;
+        star.removeFromParent();
+        starsCollectedNotifier.value = starsCollectedNotifier.value + 1;
+        _spawnParticles(star.position, const Color(0xFFFDE047), 8);
+        GameAudioService.playStar();
+        onStarCollected?.call();
       }
     }
 
@@ -681,6 +711,8 @@ class G4AdventureGame extends FlameGame with KeyboardEvents {
     world.add(WhipLashComponent(
       getOrigin: () => _player?.centerPos ?? pos,
       direction: dir,
+      primaryColor: outfit.trailPrimaryColor,
+      glowColor: outfit.trailGlowColor,
     ));
   }
 
@@ -688,6 +720,8 @@ class G4AdventureGame extends FlameGame with KeyboardEvents {
     world.add(DashAfterimageComponent(
       position: pos,
       facingRight: facingRight,
+      trailColor: outfit.trailPrimaryColor,
+      scarfColor: outfit.scarfPrimaryColor,
     ));
   }
 
@@ -709,6 +743,7 @@ class G4AdventureGame extends FlameGame with KeyboardEvents {
     } else if (state is LevelComplete) {
       _paused = true;
       clearInputs();
+      GameAudioService.playVictory();
       if (overlays.isActive(overlayQuestion)) overlays.remove(overlayQuestion);
       if (overlays.isActive(overlayControls)) overlays.remove(overlayControls);
       overlays.add(overlayLevelComplete);
@@ -721,6 +756,7 @@ class G4AdventureGame extends FlameGame with KeyboardEvents {
     } else if (state is GameComplete) {
       _paused = true;
       clearInputs();
+      GameAudioService.playVictory();
       if (overlays.isActive(overlayQuestion)) overlays.remove(overlayQuestion);
       if (overlays.isActive(overlayControls)) overlays.remove(overlayControls);
       overlays.add(overlayGameComplete);
@@ -744,6 +780,7 @@ class G4AdventureGame extends FlameGame with KeyboardEvents {
       _activeTotem = null;
       final ok = state.lastAnswerCorrect == true;
       totem.resolve(correct: ok);
+      onQuestionAnswered?.call();
       _spawnParticles(
         Vector2(totem.position.x, totem.position.y - 38),
         ok ? const Color(0xFFFDE047) : const Color(0xFFFB7185),
@@ -756,6 +793,7 @@ class G4AdventureGame extends FlameGame with KeyboardEvents {
 
     if (_portalTrialActive && state.lastAnswerCorrect != null) {
       _portalTrialActive = false;
+      onQuestionAnswered?.call();
     }
 
     final remaining = _totems.where((t) => t.isSealed).length;
@@ -840,19 +878,70 @@ class G4AdventureGame extends FlameGame with KeyboardEvents {
     return KeyEventResult.ignored;
   }
 
+  /// Coloca arcos de estrellitas doradas coleccionables sobre plataformas,
+  /// hongos rebotadores y anillos de enganche para guiar de forma natural al niño.
+  Future<void> _spawnGuideStars() async {
+    var idx = 0;
+
+    // 1. Arcos guía sobre cada hongo rebotador
+    for (final m in _mapData.mushrooms) {
+      for (var i = -1; i <= 1; i++) {
+        final sx = m.x + i * 32.0;
+        final sy = m.y - 95.0 - (i == 0 ? 22.0 : 0.0);
+        final star = StarCoinComponent(
+          position: Vector2(sx, sy),
+          phaseOffset: idx * 0.5,
+        );
+        _stars.add(star);
+        await world.add(star);
+        idx++;
+      }
+    }
+
+    // 2. Estrellitas sobre plataformas elevadas sin tótems encima
+    for (final p in _mapData.platforms) {
+      if (p.height > 40 || p.width < 130) continue;
+      final cx = p.x + p.width / 2;
+      final hasTotemNear = _mapData.totems.any(
+        (t) => (t.x - cx).abs() < 60 && (t.y - p.y).abs() < 30,
+      );
+      if (hasTotemNear) continue;
+      for (final dx in [-28.0, 0.0, 28.0]) {
+        final star = StarCoinComponent(
+          position: Vector2(cx + dx, p.y - 26),
+          phaseOffset: idx * 0.45,
+        );
+        _stars.add(star);
+        await world.add(star);
+        idx++;
+      }
+    }
+
+    // 3. Estrellita guía debajo de cada anillo de enganche
+    for (final r in _mapData.hookRings) {
+      final star = StarCoinComponent(
+        position: Vector2(r.x, r.y + 52),
+        phaseOffset: idx * 0.6,
+      );
+      _stars.add(star);
+      await world.add(star);
+      idx++;
+    }
+  }
+
   @override
   void onRemove() {
     _stateSub?.cancel();
     biomeNameNotifier.dispose();
     targetDirectionNotifier.dispose();
     sealsClearedNotifier.dispose();
+    starsCollectedNotifier.dispose();
     toastMessageNotifier.dispose();
     super.onRemove();
   }
 }
 
-/// Viñeta oscura sutil en los bordes de la pantalla para reforzar la atmósfera
-/// subterránea de caverna iluminada por el fósforo.
+/// Marco cálido muy sutil en los bordes para dar profundidad sin oscurecer los mundos.
 class _CavernVignetteComponent extends Component {
   final Vector2 Function() getViewportSize;
 
@@ -864,7 +953,7 @@ class _CavernVignetteComponent extends Component {
     if (view.x <= 0 || view.y <= 0) return;
 
     final rect = Rect.fromLTWH(0, 0, view.x, view.y);
-    final radius = math.max(view.x, view.y) * 0.72;
+    final radius = math.max(view.x, view.y) * 0.78;
     canvas.drawRect(
       rect,
       Paint()
@@ -873,9 +962,9 @@ class _CavernVignetteComponent extends Component {
           radius: 1.0,
           colors: [
             Colors.transparent,
-            const Color(0xFF030712).withValues(alpha: 0.42),
+            const Color(0xFFD97706).withValues(alpha: 0.06),
           ],
-          stops: const [0.55, 1.0],
+          stops: const [0.70, 1.0],
         ).createShader(Rect.fromCircle(
           center: Offset(view.x / 2, view.y / 2),
           radius: radius,

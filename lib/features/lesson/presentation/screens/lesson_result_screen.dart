@@ -7,20 +7,58 @@ import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../../../core/providers/child_progress_provider.dart';
+import '../../../../../core/providers/daily_quests_provider.dart';
 import '../../../../../core/providers/lesson_progress_provider.dart';
+import '../../../../../core/providers/lumi_customization_provider.dart';
 import '../../../../../core/theme/app_theme.dart';
 import '../../../../../shared/widgets/ep_button.dart';
 import '../../../../../shared/widgets/lumi_lion_mascot.dart';
 import '../../data/curriculum_data.dart';
 import '../../domain/entities/lesson.dart';
 
-class LessonResultScreen extends ConsumerWidget {
+class LessonResultScreen extends ConsumerStatefulWidget {
   final LessonResult result;
   const LessonResultScreen({super.key, required this.result});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<LessonResultScreen> createState() => _LessonResultScreenState();
+}
+
+class _LessonResultScreenState extends ConsumerState<LessonResultScreen> {
+  bool _recorded = false;
+
+  void _recordCompletionIfNeeded() {
+    if (_recorded || !widget.result.isCompleted) return;
+    _recorded = true;
+    ref
+        .read(lessonProgressProvider.notifier)
+        .completeLesson(widget.result.lessonId);
+    final unitId = CurriculumData.getLesson(widget.result.lessonId)?.unitId;
+    ref.read(childProgressProvider.notifier).recordLessonCompleted(
+          xpEarned: widget.result.xpEarned,
+          coinsEarned: widget.result.coinsEarned,
+          starsEarned: widget.result.score >= 0.9 ? 3 : 2,
+          unitStampId: unitId,
+        );
+    ref
+        .read(dailyQuestsProvider.notifier)
+        .addProgress(DailyQuestType.schoolLesson, 1);
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) _recordCompletionIfNeeded();
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final result = widget.result;
     final passed = result.isCompleted;
+    final outfit = ref.watch(lumiCustomizationProvider).equipped;
 
     return Scaffold(
       backgroundColor: passed
@@ -39,6 +77,7 @@ class LessonResultScreen extends ConsumerWidget {
                     LumiLionMascot(
                       size: 112,
                       expressionVariant: passed ? 1 : 0,
+                      outfit: outfit,
                       accentColor: passed
                           ? EduPlayColors.successGreen
                           : EduPlayColors.primaryBlue,
@@ -123,9 +162,7 @@ class LessonResultScreen extends ConsumerWidget {
                     label: passed ? '¡Continuar!' : '¡Intentar de nuevo!',
                     onPressed: () {
                       if (passed) {
-                        ref
-                            .read(lessonProgressProvider.notifier)
-                            .completeLesson(result.lessonId);
+                        _recordCompletionIfNeeded();
                         final unitId =
                             CurriculumData.getLesson(result.lessonId)?.unitId ??
                                 'unit-001';
@@ -146,9 +183,7 @@ class LessonResultScreen extends ConsumerWidget {
                     variant: EpButtonVariant.secondary,
                     onPressed: () {
                       if (passed) {
-                        ref
-                            .read(lessonProgressProvider.notifier)
-                            .completeLesson(result.lessonId);
+                        _recordCompletionIfNeeded();
                       }
                       context.go('/home');
                     },

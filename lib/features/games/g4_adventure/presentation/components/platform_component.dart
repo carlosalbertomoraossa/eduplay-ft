@@ -5,7 +5,10 @@ import 'package:flutter/material.dart';
 
 import '../../data/level_map_data.dart';
 
-/// Plataforma de piedra tallada con borde bioluminiscente/musgoso y cristales.
+/// Plataforma estilo **Cuaderno Escolar Mágico**:
+/// - Plataformas elevadas (`h <= 40`): Reglas escolares coloridas con marquitas numéricas.
+/// - Suelos y bloques grandes (`h > 40`): Libros ilustrados apilados con lomo colorido,
+///   hojas cremita y cintas decorativas (*washi tape*).
 class CavernPlatformComponent extends PositionComponent {
   final BiomeTheme theme;
   final bool hasCrystalAccent;
@@ -23,87 +26,191 @@ class CavernPlatformComponent extends PositionComponent {
   void render(Canvas canvas) {
     final w = size.x;
     final h = size.y;
-    final bodyRRect = RRect.fromRectAndCorners(
-      Rect.fromLTWH(0, 0, w, h),
-      topLeft: const Radius.circular(8),
-      topRight: const Radius.circular(8),
-      bottomLeft: Radius.circular(h > 40 ? 0 : 8),
-      bottomRight: Radius.circular(h > 40 ? 0 : 8),
-    );
 
-    // Sombra inferior proyectada
+    // Sombra suave sobre el papel del cuaderno
     canvas.drawRRect(
       RRect.fromRectAndRadius(
-        Rect.fromLTWH(2, 4, w, h),
+        Rect.fromLTWH(3, 5, w, h),
         const Radius.circular(8),
       ),
-      Paint()..color = const Color(0x55000000),
+      Paint()..color = const Color(0x220F172A),
     );
 
-    // Cuerpo principal de roca oscura
-    canvas.drawRRect(
-      bodyRRect,
-      Paint()..color = theme.stoneBody,
-    );
-
-    // Textura sutil de bloques tallados
-    final brickPaint = Paint()
-      ..color = Colors.black.withValues(alpha: 0.22)
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = 1.2;
-    for (var bx = 36.0; bx < w - 16; bx += 46) {
-      canvas.drawLine(Offset(bx, 10), Offset(bx, math.min(h - 4, 34)), brickPaint);
+    if (h <= 40) {
+      _drawRulerPlatform(canvas, w, h);
+    } else {
+      _drawStackedBookPlatform(canvas, w, h);
     }
-    if (h > 40) {
-      canvas.drawLine(const Offset(6, 36), Offset(w - 6, 36), brickPaint);
-      for (var bx = 18.0; bx < w - 16; bx += 54) {
-        canvas.drawLine(Offset(bx, 36), Offset(bx, math.min(h - 4, 72)), brickPaint);
+  }
+
+  static final List<TextPainter> _rulerDigitPainters = List.generate(
+    9,
+    (i) => TextPainter(
+      text: TextSpan(
+        text: '${i + 1}',
+        style: const TextStyle(
+          fontFamily: 'Nunito',
+          fontSize: 8.5,
+          fontWeight: FontWeight.w900,
+          color: Color(0xFF0F172A),
+        ),
+      ),
+      textDirection: TextDirection.ltr,
+    )..layout(),
+  );
+
+  /// Regla escolar colorida con marcas de centímetros y pestañitas adhesivas.
+  void _drawRulerPlatform(Canvas canvas, double w, double h) {
+    final rrect = RRect.fromRectAndRadius(
+      Rect.fromLTWH(0, 0, w, h),
+      const Radius.circular(6),
+    );
+
+    // Cuerpo principal de la regla
+    canvas.drawRRect(rrect, Paint()..color = theme.stoneTop);
+
+    // Franja superior clara para resaltar las medidas
+    canvas.drawRRect(
+      RRect.fromRectAndCorners(
+        Rect.fromLTWH(0, 0, w, h * 0.42),
+        topLeft: const Radius.circular(6),
+        topRight: const Radius.circular(6),
+      ),
+      Paint()..color = Colors.white.withValues(alpha: 0.28),
+    );
+
+    // Borde definido estilo ilustración infantil
+    canvas.drawRRect(
+      rrect,
+      Paint()
+        ..color = theme.stoneBody.withValues(alpha: 0.78)
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = 2.0,
+    );
+
+    // Marcas de centímetros y milímetros a lo largo de la regla
+    final tickPaint = Paint()
+      ..color = const Color(0xFF1E293B).withValues(alpha: 0.65)
+      ..strokeWidth = 1.5
+      ..strokeCap = StrokeCap.round;
+
+    var cm = 1;
+    for (var tx = 14.0; tx < w - 10; tx += 12.0) {
+      final isMajor = ((tx - 14.0) / 12.0).round() % 3 == 0;
+      canvas.drawLine(
+        Offset(tx, 1.5),
+        Offset(tx, isMajor ? 11.0 : 6.5),
+        tickPaint,
+      );
+      if (isMajor && tx < w - 20 && cm <= 9) {
+        final tp = _rulerDigitPainters[cm - 1];
+        tp.paint(canvas, Offset(tx - tp.width / 2, 12.5));
+        cm++;
       }
     }
 
-    // Franja superior luminosa / musgo subterráneo
+    // Banderita adhesiva (post-it tab) decorativa en plataformas especiales
+    if (hasCrystalAccent && w >= 120) {
+      _drawStickyTab(canvas, 18, 0, const Color(0xFFFB7185));
+      _drawStickyTab(canvas, w - 28, 0, const Color(0xFF38BDF8));
+    }
+  }
+
+  /// Bloque tipo libro de cuentos gigante con tapa de color, páginas crema y washi tape.
+  void _drawStackedBookPlatform(Canvas canvas, double w, double h) {
+    final bodyRRect = RRect.fromRectAndCorners(
+      Rect.fromLTWH(0, 0, w, h),
+      topLeft: const Radius.circular(10),
+      topRight: const Radius.circular(10),
+    );
+
+    // Tapa principal del libro en color vivo del capítulo
+    canvas.drawRRect(bodyRRect, Paint()..color = theme.stoneBody);
+
+    // Franja gruesa de hojas blancas/cremita de libro en la parte superior
+    final pagesRect = RRect.fromRectAndRadius(
+      Rect.fromLTWH(6, 12, w - 12, 22),
+      const Radius.circular(4),
+    );
+    canvas.drawRRect(pagesRect, Paint()..color = const Color(0xFFFFFBEB));
+    final pageLinePaint = Paint()
+      ..color = const Color(0xFFCBD5E1)
+      ..strokeWidth = 1.0;
+    canvas.drawLine(const Offset(10, 18), Offset(w - 10, 18), pageLinePaint);
+    canvas.drawLine(const Offset(10, 24), Offset(w - 10, 24), pageLinePaint);
+    canvas.drawLine(const Offset(10, 30), Offset(w - 10, 30), pageLinePaint);
+
+    // Lomo / tapa superior contrastante
     canvas.drawRRect(
       RRect.fromRectAndCorners(
-        Rect.fromLTWH(0, 0, w, 8),
-        topLeft: const Radius.circular(8),
-        topRight: const Radius.circular(8),
+        Rect.fromLTWH(0, 0, w, 12),
+        topLeft: const Radius.circular(10),
+        topRight: const Radius.circular(10),
       ),
       Paint()..color = theme.stoneTop,
     );
 
-    // Línea de brillo fino en el borde superior
-    canvas.drawLine(
-      const Offset(6, 1.5),
-      Offset(w - 6, 1.5),
+    // Puntadas decorativas de encuadernación
+    final stitchPaint = Paint()
+      ..color = Colors.white.withValues(alpha: 0.65)
+      ..strokeWidth = 2.0
+      ..strokeCap = StrokeCap.round;
+    for (var sx = 14.0; sx < w - 16; sx += 22) {
+      canvas.drawLine(Offset(sx, 6), Offset(sx + 9, 6), stitchPaint);
+    }
+
+    // Franjas geométricas suaves en la portada inferior del libro
+    final stripePaint = Paint()..color = Colors.white.withValues(alpha: 0.14);
+    for (var bx = 26.0; bx < w - 30; bx += 68) {
+      canvas.drawRRect(
+        RRect.fromRectAndRadius(
+          Rect.fromLTWH(bx, 46, 38, 12),
+          const Radius.circular(6),
+        ),
+        stripePaint,
+      );
+    }
+
+    // Cinta adhesiva decorativa (*washi tape*) en la esquina
+    canvas.save();
+    canvas.translate(22, 6);
+    canvas.rotate(-0.22);
+    canvas.drawRect(
+      const Rect.fromLTWH(-14, -4, 28, 9),
+      Paint()..color = theme.accentGlow.withValues(alpha: 0.78),
+    );
+    canvas.restore();
+
+    // Contorno definido de libro ilustrado
+    canvas.drawRRect(
+      bodyRRect,
       Paint()
-        ..color = theme.accentGlow.withValues(alpha: 0.65)
-        ..strokeWidth = 1.5,
+        ..color = const Color(0xFF0F172A).withValues(alpha: 0.25)
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = 1.8,
     );
 
-    // Pequeños cristales decorativos en los extremos
+    // Separadores de colores sobresaliendo en plataformas destacadas
     if (hasCrystalAccent && w >= 120) {
-      _drawCrystalCluster(canvas, 18, 0);
-      _drawCrystalCluster(canvas, w - 26, 0);
+      _drawStickyTab(canvas, 34, 0, const Color(0xFFFACC15));
+      _drawStickyTab(canvas, w - 34, 0, const Color(0xFFFB7185));
     }
   }
 
-  void _drawCrystalCluster(Canvas canvas, double cx, double baseY) {
-    final glow = Paint()..color = theme.accentGlow.withValues(alpha: 0.22);
-    canvas.drawCircle(Offset(cx, baseY - 6), 14, glow);
-
-    final crystalPaint = Paint()..color = theme.accentGlow.withValues(alpha: 0.85);
-    final p1 = Path()
-      ..moveTo(cx - 5, baseY)
-      ..lineTo(cx - 2, baseY - 13)
-      ..lineTo(cx + 2, baseY)
-      ..close();
-    final p2 = Path()
-      ..moveTo(cx + 1, baseY)
-      ..lineTo(cx + 6, baseY - 9)
-      ..lineTo(cx + 9, baseY)
-      ..close();
-    canvas.drawPath(p1, crystalPaint);
-    canvas.drawPath(p2, Paint()..color = theme.stoneTop);
+  void _drawStickyTab(Canvas canvas, double cx, double baseY, Color color) {
+    final tab = RRect.fromRectAndCorners(
+      Rect.fromLTWH(cx - 8, baseY - 12, 16, 13),
+      topLeft: const Radius.circular(5),
+      topRight: const Radius.circular(5),
+    );
+    canvas.drawRRect(tab, Paint()..color = color);
+    canvas.drawRRect(
+      tab,
+      Paint()
+        ..color = Colors.white.withValues(alpha: 0.8)
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = 1.3,
+    );
   }
 }
 
@@ -142,21 +249,31 @@ class SpikeHazardComponent extends PositionComponent {
     final count = (size.x / toothW).floor().clamp(1, 20);
     final actualW = size.x / count;
 
-    final darkPaint = Paint()..color = const Color(0xFF1A1024);
+    final woodPaint = Paint()..color = const Color(0xFFFDE68A);
+    final leadPaint = Paint()..color = const Color(0xFFE11D48);
     final rimPaint = Paint()
-      ..color = const Color(0xFFF43F5E).withValues(alpha: 0.75)
+      ..color = const Color(0xFF78350F)
       ..style = PaintingStyle.stroke
-      ..strokeWidth = 1.5;
+      ..strokeWidth = 1.4;
 
+    // Puntas afiladas de lápices de colores (obstáculo 100% escolar)
     for (var i = 0; i < count; i++) {
       final lx = i * actualW;
-      final path = Path()
+      final tipX = lx + actualW * 0.5;
+      final cone = Path()
         ..moveTo(lx + 1, size.y)
-        ..lineTo(lx + actualW * 0.5, 1)
+        ..lineTo(tipX, 1)
         ..lineTo(lx + actualW - 1, size.y)
         ..close();
-      canvas.drawPath(path, darkPaint);
-      canvas.drawPath(path, rimPaint);
+      canvas.drawPath(cone, woodPaint);
+
+      final lead = Path()
+        ..moveTo(tipX - actualW * 0.18, 7.5)
+        ..lineTo(tipX, 1)
+        ..lineTo(tipX + actualW * 0.18, 7.5)
+        ..close();
+      canvas.drawPath(lead, leadPaint);
+      canvas.drawPath(cone, rimPaint);
     }
   }
 }
@@ -218,35 +335,63 @@ class BounceMushroomComponent extends PositionComponent {
       Paint()..color = theme.accentGlow.withValues(alpha: glowAlpha),
     );
 
-    // Tallo
+    // Resorte de espiral de cuaderno debajo del borrador
+    final springPaint = Paint()
+      ..color = const Color(0xFF64748B)
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 2.6
+      ..strokeCap = StrokeCap.round;
+    final spring = Path()
+      ..moveTo(w * 0.30, h)
+      ..lineTo(w * 0.70, h - 5)
+      ..lineTo(w * 0.30, h - 10)
+      ..lineTo(w * 0.70, h - 15);
+    canvas.drawPath(spring, springPaint);
+
+    // Borrador escolar clásico bicolor elástico (rosa + azul cielo)
+    final eraserRect = RRect.fromRectAndRadius(
+      Rect.fromLTWH(3, 4, w - 6, 18),
+      const Radius.circular(6),
+    );
+    // Mitad izquierda rosa pastel
     canvas.drawRRect(
-      RRect.fromRectAndRadius(
-        Rect.fromLTWH(w / 2 - 6, h * 0.42, 12, h * 0.58),
-        const Radius.circular(5),
+      RRect.fromRectAndCorners(
+        Rect.fromLTWH(3, 4, (w - 6) * 0.62, 18),
+        topLeft: const Radius.circular(6),
+        bottomLeft: const Radius.circular(6),
       ),
-      Paint()..color = const Color(0xFFCBD5E1),
+      Paint()..color = const Color(0xFFFB7185),
     );
-
-    // Sombrero del hongo
-    final capPath = Path()
-      ..moveTo(2, h * 0.48)
-      ..quadraticBezierTo(w / 2, -6, w - 2, h * 0.48)
-      ..quadraticBezierTo(w / 2, h * 0.58, 2, h * 0.48)
-      ..close();
-    canvas.drawPath(capPath, Paint()..color = theme.stoneTop);
-    canvas.drawPath(
-      capPath,
+    // Mitad derecha azul cielo
+    canvas.drawRRect(
+      RRect.fromRectAndCorners(
+        Rect.fromLTWH(3 + (w - 6) * 0.58, 4, (w - 6) * 0.42, 18),
+        topRight: const Radius.circular(6),
+        bottomRight: const Radius.circular(6),
+      ),
+      Paint()..color = const Color(0xFF38BDF8),
+    );
+    // Banda blanca de papel en el centro
+    canvas.drawRect(
+      Rect.fromLTWH(w * 0.45, 4, 8, 18),
+      Paint()..color = Colors.white,
+    );
+    // Contorno y brillo del borrador
+    canvas.drawRRect(
+      eraserRect,
       Paint()
-        ..color = theme.accentGlow
+        ..color = const Color(0xFF334155)
         ..style = PaintingStyle.stroke
-        ..strokeWidth = 2,
+        ..strokeWidth = 1.8,
     );
-
-    // Manchas luminosas
-    final dotPaint = Paint()..color = Colors.white.withValues(alpha: 0.85);
-    canvas.drawCircle(Offset(w * 0.32, h * 0.28), 3.2, dotPaint);
-    canvas.drawCircle(Offset(w * 0.58, h * 0.20), 2.5, dotPaint);
-    canvas.drawCircle(Offset(w * 0.72, h * 0.34), 2.8, dotPaint);
+    canvas.drawLine(
+      const Offset(8, 8),
+      Offset(w - 10, 8),
+      Paint()
+        ..color = Colors.white.withValues(alpha: 0.55)
+        ..strokeWidth = 2.0
+        ..strokeCap = StrokeCap.round,
+    );
 
     canvas.restore();
   }

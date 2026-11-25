@@ -59,6 +59,8 @@ class WhipLashComponent extends PositionComponent {
   final Vector2 Function() getOrigin;
   final SlashDirection direction;
   final double maxLength;
+  final Color primaryColor;
+  final Color glowColor;
   static const double duration = 0.22;
   double _age = 0;
 
@@ -66,6 +68,8 @@ class WhipLashComponent extends PositionComponent {
     required this.getOrigin,
     required this.direction,
     this.maxLength = 114,
+    this.primaryColor = const Color(0xFF34D399),
+    this.glowColor = const Color(0xFF10B981),
   }) : super(priority: 22);
 
   @override
@@ -125,21 +129,21 @@ class WhipLashComponent extends PositionComponent {
       }
     }
 
-    // 1. Halo bioluminiscente esmeralda alrededor del látigo
+    // 1. Halo bioluminiscente personalizado del látigo
     canvas.drawPath(
       vinePath,
       Paint()
-        ..color = const Color(0xFF10B981).withValues(alpha: alpha * 0.34)
+        ..color = glowColor.withValues(alpha: alpha * 0.34)
         ..style = PaintingStyle.stroke
         ..strokeWidth = 11
         ..strokeCap = StrokeCap.round,
     );
 
-    // 2. Liana esmeralda luminosa principal
+    // 2. Liana/estela luminosa principal
     canvas.drawPath(
       vinePath,
       Paint()
-        ..color = const Color(0xFF34D399).withValues(alpha: alpha * 0.92)
+        ..color = primaryColor.withValues(alpha: alpha * 0.92)
         ..style = PaintingStyle.stroke
         ..strokeWidth = 4.2
         ..strokeCap = StrokeCap.round,
@@ -260,15 +264,19 @@ class GrappleTetherComponent extends Component {
   }
 }
 
-/// Silueta fantasma traslúcida del Guardián (sombrero vueltiao + ruana) durante el dash.
+/// Silueta fantasma dorada de Lumi (melena + orejitas + cuerpecito + pañoleta) durante el dash.
 class DashAfterimageComponent extends PositionComponent {
   final bool facingRight;
+  final Color trailColor;
+  final Color scarfColor;
   double _age = 0;
   static const double _duration = 0.22;
 
   DashAfterimageComponent({
     required Vector2 position,
     required this.facingRight,
+    this.trailColor = const Color(0xFFFBBF24),
+    this.scarfColor = const Color(0xFF34D399),
   }) : super(
           position: position,
           size: Vector2(28, 44),
@@ -285,32 +293,41 @@ class DashAfterimageComponent extends PositionComponent {
 
   @override
   void render(Canvas canvas) {
-    final alpha = (1.0 - _age / _duration).clamp(0.0, 1.0) * 0.46;
-    final paint = Paint()..color = const Color(0xFF34D399).withValues(alpha: alpha);
+    final alpha = (1.0 - _age / _duration).clamp(0.0, 1.0) * 0.48;
+    final goldPaint = Paint()..color = trailColor.withValues(alpha: alpha);
+    final emeraldPaint = Paint()..color = scarfColor.withValues(alpha: alpha);
 
-    // Silueta de la ruana
-    final ruana = Path()
-      ..moveTo(size.x * 0.22, 18)
-      ..lineTo(size.x * 0.78, 18)
-      ..lineTo(size.x, size.y - 6)
-      ..lineTo(0, size.y - 6)
-      ..close();
-    canvas.drawPath(ruana, paint);
+    canvas.save();
+    if (!facingRight) {
+      canvas.translate(size.x, 0);
+      canvas.scale(-1, 1);
+    }
 
-    // Silueta del sombrero vueltiao
+    // Silueta del cuerpo y colita de Lumi
     canvas.drawRRect(
       RRect.fromRectAndRadius(
-        Rect.fromCenter(center: Offset(size.x * 0.5, 10.5), width: 34, height: 5),
-        const Radius.circular(3),
+        Rect.fromCenter(center: Offset(size.x * 0.5, 31), width: 17, height: 15),
+        const Radius.circular(8),
       ),
-      paint,
+      goldPaint,
     );
-    final crown = Path()
-      ..moveTo(size.x * 0.5 - 9, 9)
-      ..lineTo(size.x * 0.5, 0)
-      ..lineTo(size.x * 0.5 + 9, 9)
+    canvas.drawCircle(const Offset(-5.5, 26), 3.6, goldPaint);
+
+    // Silueta de la pañoleta ondeando
+    final scarf = Path()
+      ..moveTo(size.x * 0.22, 24)
+      ..lineTo(-8, 28)
+      ..lineTo(size.x * 0.30, 29)
       ..close();
-    canvas.drawPath(crown, paint);
+    canvas.drawPath(scarf, emeraldPaint);
+
+    // Silueta de la melena redonda + orejitas de león
+    final headCenter = Offset(size.x * 0.52, 15.0);
+    canvas.drawCircle(headCenter + const Offset(-8.2, -9.2), 4.8, goldPaint);
+    canvas.drawCircle(headCenter + const Offset(7.6, -9.2), 4.8, goldPaint);
+    canvas.drawCircle(headCenter, 13.0, goldPaint);
+
+    canvas.restore();
   }
 }
 
@@ -367,5 +384,84 @@ class HeartPickupComponent extends PositionComponent {
         ..style = PaintingStyle.stroke
         ..strokeWidth = 1.5,
     );
+  }
+}
+
+/// Estrellita dorada coleccionable que guía al niño por saltos y plataformas.
+class StarCoinComponent extends PositionComponent {
+  double _time = 0;
+  bool collected = false;
+  final double phaseOffset;
+
+  StarCoinComponent({
+    required Vector2 position,
+    this.phaseOffset = 0,
+  }) : super(
+          position: position,
+          size: Vector2(22, 22),
+          anchor: Anchor.center,
+          priority: 9,
+        );
+
+  Rect get pickupRect => Rect.fromCenter(
+        center: Offset(position.x, position.y),
+        width: 26,
+        height: 26,
+      );
+
+  @override
+  void update(double dt) {
+    super.update(dt);
+    _time += dt;
+  }
+
+  @override
+  void render(Canvas canvas) {
+    if (collected) return;
+    final bob = math.sin(_time * 3.6 + phaseOffset) * 3.5;
+    final spinScale = 0.72 + 0.28 * math.cos(_time * 4.2 + phaseOffset).abs();
+    final cx = size.x / 2;
+    final cy = size.y / 2 + bob;
+
+    // Halo brillante suave
+    canvas.drawCircle(
+      Offset(cx, cy),
+      13,
+      Paint()..color = const Color(0xFFFEF08A).withValues(alpha: 0.32),
+    );
+
+    canvas.save();
+    canvas.translate(cx, cy);
+    canvas.scale(spinScale, 1.0);
+
+    final star = Path();
+    const points = 5;
+    const outerR = 9.5;
+    const innerR = 4.4;
+    for (var i = 0; i < points * 2; i++) {
+      final r = i.isEven ? outerR : innerR;
+      final a = -math.pi / 2 + (i * math.pi) / points;
+      final pt = Offset(math.cos(a) * r, math.sin(a) * r);
+      if (i == 0) {
+        star.moveTo(pt.dx, pt.dy);
+      } else {
+        star.lineTo(pt.dx, pt.dy);
+      }
+    }
+    star.close();
+    canvas.drawPath(star, Paint()..color = const Color(0xFFFACC15));
+    canvas.drawPath(
+      star,
+      Paint()
+        ..color = const Color(0xFFB45309)
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = 1.4,
+    );
+    canvas.drawCircle(
+      const Offset(-2, -2.5),
+      2.0,
+      Paint()..color = Colors.white.withValues(alpha: 0.85),
+    );
+    canvas.restore();
   }
 }

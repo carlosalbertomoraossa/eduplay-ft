@@ -5,12 +5,13 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../../../../core/theme/app_theme.dart';
 import '../../../../../shared/widgets/heart_indicator.dart';
+import '../../../../../shared/widgets/lumi_lion_mascot.dart';
 import '../../g4_adventure_game.dart';
 import '../bloc/game_bloc.dart';
 import '../bloc/game_state.dart';
 
-/// HUD superpuesto sobre el canvas de Flame.
-/// Muestra nivel + bioma, progreso de sellos con brújula, vidas y puntuación.
+/// HUD colorido estilo juguete superpuesto sobre el canvas de Flame.
+/// Muestra a Lumi, nivel + mundo, progreso de retos con brújula, estrellitas, vidas y puntaje.
 class HudOverlay extends StatelessWidget {
   final GameBloc gameBloc;
   final G4AdventureGame? game;
@@ -38,7 +39,7 @@ class HudOverlay extends StatelessWidget {
           return SafeArea(
             child: Stack(
               children: [
-                // ── Nivel, bioma y brújula de sellos arriba-centro ──
+                // ── Lumi + Nivel, mundo y brújula de retos arriba-centro ──
                 Align(
                   alignment: Alignment.topCenter,
                   child: Padding(
@@ -49,6 +50,7 @@ class HudOverlay extends StatelessWidget {
                         _LevelSealBadge(
                           level: level,
                           answered: answered,
+                          multiplier: multiplier,
                           game: game,
                         ),
                         if (game != null)
@@ -64,20 +66,27 @@ class HudOverlay extends StatelessWidget {
                                     vertical: 5,
                                   ),
                                   decoration: BoxDecoration(
-                                    color: const Color(0xFF090D18)
-                                        .withValues(alpha: 0.78),
-                                    borderRadius: BorderRadius.circular(14),
+                                    color: const Color(0xFFFEF9C3)
+                                        .withValues(alpha: 0.95),
+                                    borderRadius: BorderRadius.circular(16),
                                     border: Border.all(
-                                      color: const Color(0xFFFDE047)
-                                          .withValues(alpha: 0.5),
+                                      color: const Color(0xFFF59E0B),
+                                      width: 1.6,
                                     ),
+                                    boxShadow: [
+                                      BoxShadow(
+                                        color: Colors.black.withValues(alpha: 0.14),
+                                        blurRadius: 8,
+                                        offset: const Offset(0, 3),
+                                      ),
+                                    ],
                                   ),
                                   child: Text(
                                     toast,
                                     style: const TextStyle(
-                                      color: Color(0xFFFEF08A),
+                                      color: Color(0xFF92400E),
                                       fontSize: 12,
-                                      fontWeight: FontWeight.w800,
+                                      fontWeight: FontWeight.w900,
                                       fontFamily: 'Nunito',
                                     ),
                                   ),
@@ -99,8 +108,29 @@ class HudOverlay extends StatelessWidget {
                       mainAxisSize: MainAxisSize.min,
                       crossAxisAlignment: CrossAxisAlignment.end,
                       children: [
-                        HeartIndicator(currentHearts: lives, maxHearts: 5),
-                        const SizedBox(height: 2),
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 10,
+                            vertical: 4,
+                          ),
+                          decoration: BoxDecoration(
+                            color: Colors.white.withValues(alpha: 0.90),
+                            borderRadius: BorderRadius.circular(18),
+                            border: Border.all(
+                              color: const Color(0xFFFB7185).withValues(alpha: 0.55),
+                              width: 1.6,
+                            ),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.black.withValues(alpha: 0.12),
+                                blurRadius: 8,
+                                offset: const Offset(0, 3),
+                              ),
+                            ],
+                          ),
+                          child: HeartIndicator(currentHearts: lives, maxHearts: 5),
+                        ),
+                        const SizedBox(height: 5),
                         _ScoreText(score: score, multiplier: multiplier),
                       ],
                     ),
@@ -118,28 +148,30 @@ class HudOverlay extends StatelessWidget {
 class _LevelSealBadge extends StatelessWidget {
   final int level;
   final int answered;
+  final int multiplier;
   final G4AdventureGame? game;
 
   const _LevelSealBadge({
     required this.level,
     required this.answered,
+    required this.multiplier,
     required this.game,
   });
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+      padding: const EdgeInsets.fromLTRB(8, 4, 12, 4),
       decoration: BoxDecoration(
-        color: const Color(0xFF0B1120).withValues(alpha: 0.78),
-        borderRadius: BorderRadius.circular(24),
+        color: Colors.white.withValues(alpha: 0.92),
+        borderRadius: BorderRadius.circular(26),
         border: Border.all(
-          color: const Color(0xFF5EEAD4).withValues(alpha: 0.45),
-          width: 1.5,
+          color: const Color(0xFF38BDF8),
+          width: 2.0,
         ),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.4),
+            color: const Color(0xFF0369A1).withValues(alpha: 0.18),
             blurRadius: 10,
             offset: const Offset(0, 3),
           ),
@@ -148,13 +180,29 @@ class _LevelSealBadge extends StatelessWidget {
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Text(
-            'N$level',
-            style: const TextStyle(
-              color: Color(0xFF5EEAD4),
-              fontWeight: FontWeight.w900,
-              fontSize: 13,
-              fontFamily: 'Nunito',
+          // Mini-avatar de Lumi reaccionando a la racha y con su outfit equipado
+          LumiLionMascot(
+            size: 30,
+            grade: 4,
+            accentColor: const Color(0xFF10B981),
+            expressionVariant: multiplier >= 2 ? 1 : 0,
+            outfit: game?.outfit,
+          ),
+          const SizedBox(width: 6),
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
+            decoration: BoxDecoration(
+              color: const Color(0xFF38BDF8),
+              borderRadius: BorderRadius.circular(10),
+            ),
+            child: Text(
+              'N$level',
+              style: const TextStyle(
+                color: Colors.white,
+                fontWeight: FontWeight.w900,
+                fontSize: 12,
+                fontFamily: 'Nunito',
+              ),
             ),
           ),
           if (game != null) ...[
@@ -164,32 +212,33 @@ class _LevelSealBadge extends StatelessWidget {
               builder: (_, biome, __) => Text(
                 biome,
                 style: const TextStyle(
-                  color: Colors.white,
-                  fontWeight: FontWeight.w700,
+                  color: Color(0xFF0F172A),
+                  fontWeight: FontWeight.w800,
                   fontSize: 12.5,
                   fontFamily: 'Nunito',
                 ),
               ),
             ),
           ],
-          const SizedBox(width: 10),
+          const SizedBox(width: 8),
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
             decoration: BoxDecoration(
-              color: const Color(0xFFF59E0B).withValues(alpha: 0.22),
+              color: const Color(0xFFFEF08A),
               borderRadius: BorderRadius.circular(12),
+              border: Border.all(color: const Color(0xFFF59E0B), width: 1.2),
             ),
             child: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
-                const Text('🕯️', style: TextStyle(fontSize: 12)),
+                const Text('⭐', style: TextStyle(fontSize: 12)),
                 const SizedBox(width: 3),
                 Text(
                   '$answered/10',
                   style: const TextStyle(
-                    color: Color(0xFFFDE047),
+                    color: Color(0xFF92400E),
                     fontWeight: FontWeight.w900,
-                    fontSize: 12.5,
+                    fontSize: 12,
                     fontFamily: 'Nunito',
                   ),
                 ),
@@ -199,12 +248,12 @@ class _LevelSealBadge extends StatelessWidget {
                     builder: (_, dir, __) {
                       if (dir == 0) return const SizedBox.shrink();
                       return Padding(
-                        padding: const EdgeInsets.only(left: 4),
+                        padding: const EdgeInsets.only(left: 2),
                         child: Icon(
                           dir > 0
                               ? Icons.chevron_right_rounded
                               : Icons.chevron_left_rounded,
-                          color: const Color(0xFFFDE047),
+                          color: const Color(0xFFD97706),
                           size: 16,
                         ),
                       );
@@ -213,6 +262,36 @@ class _LevelSealBadge extends StatelessWidget {
               ],
             ),
           ),
+          if (game != null) ...[
+            const SizedBox(width: 6),
+            ValueListenableBuilder<int>(
+              valueListenable: game!.starsCollectedNotifier,
+              builder: (_, stars, __) => Container(
+                padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
+                decoration: BoxDecoration(
+                  color: const Color(0xFFDCFCE7),
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(color: const Color(0xFF22C55E), width: 1.2),
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const Text('✨', style: TextStyle(fontSize: 11)),
+                    const SizedBox(width: 2),
+                    Text(
+                      '$stars',
+                      style: const TextStyle(
+                        color: Color(0xFF166534),
+                        fontWeight: FontWeight.w900,
+                        fontSize: 12,
+                        fontFamily: 'Nunito',
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ],
         ],
       ),
     );
@@ -226,37 +305,53 @@ class _ScoreText extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Column(
+    return Row(
       mainAxisSize: MainAxisSize.min,
-      crossAxisAlignment: CrossAxisAlignment.end,
       children: [
-        Text(
-          '$score pts',
-          style: const TextStyle(
-            color: Colors.white,
-            fontWeight: FontWeight.w800,
-            fontSize: 15,
-            fontFamily: 'Nunito',
-            shadows: [Shadow(color: Colors.black87, blurRadius: 4)],
-          ),
-        ),
-        if (multiplier > 1)
+        if (multiplier > 1) ...[
           Container(
-            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1),
+            padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
             decoration: BoxDecoration(
-              color: EduPlayColors.energyYellow,
-              borderRadius: BorderRadius.circular(8),
+              color: const Color(0xFFF97316),
+              borderRadius: BorderRadius.circular(10),
+              border: Border.all(color: Colors.white, width: 1.4),
             ),
             child: Text(
               '×$multiplier',
               style: const TextStyle(
-                color: EduPlayColors.textDark,
+                color: Colors.white,
                 fontWeight: FontWeight.w900,
                 fontSize: 11,
                 fontFamily: 'Nunito',
               ),
             ),
           ),
+          const SizedBox(width: 5),
+        ],
+        Container(
+          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 3),
+          decoration: BoxDecoration(
+            color: EduPlayColors.energyYellow,
+            borderRadius: BorderRadius.circular(14),
+            border: Border.all(color: Colors.white, width: 1.6),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withValues(alpha: 0.12),
+                blurRadius: 6,
+                offset: const Offset(0, 2),
+              ),
+            ],
+          ),
+          child: Text(
+            '⚡ $score pts',
+            style: const TextStyle(
+              color: EduPlayColors.textDark,
+              fontWeight: FontWeight.w900,
+              fontSize: 13,
+              fontFamily: 'Nunito',
+            ),
+          ),
+        ),
       ],
     );
   }

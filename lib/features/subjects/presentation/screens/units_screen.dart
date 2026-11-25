@@ -6,6 +6,7 @@ import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../../../core/providers/colombia_calendar_provider.dart';
 import '../../../../../core/providers/lesson_progress_provider.dart';
 import '../../../../../core/providers/selected_grade_provider.dart';
 import '../../../../../core/theme/app_theme.dart';
@@ -37,6 +38,8 @@ class _UnitsScreenState extends ConsumerState<UnitsScreen> {
   Widget build(BuildContext context) {
     final completed = ref.watch(lessonProgressProvider);
     final grade = ref.watch(selectedGradeProvider);
+    final calendar = ref.watch(colombiaCalendarProvider);
+    final currentPeriod = calendar.activePeriod();
     final allUnitIds = CurriculumData.getUnitIdsForGrade(grade);
     final visibleEntries = <(int globalIdx, String unitId)>[
       for (int i = 0; i < allUnitIds.length; i++)
@@ -62,51 +65,84 @@ class _UnitsScreenState extends ConsumerState<UnitsScreen> {
         ),
         child: Column(
           children: [
-            // Selector rápido de Período (1 a 4)
+            // Selector rápido de Período (1 a 4) alineado al calendario escolar Colombia
             Container(
-              color: Colors.white.withValues(alpha: 0.88),
+              color: Colors.white.withValues(alpha: 0.90),
               padding: const EdgeInsets.fromLTRB(16, 10, 16, 12),
-              child: SingleChildScrollView(
-                scrollDirection: Axis.horizontal,
-                child: Row(
-                  children: [
-                    for (final p in [0, 1, 2, 3, 4])
-                      Padding(
-                        padding: const EdgeInsets.only(right: 8),
-                        child: GestureDetector(
-                          onTap: () => setState(() => _selectedPeriodFilter = p),
-                          child: AnimatedContainer(
-                            duration: const Duration(milliseconds: 180),
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 14,
-                              vertical: 7,
-                            ),
-                            decoration: BoxDecoration(
-                              color: _selectedPeriodFilter == p
-                                  ? EduPlayColors.primaryBlue
-                                  : Colors.white,
-                              borderRadius: BorderRadius.circular(20),
-                              border: Border.all(
-                                color: EduPlayColors.primaryBlue
-                                    .withValues(alpha: 0.35),
-                              ),
-                            ),
-                            child: Text(
-                              p == 0 ? '📅 Todos los períodos' : '🌟 Período $p',
-                              style: TextStyle(
-                                fontFamily: 'Nunito',
-                                fontSize: 13,
-                                fontWeight: FontWeight.w800,
-                                color: _selectedPeriodFilter == p
-                                    ? Colors.white
-                                    : EduPlayColors.textDark,
-                              ),
-                            ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      const Text('🇨🇴', style: TextStyle(fontSize: 14)),
+                      const SizedBox(width: 6),
+                      Expanded(
+                        child: Text(
+                          'Cronograma activo: ${calendar.summaryLabel()}',
+                          style: const TextStyle(
+                            fontFamily: 'Nunito',
+                            fontSize: 12,
+                            fontWeight: FontWeight.w800,
+                            color: Color(0xFF0369A1),
                           ),
                         ),
                       ),
-                  ],
-                ),
+                    ],
+                  ),
+                  const SizedBox(height: 8),
+                  SingleChildScrollView(
+                    scrollDirection: Axis.horizontal,
+                    child: Row(
+                      children: [
+                        for (final p in [0, 1, 2, 3, 4])
+                          Padding(
+                            padding: const EdgeInsets.only(right: 8),
+                            child: GestureDetector(
+                              onTap: () =>
+                                  setState(() => _selectedPeriodFilter = p),
+                              child: AnimatedContainer(
+                                duration: const Duration(milliseconds: 180),
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 14,
+                                  vertical: 7,
+                                ),
+                                decoration: BoxDecoration(
+                                  color: _selectedPeriodFilter == p
+                                      ? EduPlayColors.primaryBlue
+                                      : (p == currentPeriod
+                                          ? const Color(0xFFFEF9C3)
+                                          : Colors.white),
+                                  borderRadius: BorderRadius.circular(20),
+                                  border: Border.all(
+                                    color: p == currentPeriod
+                                        ? const Color(0xFFF59E0B)
+                                        : EduPlayColors.primaryBlue
+                                            .withValues(alpha: 0.35),
+                                    width: p == currentPeriod ? 1.8 : 1.2,
+                                  ),
+                                ),
+                                child: Text(
+                                  p == 0
+                                      ? '📅 Todos'
+                                      : (p == currentPeriod
+                                          ? '📍 Período $p (Hoy)'
+                                          : '🌟 Período $p'),
+                                  style: TextStyle(
+                                    fontFamily: 'Nunito',
+                                    fontSize: 13,
+                                    fontWeight: FontWeight.w800,
+                                    color: _selectedPeriodFilter == p
+                                        ? Colors.white
+                                        : EduPlayColors.textDark,
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ),
+                      ],
+                    ),
+                  ),
+                ],
               ),
             ),
 

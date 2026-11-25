@@ -8,8 +8,12 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'core/di/injection.dart';
+import 'core/providers/child_progress_provider.dart';
+import 'core/providers/colombia_calendar_provider.dart';
+import 'core/providers/daily_quests_provider.dart';
 import 'core/providers/game_progress_provider.dart';
 import 'core/providers/lesson_progress_provider.dart';
+import 'core/providers/lumi_customization_provider.dart';
 import 'core/providers/selected_grade_provider.dart';
 import 'core/router/app_router.dart';
 import 'core/theme/app_theme.dart';
@@ -30,6 +34,18 @@ void main() async {
         ),
         gameProgressProvider.overrideWith(
           (_) => GameProgressNotifier(prefs),
+        ),
+        colombiaCalendarProvider.overrideWith(
+          (_) => ColombiaCalendarNotifier(prefs),
+        ),
+        childProgressProvider.overrideWith(
+          (_) => ChildProgressNotifier(prefs),
+        ),
+        dailyQuestsProvider.overrideWith(
+          (_) => DailyQuestsNotifier(prefs),
+        ),
+        lumiCustomizationProvider.overrideWith(
+          (_) => LumiCustomizationNotifier(prefs),
         ),
       ],
       child: const EduPlayApp(),

@@ -51,10 +51,8 @@ int _xpForLevel(int level) {
 }
 
 class GameQuestionsProvider {
-  // Devuelve las preguntas del juego para el nivel indicado (1–8).
-  // Mapea ejercicios multipleChoice de CurriculumData a GameQuestion,
-  // adaptando las 4 opciones del currículo a las 3 que necesita el juego.
-  // Devuelve las preguntas del juego para el nivel indicado (actualmente solo 1).
+  /// Devuelve las preguntas del juego para el nivel indicado (1–8) en modo
+  /// clásico (Grado 4°/5° — retrocompatible con tests existentes).
   static List<GameQuestion> getQuestionsForLevel(int level) {
     final ids = _levelExerciseIds[level];
     if (ids == null) return [];
@@ -74,6 +72,100 @@ class GameQuestionsProvider {
       if (q != null) questions.add(q);
     }
     return questions;
+  }
+
+  /// Devuelve 10 preguntas del currículo MEN Colombia para cualquier [grade] (1..5)
+  /// y capítulo [level] (1..8), mapeando 2 capítulos por cada uno de los 4 períodos.
+  static List<GameQuestion> getQuestionsForGradeAndLevel({
+    required int grade,
+    required int level,
+  }) {
+    if (level < 1 || level > 8) return [];
+    final clampedGrade = grade.clamp(1, 5);
+    final unitIds = CurriculumData.getUnitIdsForGrade(clampedGrade);
+    if (unitIds.isEmpty) return getQuestionsForLevel(level);
+
+    final period = periodForLevel(level);
+    final difficulty = _difficultyForLevel(level);
+    final xpReward = _xpForLevel(level);
+    final topicLabel =
+        'G$clampedGrade° · P$period · ${topicForGradeAndLevel(grade: clampedGrade, level: level)}';
+
+    // Prioridad 1: ejercicios de la unidad exacta del capítulo
+    final primaryPool = <Exercise>[];
+    final periodPool = <Exercise>[];
+    final gradePool = <Exercise>[];
+
+    final targetUnitId = level <= unitIds.length ? unitIds[level - 1] : null;
+
+    for (final unitId in unitIds) {
+      final unitPeriod = CurriculumData.getUnitPeriod(unitId);
+      final summaries = CurriculumData.getLessonsForUnit(unitId);
+      for (final summary in summaries) {
+        final lesson = CurriculumData.getLesson(summary.id);
+        if (lesson == null) continue;
+        for (final ex in lesson.exercises) {
+          if (ex.type != ExerciseType.multipleChoice) continue;
+          if (unitId == targetUnitId) {
+            primaryPool.add(ex);
+          } else if (unitPeriod == period) {
+            periodPool.add(ex);
+          } else {
+            gradePool.add(ex);
+          }
+        }
+      }
+    }
+
+    // Nivel 8 (Gran Enciclopedia / Boss): mezcla retos de todo el grado si es posible
+    final orderedCandidates = <Exercise>[
+      if (level == 8) ...[
+        ...primaryPool.take(4),
+        ...periodPool.take(3),
+        ...gradePool,
+        ...primaryPool.skip(4),
+      ] else ...[
+        ...primaryPool,
+        ...periodPool,
+        ...gradePool,
+      ],
+    ];
+
+    final seenIds = <String>{};
+    final result = <GameQuestion>[];
+    for (final ex in orderedCandidates) {
+      if (!seenIds.add(ex.id)) continue;
+      final q = _fromExercise(
+        ex,
+        difficulty,
+        xpReward,
+        topicLabel: topicLabel,
+      );
+      if (q != null) result.add(q);
+      if (result.length >= 10) break;
+    }
+
+    return result.isNotEmpty ? result : getQuestionsForLevel(level);
+  }
+
+  /// Período escolar colombiano (1..4) al que corresponde cada capítulo (1..8).
+  static int periodForLevel(int level) => ((level - 1) ~/ 2).clamp(0, 3) + 1;
+
+  /// Tema corto DBA del currículo MEN para el grado y capítulo dado.
+  static String topicForGradeAndLevel({
+    required int grade,
+    required int level,
+  }) {
+    final unitIds = CurriculumData.getUnitIdsForGrade(grade.clamp(1, 5));
+    if (level >= 1 && level <= unitIds.length) {
+      final rawTitle = CurriculumData.unitTitles[unitIds[level - 1]] ?? '';
+      final colonIdx = rawTitle.indexOf(':');
+      if (colonIdx != -1 && colonIdx + 1 < rawTitle.length) {
+        return rawTitle.substring(colonIdx + 1).trim();
+      }
+      if (rawTitle.isNotEmpty) return rawTitle;
+    }
+    return level == 8 ? '¡Gran Reto Final!' : 'Repaso del Período';
   }
 
   static GameQuestion? _buildQuestion(
@@ -98,29 +190,42 @@ class GameQuestionsProvider {
       }
     }
     if (exercise == null) return null;
+    return _fromExercise(
+      exercise,
+      difficulty,
+      xpReward,
+      topicLabel: topicLabel,
+    );
+  }
+
+  static GameQuestion? _fromExercise(
+    Exercise exercise,
+    Difficulty difficulty,
+    int xpReward, {
+    required String topicLabel,
+  }) {
     if (exercise.type != ExerciseType.multipleChoice) return null;
 
     final rawOptions = List<String>.from(
       exercise.content['options'] as List<dynamic>,
     );
+    if (rawOptions.length < 3) return null;
     final rawCorrectIndex = exercise.content['correct_index'] as int;
     final question = exercise.content['question'] as String;
 
     // El juego usa exactamente 3 opciones.
-    // correct_index 0-2 → tomar primeras 3; correct_index 3 → tomar últimas 3
-    // y remapear el índice correcto a 2.
     final List<String> options;
     final int correctIndex;
     if (rawCorrectIndex <= 2) {
       options = rawOptions.sublist(0, 3);
       correctIndex = rawCorrectIndex;
     } else {
-      options = rawOptions.sublist(1, 4);
+      options = rawOptions.sublist(rawOptions.length - 3, rawOptions.length);
       correctIndex = 2;
     }
 
     return GameQuestion(
-      id: exerciseId,
+      id: exercise.id,
       question: question,
       options: options,
       correctIndex: correctIndex,

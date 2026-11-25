@@ -7,8 +7,12 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../../../core/di/injection.dart';
+import '../../../../../core/providers/child_progress_provider.dart';
+import '../../../../../core/providers/daily_quests_provider.dart';
 import '../../../../../core/providers/game_progress_provider.dart';
-import '../../../../../core/theme/app_theme.dart';
+import '../../../../../core/providers/lumi_customization_provider.dart';
+import '../../../../../core/providers/selected_grade_provider.dart';
+import '../../data/game_audio_service.dart';
 import '../../data/game_questions_provider.dart';
 import '../../g4_adventure_game.dart';
 import '../bloc/game_bloc.dart';
@@ -38,6 +42,8 @@ class GamePlayScreen extends ConsumerStatefulWidget {
 class _GamePlayScreenState extends ConsumerState<GamePlayScreen> {
   late final GameBloc _gameBloc;
   late final G4AdventureGame _game;
+  late final int _activeGrade;
+  late final LumiOutfit _equippedOutfit;
 
   // Nivel siguiente preparado por LevelComplete; null = reinicio del nivel actual
   int? _nextLevel;
@@ -46,9 +52,24 @@ class _GamePlayScreenState extends ConsumerState<GamePlayScreen> {
   void initState() {
     super.initState();
     _gameBloc = getIt<GameBloc>();
+    _activeGrade = _readGradeSafely();
+    _equippedOutfit = ref.read(lumiCustomizationProvider).equipped;
     _game = G4AdventureGame(
       gameBloc: _gameBloc,
       initialLevel: widget.level,
+      outfit: _equippedOutfit,
+      onStarCollected: () {
+        if (!mounted) return;
+        ref
+            .read(dailyQuestsProvider.notifier)
+            .addProgress(DailyQuestType.collectStars, 1);
+      },
+      onQuestionAnswered: () {
+        if (!mounted) return;
+        ref
+            .read(dailyQuestsProvider.notifier)
+            .addProgress(DailyQuestType.gameChallenges, 1);
+      },
     );
 
     // Esperar primer frame para que el GameWidget monte el canvas antes de
@@ -56,6 +77,14 @@ class _GamePlayScreenState extends ConsumerState<GamePlayScreen> {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _startLevel(widget.level);
     });
+  }
+
+  int _readGradeSafely() {
+    try {
+      return ref.read(selectedGradeProvider);
+    } catch (_) {
+      return 4;
+    }
   }
 
   @override
@@ -67,7 +96,10 @@ class _GamePlayScreenState extends ConsumerState<GamePlayScreen> {
   // ── Helpers ─────────────────────────────────────────────────────────────────
 
   void _startLevel(int level) {
-    final questions = GameQuestionsProvider.getQuestionsForLevel(level);
+    final questions = GameQuestionsProvider.getQuestionsForGradeAndLevel(
+      grade: _activeGrade,
+      level: level,
+    );
     _gameBloc.add(GameStarted(level: level, questions: questions));
   }
 
@@ -88,6 +120,12 @@ class _GamePlayScreenState extends ConsumerState<GamePlayScreen> {
                   score: state.partialResult.finalScore,
                   accuracy: state.partialResult.accuracy,
                 );
+            ref.read(childProgressProvider.notifier).recordGameCompleted(
+                  xpEarned: state.partialResult.xpEarned,
+                  coinsEarned: state.partialResult.coinsEarned + 15,
+                  starsEarned: state.partialResult.accuracy >= 0.9 ? 3 : 2,
+                  chapterStampId: 'game-g$_activeGrade-l${state.level}',
+                );
             // Guardar nivel siguiente antes de que NextLevel emita GameInitial
             _nextLevel = state.level + 1;
           } else if (state is GameComplete) {
@@ -95,6 +133,12 @@ class _GamePlayScreenState extends ConsumerState<GamePlayScreen> {
                   level: 8,
                   score: state.result.finalScore,
                   accuracy: state.result.accuracy,
+                );
+            ref.read(childProgressProvider.notifier).recordGameCompleted(
+                  xpEarned: state.result.xpEarned + 50,
+                  coinsEarned: state.result.coinsEarned + 40,
+                  starsEarned: 3,
+                  chapterStampId: 'game-g$_activeGrade-boss',
                 );
           } else if (state is GameInitial) {
             // Reacción a GameRestarted o NextLevel — limpiar overlays y relanzar
@@ -117,7 +161,10 @@ class _GamePlayScreenState extends ConsumerState<GamePlayScreen> {
                 G4AdventureGame.overlayControls: (context, game) =>
                     ControlsOverlay(game: game),
                 G4AdventureGame.overlayQuestion: (context, _) =>
-                    QuestionOverlay(gameBloc: _gameBloc),
+                    QuestionOverlay(
+                      gameBloc: _gameBloc,
+                      outfit: _equippedOutfit,
+                    ),
                 G4AdventureGame.overlayGameOver: (context, _) =>
                     GameOverOverlay(
                       gameBloc: _gameBloc,
@@ -154,7 +201,13 @@ class _GamePlayScreenState extends ConsumerState<GamePlayScreen> {
                           state is LevelComplete ||
                           state is GameComplete;
                       if (isOverlay) return const SizedBox.shrink();
-                      return _ExitButton(onTap: _onExit);
+                      return Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          _ExitButton(onTap: _onExit),
+                          const _SoundToggleButton(),
+                        ],
+                      );
                     },
                   ),
                 ),
@@ -176,18 +229,68 @@ class _ExitButton extends StatelessWidget {
     return GestureDetector(
       onTap: onTap,
       child: Container(
-        margin: const EdgeInsets.all(8),
+        margin: const EdgeInsets.fromLTRB(8, 8, 4, 8),
         padding: const EdgeInsets.all(8),
         decoration: BoxDecoration(
-          color: Colors.black.withValues(alpha: 0.45),
+          color: Colors.white.withValues(alpha: 0.90),
           shape: BoxShape.circle,
+          border: Border.all(color: const Color(0xFF38BDF8), width: 1.8),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.14),
+              blurRadius: 6,
+              offset: const Offset(0, 2),
+            ),
+          ],
         ),
         child: const Icon(
           Icons.close_rounded,
-          color: EduPlayColors.surfaceWhite,
-          size: 22,
+          color: Color(0xFF0F172A),
+          size: 20,
         ),
       ),
+    );
+  }
+}
+
+class _SoundToggleButton extends StatelessWidget {
+  const _SoundToggleButton();
+
+  @override
+  Widget build(BuildContext context) {
+    return ValueListenableBuilder<bool>(
+      valueListenable: GameAudioService.soundEnabled,
+      builder: (_, enabled, __) {
+        return GestureDetector(
+          onTap: GameAudioService.toggleSound,
+          child: Container(
+            margin: const EdgeInsets.fromLTRB(4, 8, 8, 8),
+            padding: const EdgeInsets.all(8),
+            decoration: BoxDecoration(
+              color: enabled
+                  ? const Color(0xFFFEF08A).withValues(alpha: 0.94)
+                  : Colors.white.withValues(alpha: 0.85),
+              shape: BoxShape.circle,
+              border: Border.all(
+                color: enabled ? const Color(0xFFF59E0B) : const Color(0xFF94A3B8),
+                width: 1.8,
+              ),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.14),
+                  blurRadius: 6,
+                  offset: const Offset(0, 2),
+                ),
+              ],
+            ),
+            child: Icon(
+              enabled ? Icons.volume_up_rounded : Icons.volume_off_rounded,
+              color: enabled ? const Color(0xFF92400E) : const Color(0xFF64748B),
+              size: 20,
+            ),
+          ),
+        );
+      },
     );
   }
 }

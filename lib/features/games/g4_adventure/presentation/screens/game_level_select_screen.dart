@@ -4,19 +4,22 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../../../core/providers/colombia_calendar_provider.dart';
 import '../../../../../core/providers/game_progress_provider.dart';
+import '../../../../../core/providers/selected_grade_provider.dart';
 import '../../../../../core/theme/app_theme.dart';
+import '../../data/game_questions_provider.dart';
 
-// Metadatos de cada caverna: bioma subterráneo, tema matemático y dificultad (1-3 estrellas)
+// Metadatos visuales de los 8 capítulos del Cuaderno Escolar Mágico (2 por período MEN)
 const List<_LevelMeta> _levels = [
-  _LevelMeta(1, 'El Pozo de Cristal', 'Fracciones Básicas', 1, Color(0xFF0D9488)),
-  _LevelMeta(2, 'Cueva de los Hongos', 'Fracciones Equivalentes', 1, Color(0xFF0891B2)),
-  _LevelMeta(3, 'Galerías del Eco', 'Multiplicación', 2, Color(0xFF2563EB)),
-  _LevelMeta(4, 'Abismo de Ámbar', 'División', 2, Color(0xFFD97706)),
-  _LevelMeta(5, 'Ruinas de Amatista', 'Decimales Intro', 2, Color(0xFF7C3AED)),
-  _LevelMeta(6, 'Gruta de Luciérnagas', 'Decimales Avanzado', 3, Color(0xFF65A30D)),
-  _LevelMeta(7, 'Santuario del Eclipse', 'Repaso Mixto', 3, Color(0xFFE11D48)),
-  _LevelMeta(8, 'Trono de la Sombra', '¡Jefe Final!', 3, Color(0xFF9333EA)),
+  _LevelMeta(1, 'Cuaderno Menta', 1, Color(0xFF0F766E)),
+  _LevelMeta(2, 'Acuarela Coral', 1, Color(0xFFE11D48)),
+  _LevelMeta(3, 'Página Celeste', 2, Color(0xFF2563EB)),
+  _LevelMeta(4, 'Boceto Mandarina', 2, Color(0xFFEA580C)),
+  _LevelMeta(5, 'Diario Lavanda', 2, Color(0xFF7C3AED)),
+  _LevelMeta(6, 'Atlas Botánico', 3, Color(0xFF15803D)),
+  _LevelMeta(7, 'Taller Fucsia', 3, Color(0xFFBE185D)),
+  _LevelMeta(8, 'Gran Enciclopedia', 3, Color(0xFF4338CA)),
 ];
 
 class GameLevelSelectScreen extends ConsumerWidget {
@@ -25,61 +28,166 @@ class GameLevelSelectScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final progress = ref.watch(gameProgressProvider);
+    final calendar = ref.watch(colombiaCalendarProvider);
+    final activePeriod = calendar.activePeriod();
+    int grade = 4;
+    try {
+      grade = ref.watch(selectedGradeProvider);
+    } catch (_) {}
 
     return Scaffold(
-      backgroundColor: const Color(0xFF0D1B2A),
+      backgroundColor: const Color(0xFFFFFDF7),
       appBar: AppBar(
-        backgroundColor: const Color(0xFF0D1B2A),
-        foregroundColor: Colors.white,
-        title: const Text(
-          'La Aventura del Cuarto Grado',
-          style: TextStyle(
+        backgroundColor: const Color(0xFFFFFDF7),
+        foregroundColor: const Color(0xFF1E293B),
+        title: Text(
+          'Cuaderno Mágico · Grado $grade°',
+          style: const TextStyle(
             fontFamily: 'Nunito',
-            fontWeight: FontWeight.w800,
-            fontSize: 17,
+            fontWeight: FontWeight.w900,
+            fontSize: 18,
           ),
         ),
         centerTitle: true,
         elevation: 0,
       ),
-      body: Column(
-        children: [
-          Padding(
-            padding: const EdgeInsets.fromLTRB(20, 4, 20, 16),
-            child: Text(
-              'Elige tu nivel · Desbloqueados: ${progress.unlockedLevel}/8',
-              style: TextStyle(
-                color: Colors.white.withValues(alpha: 0.8),
-                fontFamily: 'Nunito',
-                fontSize: 15,
+      body: Container(
+        decoration: const BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: [
+              Color(0xFFFFFDF7),
+              Color(0xFFFEF9C3),
+              Color(0xFFE0F2FE),
+            ],
+            stops: [0.0, 0.55, 1.0],
+          ),
+        ),
+        child: Column(
+          children: [
+            // Selector rápido de Grado (1° a 5°) para cambiar en 1 toque dentro del juego
+            Padding(
+              padding: const EdgeInsets.fromLTRB(16, 4, 16, 8),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  for (var g = 1; g <= 5; g++)
+                    Expanded(
+                      child: Padding(
+                        padding: EdgeInsets.only(right: g < 5 ? 6 : 0),
+                        child: GestureDetector(
+                          onTap: () {
+                            try {
+                              ref
+                                  .read(selectedGradeProvider.notifier)
+                                  .setGrade(g);
+                            } catch (_) {}
+                          },
+                          child: AnimatedContainer(
+                            duration: const Duration(milliseconds: 180),
+                            padding: const EdgeInsets.symmetric(vertical: 8),
+                            decoration: BoxDecoration(
+                              color: g == grade
+                                  ? EduPlayColors.primaryBlue
+                                  : Colors.white,
+                              borderRadius: BorderRadius.circular(14),
+                              border: Border.all(
+                                color: g == grade
+                                    ? EduPlayColors.primaryBlue
+                                    : EduPlayColors.primaryBlue
+                                        .withValues(alpha: 0.30),
+                                width: g == grade ? 2.0 : 1.3,
+                              ),
+                              boxShadow: g == grade
+                                  ? [
+                                      BoxShadow(
+                                        color: EduPlayColors.primaryBlue
+                                            .withValues(alpha: 0.28),
+                                        blurRadius: 8,
+                                        offset: const Offset(0, 3),
+                                      ),
+                                    ]
+                                  : null,
+                            ),
+                            alignment: Alignment.center,
+                            child: Text(
+                              '$g°',
+                              style: TextStyle(
+                                fontFamily: 'Nunito',
+                                fontWeight: FontWeight.w900,
+                                fontSize: 14,
+                                color: g == grade
+                                    ? Colors.white
+                                    : EduPlayColors.textDark,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                ],
               ),
             ),
-          ),
-          Expanded(
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16),
-              child: GridView.builder(
-                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                  crossAxisCount: 2,
-                  crossAxisSpacing: 14,
-                  mainAxisSpacing: 14,
-                  childAspectRatio: 1.05,
+            Padding(
+              padding: const EdgeInsets.fromLTRB(16, 0, 16, 10),
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 7),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(20),
+                  border: Border.all(
+                    color: const Color(0xFFF59E0B).withValues(alpha: 0.65),
+                    width: 1.6,
+                  ),
                 ),
-                itemCount: _levels.length,
-                itemBuilder: (context, index) {
-                  final meta = _levels[index];
-                  return _LevelCard(
-                    meta: meta,
-                    earnedStars: progress.starsFor(meta.level),
-                    bestScore: progress.bestScoreFor(meta.level),
-                    isUnlocked: progress.isUnlocked(meta.level),
-                  );
-                },
+                child: Text(
+                  '📅 ${calendar.summaryLabel()} · Capítulos: ${progress.unlockedLevel}/8',
+                  textAlign: TextAlign.center,
+                  style: const TextStyle(
+                    color: Color(0xFF92400E),
+                    fontFamily: 'Nunito',
+                    fontWeight: FontWeight.w800,
+                    fontSize: 12.5,
+                  ),
+                ),
               ),
             ),
-          ),
-          const SizedBox(height: 16),
-        ],
+            Expanded(
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                child: GridView.builder(
+                  gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                    crossAxisCount: 2,
+                    crossAxisSpacing: 14,
+                    mainAxisSpacing: 14,
+                    childAspectRatio: 1.0,
+                  ),
+                  itemCount: _levels.length,
+                  itemBuilder: (context, index) {
+                    final meta = _levels[index];
+                    final chapterPeriod =
+                        GameQuestionsProvider.periodForLevel(meta.level);
+                    final topic = GameQuestionsProvider.topicForGradeAndLevel(
+                      grade: grade,
+                      level: meta.level,
+                    );
+                    return _LevelCard(
+                      meta: meta,
+                      topic: topic,
+                      period: chapterPeriod,
+                      isCurrentPeriod: chapterPeriod == activePeriod,
+                      earnedStars: progress.starsFor(meta.level),
+                      bestScore: progress.bestScoreFor(meta.level),
+                      isUnlocked: progress.isUnlocked(meta.level),
+                    );
+                  },
+                ),
+              ),
+            ),
+            const SizedBox(height: 16),
+          ],
+        ),
       ),
     );
   }
@@ -87,12 +195,18 @@ class GameLevelSelectScreen extends ConsumerWidget {
 
 class _LevelCard extends StatelessWidget {
   final _LevelMeta meta;
+  final String topic;
+  final int period;
+  final bool isCurrentPeriod;
   final int earnedStars;
   final int bestScore;
   final bool isUnlocked;
 
   const _LevelCard({
     required this.meta,
+    required this.topic,
+    required this.period,
+    required this.isCurrentPeriod,
     required this.earnedStars,
     required this.bestScore,
     required this.isUnlocked,
@@ -110,16 +224,18 @@ class _LevelCard extends StatelessWidget {
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
             colors: [
-              meta.color.withValues(alpha: isUnlocked ? 0.90 : 0.45),
-              meta.color.withValues(alpha: isUnlocked ? 0.60 : 0.30),
+              meta.color.withValues(alpha: isUnlocked ? 0.98 : 0.75),
+              meta.color.withValues(alpha: isUnlocked ? 0.80 : 0.58),
             ],
           ),
           borderRadius: BorderRadius.circular(18),
           border: Border.all(
-            color: earnedStars > 0
+            color: isCurrentPeriod
                 ? EduPlayColors.energyYellow
-                : Colors.white.withValues(alpha: 0.15),
-            width: earnedStars > 0 ? 2 : 1.5,
+                : (earnedStars > 0
+                    ? EduPlayColors.energyYellow
+                    : Colors.white.withValues(alpha: 0.65)),
+            width: isCurrentPeriod ? 2.8 : (earnedStars > 0 ? 2.5 : 1.8),
           ),
           boxShadow: [
             BoxShadow(
@@ -130,36 +246,56 @@ class _LevelCard extends StatelessWidget {
           ],
         ),
         child: Padding(
-          padding: const EdgeInsets.all(14),
+          padding: const EdgeInsets.all(13),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  // Número de nivel
                   Container(
-                    width: 34,
-                    height: 34,
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 9,
+                      vertical: 4,
+                    ),
                     decoration: BoxDecoration(
                       color: Colors.white.withValues(alpha: 0.25),
-                      shape: BoxShape.circle,
+                      borderRadius: BorderRadius.circular(12),
                     ),
-                    alignment: Alignment.center,
                     child: Text(
-                      '${meta.level}',
+                      'Cap. ${meta.level} · P$period',
                       style: const TextStyle(
                         color: Colors.white,
                         fontWeight: FontWeight.w900,
-                        fontSize: 16,
+                        fontSize: 11.5,
                         fontFamily: 'Nunito',
                       ),
                     ),
                   ),
-                  if (earnedStars > 0)
+                  if (isCurrentPeriod)
                     Container(
                       padding: const EdgeInsets.symmetric(
-                        horizontal: 8,
+                        horizontal: 7,
+                        vertical: 2,
+                      ),
+                      decoration: BoxDecoration(
+                        color: EduPlayColors.energyYellow,
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      child: const Text(
+                        '📍 Hoy',
+                        style: TextStyle(
+                          color: Color(0xFF78350F),
+                          fontSize: 10,
+                          fontWeight: FontWeight.w900,
+                          fontFamily: 'Nunito',
+                        ),
+                      ),
+                    )
+                  else if (earnedStars > 0)
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 7,
                         vertical: 2,
                       ),
                       decoration: BoxDecoration(
@@ -167,48 +303,46 @@ class _LevelCard extends StatelessWidget {
                         borderRadius: BorderRadius.circular(10),
                       ),
                       child: Text(
-                        '⚡ $bestScore pts',
+                        '⚡ $bestScore',
                         style: const TextStyle(
                           color: EduPlayColors.energyYellow,
-                          fontSize: 11,
+                          fontSize: 10.5,
                           fontWeight: FontWeight.w800,
                           fontFamily: 'Nunito',
                         ),
                       ),
                     )
                   else if (meta.level == 8)
-                    const Text('👑', style: TextStyle(fontSize: 20)),
+                    const Text('👑', style: TextStyle(fontSize: 18)),
                 ],
               ),
               const Spacer(),
-              // Nombre del bioma y tema matemático
               Text(
                 meta.biomeName,
                 style: const TextStyle(
                   color: Colors.white,
-                  fontWeight: FontWeight.w800,
+                  fontWeight: FontWeight.w900,
                   fontSize: 13.5,
-                  fontFamily: 'Nunito',
-                  height: 1.15,
-                ),
-                maxLines: 2,
-                overflow: TextOverflow.ellipsis,
-              ),
-              const SizedBox(height: 2),
-              Text(
-                meta.topic,
-                style: TextStyle(
-                  color: Colors.white.withValues(alpha: 0.82),
-                  fontWeight: FontWeight.w600,
-                  fontSize: 11.5,
                   fontFamily: 'Nunito',
                   height: 1.15,
                 ),
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
               ),
+              const SizedBox(height: 3),
+              Text(
+                topic,
+                style: TextStyle(
+                  color: Colors.white.withValues(alpha: 0.90),
+                  fontWeight: FontWeight.w700,
+                  fontSize: 11.5,
+                  fontFamily: 'Nunito',
+                  height: 1.15,
+                ),
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+              ),
               const SizedBox(height: 6),
-              // Estrellas ganadas o dificultad
               Row(
                 children: [
                   ...List.generate(3, (i) {
@@ -218,7 +352,7 @@ class _LevelCard extends StatelessWidget {
                           : Icons.star_outline_rounded,
                       color: i < displayStars
                           ? EduPlayColors.energyYellow
-                          : Colors.white.withValues(alpha: 0.3),
+                          : Colors.white.withValues(alpha: 0.35),
                       size: 16,
                     );
                   }),
@@ -243,14 +377,12 @@ class _LevelCard extends StatelessWidget {
 class _LevelMeta {
   final int level;
   final String biomeName;
-  final String topic;
   final int stars;
   final Color color;
 
   const _LevelMeta(
     this.level,
     this.biomeName,
-    this.topic,
     this.stars,
     this.color,
   );

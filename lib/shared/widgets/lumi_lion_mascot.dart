@@ -2,11 +2,12 @@ import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
 
+import '../../core/providers/lumi_customization_provider.dart';
+
 /// Mascota oficial de EduPlay: **Lumi el Leoncito**.
 ///
-/// Reemplaza cualquier ícono o dibujo anterior por un leoncito infantil
-/// dibujado en Canvas con melena esponjosa, orejitas redondas, hocico cremita,
-/// bigoticos, colita con pompón y pañoleta de explorador.
+/// Soporta personalización completa vía [outfit] (pañoleta, accesorio y aura)
+/// sincronizada con el Armario de Lumi y el juego del Cuaderno Mágico.
 class LumiLionMascot extends StatelessWidget {
   final double size;
   final int grade;
@@ -14,6 +15,7 @@ class LumiLionMascot extends StatelessWidget {
   final int expressionVariant;
   final bool interactive;
   final VoidCallback? onTap;
+  final LumiOutfit? outfit;
 
   const LumiLionMascot({
     super.key,
@@ -23,6 +25,7 @@ class LumiLionMascot extends StatelessWidget {
     this.expressionVariant = 0,
     this.interactive = false,
     this.onTap,
+    this.outfit,
   });
 
   @override
@@ -33,8 +36,9 @@ class LumiLionMascot extends StatelessWidget {
       child: CustomPaint(
         painter: LumiLionPainter(
           grade: grade,
-          accentColor: accentColor,
+          accentColor: outfit?.scarfPrimaryColor ?? accentColor,
           expressionVariant: expressionVariant,
+          outfit: outfit,
         ),
       ),
     );
@@ -54,11 +58,13 @@ class LumiLionPainter extends CustomPainter {
   final int grade;
   final Color accentColor;
   final int expressionVariant;
+  final LumiOutfit? outfit;
 
   const LumiLionPainter({
     this.grade = 1,
     this.accentColor = const Color(0xFF3B82F6),
     this.expressionVariant = 0,
+    this.outfit,
   });
 
   @override
@@ -137,14 +143,32 @@ class LumiLionPainter extends CustomPainter {
       Paint()..color = creamFur,
     );
 
-    // Pañoleta de explorador con el color del período/grado
+    // Pañoleta de explorador (soporta versión Tricolor Colombia y colores personalizados)
     final scarfPath = Path()
       ..moveTo(cx - 16 * s, cy + 5 * s)
       ..quadraticBezierTo(cx, cy + 12 * s, cx + 16 * s, cy + 5 * s)
       ..lineTo(cx + 4 * s, cy + 16 * s)
       ..lineTo(cx - 4 * s, cy + 16 * s)
       ..close();
-    canvas.drawPath(scarfPath, Paint()..color = accentColor);
+    if (outfit?.isTricolorScarf == true) {
+      canvas.save();
+      canvas.clipPath(scarfPath);
+      canvas.drawRect(
+        Rect.fromLTWH(cx - 18 * s, cy + 4 * s, 36 * s, 5.5 * s),
+        Paint()..color = const Color(0xFFFACC15),
+      );
+      canvas.drawRect(
+        Rect.fromLTWH(cx - 18 * s, cy + 9.5 * s, 36 * s, 3.2 * s),
+        Paint()..color = const Color(0xFF1D4ED8),
+      );
+      canvas.drawRect(
+        Rect.fromLTWH(cx - 18 * s, cy + 12.7 * s, 36 * s, 4.0 * s),
+        Paint()..color = const Color(0xFFEF4444),
+      );
+      canvas.restore();
+    } else {
+      canvas.drawPath(scarfPath, Paint()..color = accentColor);
+    }
     canvas.drawCircle(
       Offset(cx, cy + 10.5 * s),
       2.6 * s,
@@ -193,25 +217,9 @@ class LumiLionPainter extends CustomPainter {
       ..close();
     canvas.drawPath(tuftPath, Paint()..color = maneMid);
 
-    // Corona o gorrito de explorador según el grado (arriba de la melena)
-    if (grade >= 4) {
-      // Gorrita de capitán explorador
-      final capRect = Rect.fromCenter(
-        center: Offset(headCenter.dx, headCenter.dy - 26 * s),
-        width: 22 * s,
-        height: 8 * s,
-      );
-      canvas.drawRRect(
-        RRect.fromRectAndRadius(capRect, Radius.circular(4 * s)),
-        Paint()..color = accentColor,
-      );
-      canvas.drawCircle(
-        Offset(headCenter.dx, headCenter.dy - 26 * s),
-        2.5 * s,
-        Paint()..color = const Color(0xFFFDE047),
-      );
-    } else {
-      // Coronita real del rey de la selva
+    // Accesorio equipado en el Armario de Lumi (si outfit es null, mantiene comportamiento clásico)
+    final acc = outfit?.accessory;
+    if (acc == LumiAccessoryId.royalCrown || (acc == null && grade < 4)) {
       final crown = Path()
         ..moveTo(headCenter.dx - 9 * s, headCenter.dy - 23 * s)
         ..lineTo(headCenter.dx - 7 * s, headCenter.dy - 31 * s)
@@ -229,6 +237,84 @@ class LumiLionPainter extends CustomPainter {
           ..style = PaintingStyle.stroke
           ..strokeWidth = 1.2 * s,
       );
+    } else if (acc == LumiAccessoryId.explorerGoggles) {
+      // Gafas de explorador sobre la frente
+      canvas.drawLine(
+        Offset(headCenter.dx - 16 * s, headCenter.dy - 14 * s),
+        Offset(headCenter.dx + 16 * s, headCenter.dy - 14 * s),
+        Paint()
+          ..color = const Color(0xFF0F172A)
+          ..strokeWidth = 3.2 * s,
+      );
+      for (final gx in [-6.5 * s, 6.5 * s]) {
+        final c = Offset(headCenter.dx + gx, headCenter.dy - 14 * s);
+        canvas.drawCircle(c, 5.4 * s, Paint()..color = const Color(0xFF38BDF8));
+        canvas.drawCircle(
+          c,
+          5.4 * s,
+          Paint()
+            ..color = const Color(0xFF1E293B)
+            ..style = PaintingStyle.stroke
+            ..strokeWidth = 1.8 * s,
+        );
+        canvas.drawCircle(
+          c + Offset(-1.5 * s, -1.5 * s),
+          1.6 * s,
+          Paint()..color = Colors.white.withValues(alpha: 0.8),
+        );
+      }
+    } else if (acc == LumiAccessoryId.goldenStar) {
+      final starCenter = Offset(headCenter.dx + 12 * s, headCenter.dy - 18 * s);
+      final star = Path();
+      for (var i = 0; i < 10; i++) {
+        final r = i.isEven ? 7.5 * s : 3.5 * s;
+        final a = -math.pi / 2 + (i * math.pi) / 5;
+        final pt = starCenter + Offset(math.cos(a) * r, math.sin(a) * r);
+        if (i == 0) {
+          star.moveTo(pt.dx, pt.dy);
+        } else {
+          star.lineTo(pt.dx, pt.dy);
+        }
+      }
+      star.close();
+      canvas.drawPath(star, Paint()..color = const Color(0xFFFACC15));
+      canvas.drawPath(
+        star,
+        Paint()
+          ..color = const Color(0xFFB45309)
+          ..style = PaintingStyle.stroke
+          ..strokeWidth = 1.1 * s,
+      );
+    } else if (acc == LumiAccessoryId.gamerHeadset) {
+      // Diadema y audífonos gamer coloridos
+      canvas.drawArc(
+        Rect.fromCenter(
+          center: headCenter + Offset(0, -4 * s),
+          width: 44 * s,
+          height: 44 * s,
+        ),
+        math.pi + 0.35,
+        math.pi - 0.7,
+        false,
+        Paint()
+          ..color = const Color(0xFFEC4899)
+          ..style = PaintingStyle.stroke
+          ..strokeWidth = 3.5 * s
+          ..strokeCap = StrokeCap.round,
+      );
+      for (final side in [-1.0, 1.0]) {
+        canvas.drawRRect(
+          RRect.fromRectAndRadius(
+            Rect.fromCenter(
+              center: headCenter + Offset(side * 22 * s, -3 * s),
+              width: 7 * s,
+              height: 14 * s,
+            ),
+            Radius.circular(3.5 * s),
+          ),
+          Paint()..color = const Color(0xFF8B5CF6),
+        );
+      }
     }
 
     // 7. Mejillas sonrojadas
@@ -471,5 +557,6 @@ class LumiLionPainter extends CustomPainter {
   bool shouldRepaint(covariant LumiLionPainter old) =>
       old.grade != grade ||
       old.accentColor != accentColor ||
-      old.expressionVariant != expressionVariant;
+      old.expressionVariant != expressionVariant ||
+      old.outfit != outfit;
 }

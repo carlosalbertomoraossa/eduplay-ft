@@ -3,7 +3,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
+import '../../../../../core/providers/lumi_customization_provider.dart';
+import '../../../../../shared/widgets/lumi_lion_mascot.dart';
 import '../../../../lesson/presentation/widgets/exercise_visual_aid.dart';
+import '../../data/game_audio_service.dart';
 import '../../domain/entities/game_question.dart';
 import '../bloc/game_bloc.dart';
 import '../bloc/game_event.dart';
@@ -13,7 +16,8 @@ import '../bloc/game_state.dart';
 /// Animación: escala de 0→1 + fade + sube ligeramente desde el centro de la pantalla.
 class QuestionOverlay extends StatelessWidget {
   final GameBloc gameBloc;
-  const QuestionOverlay({super.key, required this.gameBloc});
+  final LumiOutfit? outfit;
+  const QuestionOverlay({super.key, required this.gameBloc, this.outfit});
 
   @override
   Widget build(BuildContext context) {
@@ -34,6 +38,7 @@ class QuestionOverlay extends StatelessWidget {
         return _QuestionCard(
           question: state.activeQuestion!,
           gameBloc: gameBloc,
+          outfit: outfit,
         );
       },
     );
@@ -43,7 +48,12 @@ class QuestionOverlay extends StatelessWidget {
 class _QuestionCard extends StatefulWidget {
   final GameQuestion question;
   final GameBloc gameBloc;
-  const _QuestionCard({required this.question, required this.gameBloc});
+  final LumiOutfit? outfit;
+  const _QuestionCard({
+    required this.question,
+    required this.gameBloc,
+    this.outfit,
+  });
 
   @override
   State<_QuestionCard> createState() => _QuestionCardState();
@@ -128,37 +138,14 @@ class _QuestionCardState extends State<_QuestionCard>
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      // Indicador temático dinámico por nivel
-                      Container(
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 14, vertical: 6),
-                        decoration: BoxDecoration(
-                          gradient: const LinearGradient(
-                            colors: [Color(0xFF6A1B9A), Color(0xFF1565C0)],
-                          ),
-                          borderRadius: BorderRadius.circular(20),
-                        ),
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            const Text('🔢', style: TextStyle(fontSize: 15)),
-                            const SizedBox(width: 6),
-                            Flexible(
-                              child: Text(
-                                widget.question.topicLabel,
-                                style: const TextStyle(
-                                  fontFamily: 'Nunito',
-                                  fontSize: 13,
-                                  fontWeight: FontWeight.w800,
-                                  color: Colors.white,
-                                ),
-                                overflow: TextOverflow.ellipsis,
-                              ),
-                            ),
-                          ],
-                        ),
+                      // Lumi acompañando y animando al niño durante el reto
+                      _LumiCoachBanner(
+                        topicLabel: widget.question.topicLabel,
+                        submitted: _submitted,
+                        wasCorrect: _selected == widget.question.correctIndex,
+                        outfit: widget.outfit,
                       ),
-                      const SizedBox(height: 12),
+                      const SizedBox(height: 10),
                       // Pregunta
                       Text(
                         widget.question.question,
@@ -204,6 +191,12 @@ class _QuestionCardState extends State<_QuestionCard>
 
   void _onTap(int index) {
     if (_submitted) return;
+    final isCorrect = index == widget.question.correctIndex;
+    if (isCorrect) {
+      GameAudioService.playCorrect();
+    } else {
+      GameAudioService.playWrong();
+    }
     setState(() {
       _selected = index;
       _submitted = true;
@@ -211,6 +204,96 @@ class _QuestionCardState extends State<_QuestionCard>
     Future.delayed(const Duration(milliseconds: 750), () {
       if (mounted) widget.gameBloc.add(AnswerBlockHit(index));
     });
+  }
+}
+
+class _LumiCoachBanner extends StatelessWidget {
+  final String topicLabel;
+  final bool submitted;
+  final bool wasCorrect;
+  final LumiOutfit? outfit;
+
+  const _LumiCoachBanner({
+    required this.topicLabel,
+    required this.submitted,
+    required this.wasCorrect,
+    this.outfit,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final message = !submitted
+        ? '¡Tú puedes! Resuelve este reto'
+        : (wasCorrect
+            ? '¡Genial! ¡Lo hiciste súper bien!'
+            : '¡Buen intento! Sigamos aprendiendo');
+    final bubbleBg = !submitted
+        ? const Color(0xFFFEF9C3)
+        : (wasCorrect ? const Color(0xFFDCFCE7) : const Color(0xFFFFEDD5));
+    final bubbleBorder = !submitted
+        ? const Color(0xFFF59E0B)
+        : (wasCorrect ? const Color(0xFF22C55E) : const Color(0xFFF97316));
+    final textColor = !submitted
+        ? const Color(0xFF92400E)
+        : (wasCorrect ? const Color(0xFF166534) : const Color(0xFF9A3412));
+
+    return Row(
+      children: [
+        LumiLionMascot(
+          size: 56,
+          grade: 4,
+          accentColor: const Color(0xFF10B981),
+          expressionVariant: submitted && wasCorrect ? 1 : 0,
+          outfit: outfit,
+        ),
+        const SizedBox(width: 10),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 3),
+                decoration: BoxDecoration(
+                  gradient: const LinearGradient(
+                    colors: [Color(0xFF8B5CF6), Color(0xFF38BDF8)],
+                  ),
+                  borderRadius: BorderRadius.circular(14),
+                ),
+                child: Text(
+                  '🔢 $topicLabel',
+                  style: const TextStyle(
+                    fontFamily: 'Nunito',
+                    fontSize: 11.5,
+                    fontWeight: FontWeight.w800,
+                    color: Colors.white,
+                  ),
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
+              const SizedBox(height: 5),
+              AnimatedContainer(
+                duration: const Duration(milliseconds: 220),
+                padding: const EdgeInsets.symmetric(horizontal: 11, vertical: 6),
+                decoration: BoxDecoration(
+                  color: bubbleBg,
+                  borderRadius: BorderRadius.circular(14),
+                  border: Border.all(color: bubbleBorder, width: 1.5),
+                ),
+                child: Text(
+                  message,
+                  style: TextStyle(
+                    fontFamily: 'Nunito',
+                    fontSize: 12.5,
+                    fontWeight: FontWeight.w800,
+                    color: textColor,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
   }
 }
 

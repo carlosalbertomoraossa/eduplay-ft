@@ -1,16 +1,17 @@
 import 'dart:math' as math;
 
 import 'package:flame/components.dart';
-import 'package:flame_audio/flame_audio.dart';
 import 'package:flutter/material.dart';
 
+import '../../../../../core/providers/lumi_customization_provider.dart';
+import '../../data/game_audio_service.dart';
 import 'particle_component.dart';
 import 'platform_component.dart';
 
-/// Protagonista original de EduPlay: "El Guardián de la Esmeralda".
-/// Mezcla entre explorador Muisca / El Dorado (sombrero vueltiao estilizado +
-/// ruana índigo con ribetes dorados) y espíritu de piedra tallada con corazón
-/// de esmeralda brillante y hoja prismática de oro y esmeralda.
+/// Protagonista jugable de EduPlay: **Lumi el Leoncito Explorador**.
+/// Versión aventurera de la mascota oficial de EduPlay dibujada en Canvas:
+/// melena esponjosa, orejitas redondas, colita con pompón animada, pañoleta
+/// esmeralda ondeante y látigo de cadena dorada y liana luminosa.
 class PlayerComponent extends PositionComponent {
   // ── Constantes de física ──
   static const double gravity = 1150;
@@ -50,6 +51,7 @@ class PlayerComponent extends PositionComponent {
   double _knockbackTimer = 0;
   double _animTime = 0;
   double _afterimageTimer = 0;
+  double _celebrateTimer = 0;
 
   // Ataque activo
   SlashDirection? activeSlashDir;
@@ -65,13 +67,18 @@ class PlayerComponent extends PositionComponent {
   // Última posición segura para recuperación tras caer en un foso
   Vector2 lastSafePosition = Vector2(100, 540);
 
+  // Personalización equipada desde el Armario de Lumi
+  LumiOutfit outfit;
+
   // Callbacks visuales al mundo
   void Function(Vector2 pos, Color color, int count)? onSpawnParticles;
   void Function(Vector2 pos, SlashDirection dir)? onSpawnSlash;
   void Function(Vector2 pos, bool facingRight)? onSpawnAfterimage;
 
-  PlayerComponent({required Vector2 startPosition})
-      : lastSafePosition = startPosition.clone(),
+  PlayerComponent({
+    required Vector2 startPosition,
+    this.outfit = const LumiOutfit(),
+  })  : lastSafePosition = startPosition.clone(),
         super(
           position: startPosition.clone(),
           size: Vector2(28, 44),
@@ -124,7 +131,7 @@ class PlayerComponent extends PositionComponent {
       hasAirDash = true;
       _jumpBufferTimer = 0;
       onSpawnParticles?.call(centerPos, const Color(0xFFFDE047), 9);
-      _playSfx('games/g4/sfx_jump.mp3');
+      GameAudioService.playJump();
       return;
     }
     _jumpBufferTimer = jumpBufferDuration;
@@ -177,7 +184,7 @@ class PlayerComponent extends PositionComponent {
       SlashDirection.up => Vector2(0, -size.y - 8),
     };
     onSpawnSlash?.call(position + slashOffset, dir);
-    _playSfx('games/g4/sfx_block_hit.mp3');
+    GameAudioService.playWhip();
   }
 
   /// Rebote pogo (golpe hacia abajo sobre enemigo/espinas/hongo) o hongo rebotador.
@@ -194,7 +201,7 @@ class PlayerComponent extends PositionComponent {
         8,
       );
     }
-    _playSfx('games/g4/sfx_jump.mp3');
+    GameAudioService.playBounce();
   }
 
   /// Engancha al Guardián en el anillo dorado y lo mantiene colgado/balanceándose
@@ -243,7 +250,7 @@ class PlayerComponent extends PositionComponent {
     _dashTimer = 0;
     _jumpBufferTimer = 0;
     onSpawnParticles?.call(anchorPos, const Color(0xFF34D399), 10);
-    _playSfx('games/g4/sfx_jump.mp3');
+    GameAudioService.playJump();
   }
 
   void releaseGrapple() {
@@ -251,6 +258,7 @@ class PlayerComponent extends PositionComponent {
   }
 
   void celebrate() {
+    _celebrateTimer = 1.3;
     onSpawnParticles?.call(centerPos, const Color(0xFFFDE047), 14);
   }
 
@@ -296,6 +304,7 @@ class PlayerComponent extends PositionComponent {
     if (_attackCooldown > 0) _attackCooldown = (_attackCooldown - dt).clamp(0.0, 1.0);
     if (_invulnTimer > 0) _invulnTimer = (_invulnTimer - dt).clamp(0.0, 2.0);
     if (_knockbackTimer > 0) _knockbackTimer = (_knockbackTimer - dt).clamp(0.0, 1.0);
+    if (_celebrateTimer > 0) _celebrateTimer = (_celebrateTimer - dt).clamp(0.0, 2.0);
 
     if (_attackTimer > 0) {
       _attackTimer -= dt;
@@ -425,7 +434,7 @@ class PlayerComponent extends PositionComponent {
         _coyoteTimer = 0;
         _jumpBufferTimer = 0;
         onSpawnParticles?.call(position.clone(), const Color(0xFFCBD5E1), 5);
-        _playSfx('games/g4/sfx_jump.mp3');
+        GameAudioService.playJump();
       } else if (hasDoubleJump) {
         vy = doubleJumpVelocity;
         hasDoubleJump = false;
@@ -435,7 +444,7 @@ class PlayerComponent extends PositionComponent {
           const Color(0xFF34D399),
           9,
         );
-        _playSfx('games/g4/sfx_jump.mp3');
+        GameAudioService.playJump();
       }
     }
 
@@ -501,7 +510,7 @@ class PlayerComponent extends PositionComponent {
     }
   }
 
-  // ── Renderizado Canvas (Guardián de la Esmeralda: Sombrero Vueltiao + Ruana + Hoja Esmeralda) ─
+  // ── Renderizado Canvas (Lumi el Leoncito Explorador: Melena + Orejitas + Pañoleta) ─
 
   @override
   void render(Canvas canvas) {
@@ -513,21 +522,34 @@ class PlayerComponent extends PositionComponent {
     final w = size.x; // 28
     final h = size.y; // 44
 
-    // 1. Halo bioluminiscente esmeralda-dorado que irradia del corazón y la hoja
-    final pulse = 1.0 + 0.05 * math.sin(_animTime * 9);
-    final lightCenter = Offset(w * 0.5, h * 0.48);
-    final lightRadius = 158.0 * pulse;
+    // Paleta oficial cálida de Lumi el Leoncito
+    const maneDark = Color(0xFFB45309); // Castaño miel oscuro
+    const maneMid = Color(0xFFD97706); // Ámbar cálido
+    const furGold = Color(0xFFFBBF24); // Dorado leoncito
+    const furShadow = Color(0xFFF59E0B); // Dorado intenso
+    const creamFur = Color(0xFFFEF3C7); // Cremita hocico y pancita
+    const innerEarPink = Color(0xFFFDBA74); // Durazno orejas / almohadillas
+    const noseColor = Color(0xFF9A3412); // Naricita terracota
+    const lineBrown = Color(0xFF78350F); // Líneas faciales
+    final scarfEmerald = outfit.scarfPrimaryColor;
+    final scarfDark = outfit.scarfSecondaryColor;
+    final trailColor = outfit.trailPrimaryColor;
+
+    // 1. Suave aura soleada alrededor de Lumi para que destaque en cualquier cielo
+    final pulse = 1.0 + 0.06 * math.sin(_animTime * 7);
+    final lightCenter = Offset(w * 0.5, h * 0.46);
+    final lightRadius = 46.0 * pulse;
     canvas.drawCircle(
       lightCenter,
       lightRadius,
       Paint()
         ..shader = RadialGradient(
           colors: [
-            const Color(0xFF34D399).withValues(alpha: 0.25),
-            const Color(0xFFFBBF24).withValues(alpha: 0.11),
+            const Color(0xFFFEF08A).withValues(alpha: 0.28),
+            const Color(0xFFFBBF24).withValues(alpha: 0.10),
             Colors.transparent,
           ],
-          stops: const [0.0, 0.42, 1.0],
+          stops: const [0.0, 0.5, 1.0],
         ).createShader(Rect.fromCircle(center: lightCenter, radius: lightRadius)),
     );
 
@@ -538,16 +560,30 @@ class PlayerComponent extends PositionComponent {
     }
 
     final isRunning = isOnGround && vx.abs() > 25;
+    final isJumping = !isOnGround && vy < -40;
+    final isFalling = !isOnGround && vy > 80;
+    final isCelebrating = _celebrateTimer > 0;
     final bob = isRunning
         ? math.sin(_animTime * 16).abs() * 2.4
-        : math.sin(_animTime * 3.2) * 1.4;
-    final lean = isDashing ? 0.22 : (isRunning ? 0.09 : 0.0);
+        : math.sin(_animTime * 3.4) * 1.3;
+    final lean = isDashing
+        ? 0.24
+        : (isRunning ? 0.10 : (isGrappling ? -0.10 : 0.0));
+
+    // Ligero squash & stretch al saltar/caer para darle vida
+    final scaleX = isDashing
+        ? 1.12
+        : (isJumping ? 0.92 : (isFalling ? 0.96 : 1.0));
+    final scaleY = isDashing
+        ? 0.90
+        : (isJumping ? 1.08 : (isFalling ? 1.04 : 1.0));
 
     canvas.translate(w / 2, h);
     canvas.rotate(lean);
+    canvas.scale(scaleX, scaleY);
     canvas.translate(-w / 2, -h);
 
-    // Sombra proyectada en el suelo
+    // 2. Sombra proyectada en el suelo
     if (isOnGround) {
       canvas.drawOval(
         Rect.fromCenter(center: Offset(w / 2, h - 1), width: 22, height: 5),
@@ -555,202 +591,401 @@ class PlayerComponent extends PositionComponent {
       );
     }
 
-    // Pies de piedra tallada / botitas de explorador
-    final footPaint = Paint()
-      ..color = const Color(0xFF1E293B)
-      ..strokeWidth = 4.0
-      ..strokeCap = StrokeCap.round;
-    final stride = isRunning ? math.sin(_animTime * 16) * 5.0 : 0.0;
-    canvas.drawLine(
-      Offset(w * 0.36, h - 10),
-      Offset(w * 0.34 + stride, h - 1.5),
-      footPaint,
-    );
-    canvas.drawLine(
-      Offset(w * 0.64, h - 10),
-      Offset(w * 0.66 - stride, h - 1.5),
-      footPaint,
-    );
-
-    // ── Ruana Muisca índigo oscuro con ondeo y ribetes dorados (El Dorado) ──
-    final sway = (isRunning || !isOnGround)
-        ? math.sin(_animTime * 17) * 3.2
-        : math.sin(_animTime * 3) * 1.0;
-
-    final ruanaPath = Path()
-      ..moveTo(w * 0.22, 20 - bob)
-      ..lineTo(w * 0.78, 20 - bob)
-      ..lineTo(w + 1, h - 9)
-      ..lineTo(w * 0.56, h - 5)
-      ..lineTo(-2 - sway, h - 8)
-      ..close();
-    canvas.drawPath(ruanaPath, Paint()..color = const Color(0xFF172554));
-
-    // Ribete dorado inferior estilo orfebrería Muisca
-    final goldBorder = Path()
-      ..moveTo(-1 - sway, h - 10.5)
-      ..lineTo(w * 0.56, h - 7.5)
-      ..lineTo(w, h - 11.5);
+    // 3. Colita de leoncito con pompón animado (detrás del cuerpo)
+    final tailWag = isRunning || !isOnGround
+        ? math.sin(_animTime * 15) * 4.5
+        : math.sin(_animTime * 4.2) * 2.5;
+    final tailTip = Offset(-6.5, 25.5 - bob + tailWag);
+    final tailPath = Path()
+      ..moveTo(w * 0.28, h - 11 - bob * 0.4)
+      ..quadraticBezierTo(-5.0, h - 10 + tailWag * 0.6, tailTip.dx, tailTip.dy);
     canvas.drawPath(
-      goldBorder,
+      tailPath,
       Paint()
-        ..color = const Color(0xFFFBBF24)
+        ..color = furShadow
         ..style = PaintingStyle.stroke
-        ..strokeWidth = 2.4
+        ..strokeWidth = 3.2
         ..strokeCap = StrokeCap.round,
     );
-
-    // Borde sutil de la ruana
-    canvas.drawPath(
-      ruanaPath,
-      Paint()
-        ..color = const Color(0xFF60A5FA).withValues(alpha: 0.35)
-        ..style = PaintingStyle.stroke
-        ..strokeWidth = 1.2,
-    );
-
-    // ── Corazón de Esmeralda Colombiana incrustado en el pecho ──
-    final gemCx = w * 0.54;
-    final gemCy = 27.5 - bob;
-    final gemGlow = 0.40 + 0.20 * math.sin(_animTime * 6);
+    canvas.drawCircle(tailTip, 3.8, Paint()..color = maneDark);
     canvas.drawCircle(
-      Offset(gemCx, gemCy),
-      8.5,
-      Paint()..color = const Color(0xFF10B981).withValues(alpha: gemGlow),
-    );
-    final emeraldHex = Path()
-      ..moveTo(gemCx, gemCy - 5.2)
-      ..lineTo(gemCx + 4.2, gemCy - 2.2)
-      ..lineTo(gemCx + 4.2, gemCy + 2.2)
-      ..lineTo(gemCx, gemCy + 5.2)
-      ..lineTo(gemCx - 4.2, gemCy + 2.2)
-      ..lineTo(gemCx - 4.2, gemCy - 2.2)
-      ..close();
-    canvas.drawPath(emeraldHex, Paint()..color = const Color(0xFF10B981));
-    canvas.drawPath(
-      emeraldHex,
-      Paint()
-        ..color = const Color(0xFFA7F3D0)
-        ..style = PaintingStyle.stroke
-        ..strokeWidth = 1.1,
-    );
-    // Destello interior del cristal
-    canvas.drawCircle(
-      Offset(gemCx - 1.0, gemCy - 1.4),
-      1.3,
-      Paint()..color = Colors.white.withValues(alpha: 0.9),
+      tailTip + const Offset(0.7, -0.7),
+      2.5,
+      Paint()..color = maneMid,
     );
 
-    // ── Cabeza: Espíritu de Piedra Tallada Oscura con Ojos Esmeralda ──
-    final headCx = w * 0.50;
-    final headCy = 15.0 - bob;
-    final headRRect = RRect.fromRectAndRadius(
-      Rect.fromCenter(center: Offset(headCx, headCy), width: 17, height: 14),
-      const Radius.circular(6),
-    );
-    canvas.drawRRect(headRRect, Paint()..color = const Color(0xFF1E293B));
-    canvas.drawRRect(
-      headRRect,
-      Paint()
-        ..color = const Color(0xFF475569)
-        ..style = PaintingStyle.stroke
-        ..strokeWidth = 1.2,
-    );
+    // 4. Patitas traseras / piernas animadas de Lumi
+    final stride = isRunning
+        ? math.sin(_animTime * 16) * 5.2
+        : (isJumping ? 2.5 : (isFalling ? -2.0 : 0.0));
+    final backFootX = w * 0.36 + stride;
+    final frontFootX = w * 0.64 - stride;
+    final footLiftBack = isRunning ? math.max(0.0, -math.cos(_animTime * 16)) * 2.4 : (isJumping ? 2.0 : 0.0);
+    final footLiftFront = isRunning ? math.max(0.0, math.cos(_animTime * 16)) * 2.4 : (isJumping ? 1.0 : 0.0);
 
-    // Ojos luminosos verde-esmeralda (expresivos y cálidos)
-    final eyeGlow = Paint()..color = const Color(0xFF34D399).withValues(alpha: 0.45);
-    final eyeCore = Paint()..color = const Color(0xFFA7F3D0);
-    canvas.drawCircle(Offset(headCx + 1.8, headCy + 0.5), 3.6, eyeGlow);
-    canvas.drawCircle(Offset(headCx + 6.4, headCy + 0.5), 3.2, eyeGlow);
+    final legPaint = Paint()
+      ..color = furShadow
+      ..strokeWidth = 4.6
+      ..strokeCap = StrokeCap.round;
+    canvas.drawLine(
+      Offset(w * 0.38, h - 11 - bob * 0.3),
+      Offset(backFootX, h - 2.6 - footLiftBack),
+      legPaint,
+    );
+    canvas.drawLine(
+      Offset(w * 0.62, h - 11 - bob * 0.3),
+      Offset(frontFootX, h - 2.6 - footLiftFront),
+      legPaint..color = furGold,
+    );
+    // Patitas redondas doradas con deditos cremita
     canvas.drawOval(
-      Rect.fromCenter(center: Offset(headCx + 1.8, headCy + 0.5), width: 3.4, height: 4.6),
-      eyeCore,
+      Rect.fromCenter(
+        center: Offset(backFootX + 1.0, h - 2.2 - footLiftBack),
+        width: 7.2,
+        height: 4.4,
+      ),
+      Paint()..color = furShadow,
     );
     canvas.drawOval(
-      Rect.fromCenter(center: Offset(headCx + 6.4, headCy + 0.5), width: 2.8, height: 4.2),
-      eyeCore,
+      Rect.fromCenter(
+        center: Offset(frontFootX + 1.2, h - 2.2 - footLiftFront),
+        width: 7.6,
+        height: 4.6,
+      ),
+      Paint()..color = furGold,
     );
 
-    // ── Sombrero Vueltiao Estilizado (Silueta icónica colombiana!) ──
-    final hatY = 10.5 - bob;
-    // Ala ancha ligeramente curvada
-    final brimRect = RRect.fromRectAndRadius(
-      Rect.fromCenter(center: Offset(headCx, hatY), width: 36, height: 5.5),
-      const Radius.circular(3),
+    // 5. Cuerpecito de leoncito + pancita cremita
+    final bodyRect = Rect.fromCenter(
+      center: Offset(w * 0.50, 30.5 - bob),
+      width: 17.5,
+      height: 15.5,
     );
-    canvas.drawRRect(brimRect, Paint()..color = const Color(0xFFF5E6C8));
-    // Franjas negras tejidas características del sombrero vueltiao en el ala
-    final weaveDark = Paint()..color = const Color(0xFF111827);
-    canvas.drawRect(Rect.fromLTWH(headCx - 14, hatY - 2.5, 4.5, 5), weaveDark);
-    canvas.drawRect(Rect.fromLTWH(headCx - 4, hatY - 2.5, 4.5, 5), weaveDark);
-    canvas.drawRect(Rect.fromLTWH(headCx + 6, hatY - 2.5, 4.5, 5), weaveDark);
     canvas.drawRRect(
-      brimRect,
-      Paint()
-        ..color = const Color(0xFFD97706)
-        ..style = PaintingStyle.stroke
-        ..strokeWidth = 1.1,
+      RRect.fromRectAndRadius(bodyRect, const Radius.circular(8)),
+      Paint()..color = furShadow,
     );
-
-    // Copa cónica del sombrero vueltiao
-    final crownPath = Path()
-      ..moveTo(headCx - 10, hatY - 1.5)
-      ..lineTo(headCx - 5.5, hatY - 10.5)
-      ..quadraticBezierTo(headCx, hatY - 12.2, headCx + 5.5, hatY - 10.5)
-      ..lineTo(headCx + 10, hatY - 1.5)
-      ..close();
-    canvas.drawPath(crownPath, Paint()..color = const Color(0xFFF5E6C8));
-
-    // Banda trenzada oscura + pequeño broche dorado-esmeralda en la copa
-    canvas.drawRect(
-      Rect.fromLTWH(headCx - 8.5, hatY - 5.2, 17, 3.4),
-      weaveDark,
-    );
-    // Patrón romboidal dorado en la cinta
-    final diamondBelt = Path()
-      ..moveTo(headCx + 2.5, hatY - 5.4)
-      ..lineTo(headCx + 5.2, hatY - 3.5)
-      ..lineTo(headCx + 2.5, hatY - 1.6)
-      ..lineTo(headCx - 0.2, hatY - 3.5)
-      ..close();
-    canvas.drawPath(diamondBelt, Paint()..color = const Color(0xFF10B981));
-    canvas.drawPath(
-      diamondBelt,
+    canvas.drawRRect(
+      RRect.fromRectAndRadius(bodyRect, const Radius.circular(8)),
       Paint()
-        ..color = const Color(0xFFFBBF24)
+        ..color = maneDark.withValues(alpha: 0.45)
         ..style = PaintingStyle.stroke
         ..strokeWidth = 1.0,
     );
-    canvas.drawPath(
-      crownPath,
-      Paint()
-        ..color = const Color(0xFF111827).withValues(alpha: 0.65)
-        ..style = PaintingStyle.stroke
-        ..strokeWidth = 1.1,
+    // Pancita cremita orientada hacia adelante
+    canvas.drawOval(
+      Rect.fromCenter(
+        center: Offset(w * 0.56, 31.2 - bob),
+        width: 10.5,
+        height: 10.8,
+      ),
+      Paint()..color = creamFur,
     );
 
-    // ── Arma: Empuñadura del Látigo de Cadena Dorada y Liana Esmeralda ──
+    // 6. Pañoleta de explorador esmeralda con punta ondeando al viento
+    final scarfSway = (isRunning || !isOnGround || isDashing)
+        ? math.sin(_animTime * 18) * 3.0
+        : math.sin(_animTime * 3.5) * 1.1;
+    // Cola flotante de la pañoleta atrás
+    final scarfTail = Path()
+      ..moveTo(w * 0.24, 24.0 - bob)
+      ..quadraticBezierTo(
+        -2.5,
+        24.5 - bob + scarfSway * 0.5,
+        -6.0 - (isDashing ? 4.0 : 0.0),
+        27.5 - bob + scarfSway,
+      )
+      ..lineTo(-2.5, 30.0 - bob + scarfSway * 0.7)
+      ..lineTo(w * 0.28, 26.8 - bob)
+      ..close();
+    canvas.drawPath(scarfTail, Paint()..color = scarfDark);
+
+    // Pañoleta frontal (soporta bandera tricolor Colombia)
+    final scarfFront = Path()
+      ..moveTo(w * 0.20, 23.2 - bob)
+      ..quadraticBezierTo(w * 0.52, 26.8 - bob, w * 0.80, 23.2 - bob)
+      ..lineTo(w * 0.62, 29.2 - bob)
+      ..lineTo(w * 0.44, 29.2 - bob)
+      ..close();
+    if (outfit.isTricolorScarf) {
+      canvas.save();
+      canvas.clipPath(scarfFront);
+      canvas.drawRect(Rect.fromLTWH(w * 0.18, 22.8 - bob, w * 0.66, 2.8), Paint()..color = const Color(0xFFFACC15));
+      canvas.drawRect(Rect.fromLTWH(w * 0.18, 25.6 - bob, w * 0.66, 1.8), Paint()..color = const Color(0xFF1D4ED8));
+      canvas.drawRect(Rect.fromLTWH(w * 0.18, 27.4 - bob, w * 0.66, 2.2), Paint()..color = const Color(0xFFEF4444));
+      canvas.restore();
+    } else {
+      canvas.drawPath(scarfFront, Paint()..color = scarfEmerald);
+    }
+    canvas.drawCircle(
+      Offset(w * 0.56, 26.2 - bob),
+      2.1,
+      Paint()..color = const Color(0xFFFDE047),
+    );
+
+    // 7. Orejitas redondas de león (bien visibles arriba de la melena)
+    final headCenter = Offset(w * 0.52, 15.0 - bob);
+    final leftEar = headCenter + const Offset(-8.2, -9.2);
+    final rightEar = headCenter + const Offset(7.6, -9.2);
+    for (final ear in [leftEar, rightEar]) {
+      canvas.drawCircle(ear, 5.0, Paint()..color = furShadow);
+      canvas.drawCircle(
+        ear,
+        5.0,
+        Paint()
+          ..color = maneDark.withValues(alpha: 0.55)
+          ..style = PaintingStyle.stroke
+          ..strokeWidth = 1.0,
+      );
+      canvas.drawCircle(ear, 2.8, Paint()..color = innerEarPink);
+    }
+
+    // 8. Melena esponjosa de Lumi (corona de pétalos redondeados en dos tonos ámbar)
+    const petalCount = 12;
+    const maneRadius = 10.6;
+    for (var i = 0; i < petalCount; i++) {
+      final angle = (i * 2 * math.pi) / petalCount;
+      final px = headCenter.dx + math.cos(angle) * maneRadius;
+      final py = headCenter.dy + math.sin(angle) * maneRadius;
+      canvas.drawCircle(
+        Offset(px, py),
+        4.6,
+        Paint()..color = i.isEven ? maneDark : maneMid,
+      );
+    }
+    canvas.drawCircle(headCenter, 11.0, Paint()..color = maneDark);
+    canvas.drawCircle(headCenter, 9.8, Paint()..color = maneMid);
+
+    // 9. Carita dorada de Lumi (perfil 3/4 mirando hacia adelante)
+    final faceCenter = headCenter + const Offset(1.3, 0.3);
+    canvas.drawCircle(faceCenter, 8.2, Paint()..color = furGold);
+
+    // Mechoncito tierno en la frente
+    final tuft = Path()
+      ..moveTo(faceCenter.dx - 2.2, faceCenter.dy - 7.0)
+      ..quadraticBezierTo(
+        faceCenter.dx + 0.5,
+        faceCenter.dy - 10.4,
+        faceCenter.dx + 2.6,
+        faceCenter.dy - 6.8,
+      )
+      ..close();
+    canvas.drawPath(tuft, Paint()..color = maneMid);
+
+    // Mejilla sonrojada
+    canvas.drawOval(
+      Rect.fromCenter(
+        center: faceCenter + const Offset(-3.2, 2.4),
+        width: 3.4,
+        height: 2.0,
+      ),
+      Paint()..color = const Color(0xFFFB7185).withValues(alpha: 0.5),
+    );
+
+    // Ojos grandes y expresivos (con parpadeo natural y reacción al celebrar)
+    final isBlinking = !isAttacking &&
+        !isDashing &&
+        !isCelebrating &&
+        (_animTime % 3.6) > 3.47;
+    final eyeLeft = faceCenter + const Offset(-1.2, -1.2);
+    final eyeRight = faceCenter + const Offset(4.2, -1.2);
+
+    if (isCelebrating) {
+      // Ojitos felices en arco (^ ^) al resolver un tótem
+      final happyEyePaint = Paint()
+        ..color = const Color(0xFF1E1B18)
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = 1.6
+        ..strokeCap = StrokeCap.round;
+      for (final eye in [eyeLeft, eyeRight]) {
+        canvas.drawArc(
+          Rect.fromCenter(center: eye, width: 4.0, height: 3.6),
+          math.pi + 0.2,
+          math.pi - 0.4,
+          false,
+          happyEyePaint,
+        );
+      }
+    } else if (isBlinking) {
+      final blinkPaint = Paint()
+        ..color = lineBrown
+        ..strokeWidth = 1.5
+        ..strokeCap = StrokeCap.round;
+      canvas.drawLine(
+        eyeLeft + const Offset(-2.0, 0),
+        eyeLeft + const Offset(2.0, 0),
+        blinkPaint,
+      );
+      canvas.drawLine(
+        eyeRight + const Offset(-1.7, 0),
+        eyeRight + const Offset(1.7, 0),
+        blinkPaint,
+      );
+    } else {
+      // Sclera blanca + pupila oscura + brillito
+      canvas.drawOval(
+        Rect.fromCenter(center: eyeLeft, width: 4.8, height: 5.2),
+        Paint()..color = Colors.white,
+      );
+      canvas.drawOval(
+        Rect.fromCenter(center: eyeRight, width: 4.2, height: 5.0),
+        Paint()..color = Colors.white,
+      );
+      final pupilShiftY = isJumping ? -0.5 : (isFalling ? 0.5 : 0.0);
+      canvas.drawCircle(
+        eyeLeft + Offset(0.7, pupilShiftY),
+        1.8,
+        Paint()..color = const Color(0xFF1E1B18),
+      );
+      canvas.drawCircle(
+        eyeRight + Offset(0.6, pupilShiftY),
+        1.6,
+        Paint()..color = const Color(0xFF1E1B18),
+      );
+      canvas.drawCircle(
+        eyeLeft + const Offset(-0.2, -1.0),
+        0.75,
+        Paint()..color = Colors.white,
+      );
+      canvas.drawCircle(
+        eyeRight + const Offset(-0.1, -1.0),
+        0.7,
+        Paint()..color = Colors.white,
+      );
+
+      // Cejas determinadas al atacar o hacer dash
+      if (isAttacking || isDashing) {
+        final browPaint = Paint()
+          ..color = maneDark
+          ..strokeWidth = 1.3
+          ..strokeCap = StrokeCap.round;
+        canvas.drawLine(
+          eyeLeft + const Offset(-2.0, -3.2),
+          eyeLeft + const Offset(1.8, -2.1),
+          browPaint,
+        );
+        canvas.drawLine(
+          eyeRight + const Offset(-1.5, -2.1),
+          eyeRight + const Offset(1.8, -3.2),
+          browPaint,
+        );
+      }
+    }
+
+    // Hocico cremita + naricita terracota + sonrisa tierna
+    final muzzleCenter = faceCenter + const Offset(2.5, 2.4);
+    canvas.drawCircle(
+      muzzleCenter + const Offset(-1.8, 0),
+      2.6,
+      Paint()..color = creamFur,
+    );
+    canvas.drawCircle(
+      muzzleCenter + const Offset(1.8, 0),
+      2.6,
+      Paint()..color = creamFur,
+    );
+    // Naricita triangular de león
+    final nose = Path()
+      ..moveTo(muzzleCenter.dx - 2.0, muzzleCenter.dy - 1.6)
+      ..lineTo(muzzleCenter.dx + 2.0, muzzleCenter.dy - 1.6)
+      ..lineTo(muzzleCenter.dx, muzzleCenter.dy + 0.6)
+      ..close();
+    canvas.drawPath(nose, Paint()..color = noseColor);
+
+    // Boquita abierta alegre al saltar, atacar o celebrar; sonrisa suave en reposo
+    if (isCelebrating || isJumping || isAttacking) {
+      canvas.drawArc(
+        Rect.fromCenter(
+          center: muzzleCenter + const Offset(0, 1.4),
+          width: 4.2,
+          height: 3.4,
+        ),
+        0,
+        math.pi,
+        true,
+        Paint()..color = const Color(0xFFFB7185),
+      );
+    }
+    final mouthPaint = Paint()
+      ..color = lineBrown
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 1.1
+      ..strokeCap = StrokeCap.round;
+    canvas.drawArc(
+      Rect.fromCenter(
+        center: muzzleCenter + const Offset(-1.3, 1.0),
+        width: 2.8,
+        height: 2.2,
+      ),
+      0.15,
+      math.pi - 0.3,
+      false,
+      mouthPaint,
+    );
+    canvas.drawArc(
+      Rect.fromCenter(
+        center: muzzleCenter + const Offset(1.3, 1.0),
+        width: 2.8,
+        height: 2.2,
+      ),
+      0.15,
+      math.pi - 0.3,
+      false,
+      mouthPaint,
+    );
+
+    // Bigoticos sutiles
+    final whiskerPaint = Paint()
+      ..color = lineBrown.withValues(alpha: 0.6)
+      ..strokeWidth = 0.85
+      ..strokeCap = StrokeCap.round;
+    canvas.drawLine(
+      muzzleCenter + const Offset(-4.0, -0.3),
+      muzzleCenter + const Offset(-7.2, -1.0),
+      whiskerPaint,
+    );
+    canvas.drawLine(
+      muzzleCenter + const Offset(-4.0, 1.1),
+      muzzleCenter + const Offset(-7.0, 1.8),
+      whiskerPaint,
+    );
+
+    // 9b. Accesorio opcional equipado desde el Armario de Lumi
+    _drawEquippedAccessory(canvas, headCenter, faceCenter);
+
+    // 10. Patita delantera sosteniendo el Látigo de Cadena Dorada y Liana Esmeralda
     final hiltAngle = isAttacking ? 0.35 : -0.18 + math.sin(_animTime * 4) * 0.06;
     canvas.save();
-    canvas.translate(w * 0.78, 27 - bob);
+    canvas.translate(w * 0.76, 29.5 - bob);
     canvas.rotate(hiltAngle);
 
-    // Empuñadura Muisca dorada
+    // Empuñadura dorada
     canvas.drawLine(
-      const Offset(-3, 2),
+      const Offset(-2, 1.5),
       const Offset(8, -2),
       Paint()
         ..color = const Color(0xFFF59E0B)
-        ..strokeWidth = 3.2
+        ..strokeWidth = 3.0
         ..strokeCap = StrokeCap.round,
     );
     canvas.drawCircle(
       const Offset(8.5, -2.2),
-      2.6,
-      Paint()..color = const Color(0xFF10B981),
+      2.4,
+      Paint()..color = scarfEmerald,
     );
 
-    // Cuando no está extendido el látigo ni enganchado, muestra el rollo de cadena dorada + liana brillante
+    // Patita dorada de Lumi sujetando la empuñadura
+    canvas.drawCircle(const Offset(1.0, 0.5), 3.4, Paint()..color = furGold);
+    canvas.drawCircle(
+      const Offset(1.0, 0.5),
+      3.4,
+      Paint()
+        ..color = maneMid.withValues(alpha: 0.65)
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = 0.9,
+    );
+
+    // Rollo de cadena dorada + liana luminosa cuando no está atacando ni colgado
     if (!isAttacking && !isGrappling) {
       final coilWave = math.sin(_animTime * 7) * 1.6;
       final coilPath = Path()
@@ -760,7 +995,7 @@ class PlayerComponent extends PositionComponent {
       canvas.drawPath(
         coilPath,
         Paint()
-          ..color = const Color(0xFF34D399)
+          ..color = trailColor
           ..style = PaintingStyle.stroke
           ..strokeWidth = 2.4
           ..strokeCap = StrokeCap.round,
@@ -776,7 +1011,7 @@ class PlayerComponent extends PositionComponent {
       canvas.drawCircle(
         const Offset(13.2, 12),
         2.2,
-        Paint()..color = const Color(0xFFA7F3D0),
+        Paint()..color = Colors.white.withValues(alpha: 0.9),
       );
     }
 
@@ -784,14 +1019,93 @@ class PlayerComponent extends PositionComponent {
     canvas.restore();
   }
 
-  /// Los archivos SFX en assets/audio/games/g4/ son placeholders de 0 bytes;
-  /// activar cuando se incluyan audios reales para evitar MediaError en Web.
-  static bool sfxEnabled = false;
-
-  static void _playSfx(String path) {
-    if (!sfxEnabled) return;
-    try {
-      FlameAudio.play(path).then<void>((_) {}, onError: (_) {});
-    } catch (_) {}
+  void _drawEquippedAccessory(
+    Canvas canvas,
+    Offset headCenter,
+    Offset faceCenter,
+  ) {
+    switch (outfit.accessory) {
+      case LumiAccessoryId.none:
+        return;
+      case LumiAccessoryId.explorerGoggles:
+        final gy = faceCenter.dy - 6.8;
+        canvas.drawLine(
+          Offset(headCenter.dx - 7.5, gy),
+          Offset(headCenter.dx + 8.5, gy),
+          Paint()
+            ..color = const Color(0xFF0F172A)
+            ..strokeWidth = 2.0,
+        );
+        for (final gx in [faceCenter.dx - 1.5, faceCenter.dx + 4.5]) {
+          canvas.drawCircle(Offset(gx, gy), 3.0, Paint()..color = const Color(0xFF38BDF8));
+          canvas.drawCircle(
+            Offset(gx, gy),
+            3.0,
+            Paint()
+              ..color = const Color(0xFF1E293B)
+              ..style = PaintingStyle.stroke
+              ..strokeWidth = 1.1,
+          );
+        }
+      case LumiAccessoryId.goldenStar:
+        final sc = headCenter + const Offset(6.5, -10.0);
+        final star = Path();
+        for (var i = 0; i < 10; i++) {
+          final r = i.isEven ? 4.4 : 2.0;
+          final a = -math.pi / 2 + (i * math.pi) / 5;
+          final pt = sc + Offset(math.cos(a) * r, math.sin(a) * r);
+          if (i == 0) {
+            star.moveTo(pt.dx, pt.dy);
+          } else {
+            star.lineTo(pt.dx, pt.dy);
+          }
+        }
+        star.close();
+        canvas.drawPath(star, Paint()..color = const Color(0xFFFACC15));
+        canvas.drawPath(
+          star,
+          Paint()
+            ..color = const Color(0xFFB45309)
+            ..style = PaintingStyle.stroke
+            ..strokeWidth = 0.9,
+        );
+      case LumiAccessoryId.gamerHeadset:
+        canvas.drawArc(
+          Rect.fromCenter(center: headCenter + const Offset(0, -1), width: 23, height: 23),
+          math.pi + 0.3,
+          math.pi - 0.6,
+          false,
+          Paint()
+            ..color = const Color(0xFFEC4899)
+            ..style = PaintingStyle.stroke
+            ..strokeWidth = 2.2
+            ..strokeCap = StrokeCap.round,
+        );
+        canvas.drawRRect(
+          RRect.fromRectAndRadius(
+            Rect.fromCenter(center: headCenter + const Offset(-10.5, -1), width: 4, height: 8),
+            const Radius.circular(2),
+          ),
+          Paint()..color = const Color(0xFF8B5CF6),
+        );
+      case LumiAccessoryId.royalCrown:
+        final crown = Path()
+          ..moveTo(headCenter.dx - 5.5, headCenter.dy - 11.5)
+          ..lineTo(headCenter.dx - 4.2, headCenter.dy - 17.5)
+          ..lineTo(headCenter.dx - 1.2, headCenter.dy - 14.0)
+          ..lineTo(headCenter.dx + 0.5, headCenter.dy - 18.8)
+          ..lineTo(headCenter.dx + 2.2, headCenter.dy - 14.0)
+          ..lineTo(headCenter.dx + 5.0, headCenter.dy - 17.5)
+          ..lineTo(headCenter.dx + 6.2, headCenter.dy - 11.5)
+          ..close();
+        canvas.drawPath(crown, Paint()..color = const Color(0xFFFACC15));
+        canvas.drawPath(
+          crown,
+          Paint()
+            ..color = const Color(0xFFB45309)
+            ..style = PaintingStyle.stroke
+            ..strokeWidth = 1.0,
+        );
+    }
   }
 }

@@ -5,11 +5,11 @@ import 'package:flutter/material.dart';
 
 import '../../data/level_map_data.dart';
 
-/// Criaturas de sombra estilo Hollow Knight / Well Dweller:
-/// - [EnemyKind.crawler]: Escarabajo Sombra terrestre (2 HP)
-/// - [EnemyKind.floater]: Polilla del Pozo voladora (2 HP)
-/// - [EnemyKind.sentinel]: Centinela Cornudo con saltos (4 HP)
-/// - [EnemyKind.boss]: Reina Sombra del nivel 8 (6 HP)
+/// Criaturas traviesas y coloridas pensadas para niños:
+/// - [EnemyKind.crawler]: Escarabajo Mariquita saltarín (2 HP)
+/// - [EnemyKind.floater]: Abejita Traviesa voladora (2 HP)
+/// - [EnemyKind.sentinel]: Monstruito Morado Saltarín (4 HP)
+/// - [EnemyKind.boss]: Rey Estrella Travieso del nivel 8 (6 HP)
 class EnemyComponent extends PositionComponent {
   final EnemyKind kind;
   final double patrolMinX;
@@ -234,115 +234,177 @@ class EnemyComponent extends PositionComponent {
   void _drawCrawler(Canvas canvas, bool flash) {
     final w = size.x;
     final h = size.y;
-    final shellColor = flash ? Colors.white : const Color(0xFF1E1B2E);
-    final rimColor = flash ? Colors.white : const Color(0xFF818CF8);
+    final shellColor = flash ? Colors.white : const Color(0xFFEF4444);
+    final rimColor = flash ? Colors.white : const Color(0xFF991B1B);
 
-    // Patitas rápidas
+    // Patitas rápidas redondeadas
     final legPaint = Paint()
-      ..color = const Color(0xFF0F172A)
-      ..strokeWidth = 2.4
+      ..color = const Color(0xFF451A03)
+      ..strokeWidth = 2.6
       ..strokeCap = StrokeCap.round;
     final legWave = math.sin(_time * 16) * 3;
     for (var i = 0; i < 3; i++) {
       final lx = 8.0 + i * 10;
-      canvas.drawLine(Offset(lx, h - 7), Offset(lx - 2 + (i.isEven ? legWave : -legWave), h), legPaint);
+      canvas.drawLine(
+        Offset(lx, h - 7),
+        Offset(lx - 1.5 + (i.isEven ? legWave : -legWave), h - 1),
+        legPaint,
+      );
     }
 
-    // Caparazón abombado estilo Hollow Knight
+    // Antenitas curiosas
+    final antWave = math.sin(_time * 9) * 1.5;
+    final antPaint = Paint()
+      ..color = const Color(0xFF451A03)
+      ..strokeWidth = 1.6
+      ..strokeCap = StrokeCap.round;
+    canvas.drawLine(Offset(w - 9, 9), Offset(w - 3, 2 + antWave), antPaint);
+    canvas.drawCircle(Offset(w - 3, 2 + antWave), 2.0, Paint()..color = const Color(0xFFFDE047));
+
+    // Caparazón colorido de mariquita
     final shell = Path()
       ..moveTo(3, h - 6)
-      ..quadraticBezierTo(w * 0.5, -4, w - 3, h - 6)
+      ..quadraticBezierTo(w * 0.48, -4, w - 3, h - 6)
       ..close();
     canvas.drawPath(shell, Paint()..color = shellColor);
     canvas.drawPath(
       shell,
       Paint()
-        ..color = rimColor.withValues(alpha: 0.7)
+        ..color = rimColor
         ..style = PaintingStyle.stroke
-        ..strokeWidth = 2,
+        ..strokeWidth = 1.6,
     );
 
-    // Ojos brillantes naranja/carmesí
-    final eyeColor = flash ? Colors.amber : const Color(0xFFFB7185);
-    canvas.drawCircle(Offset(w * 0.72, h * 0.56), 3.0, Paint()..color = eyeColor);
-    canvas.drawCircle(Offset(w * 0.85, h * 0.58), 2.3, Paint()..color = eyeColor);
+    // Lunares simpáticos + brillo
+    if (!flash) {
+      final spotPaint = Paint()..color = const Color(0xFF7F1D1D);
+      canvas.drawCircle(Offset(w * 0.30, h * 0.48), 3.0, spotPaint);
+      canvas.drawCircle(Offset(w * 0.48, h * 0.32), 2.6, spotPaint);
+      canvas.drawCircle(Offset(w * 0.38, h * 0.24), 1.8, Paint()..color = Colors.white.withValues(alpha: 0.45));
+    }
+
+    // Carita simpática con ojos grandes
+    canvas.drawCircle(Offset(w * 0.78, h * 0.54), 6.2, Paint()..color = flash ? Colors.white : const Color(0xFFFEF3C7));
+    canvas.drawCircle(Offset(w * 0.74, h * 0.50), 3.1, Paint()..color = Colors.white);
+    canvas.drawCircle(Offset(w * 0.86, h * 0.51), 2.7, Paint()..color = Colors.white);
+    canvas.drawCircle(Offset(w * 0.75, h * 0.50), 1.7, Paint()..color = const Color(0xFF1E293B));
+    canvas.drawCircle(Offset(w * 0.87, h * 0.51), 1.5, Paint()..color = const Color(0xFF1E293B));
   }
 
   void _drawFloater(Canvas canvas, bool flash) {
     final w = size.x;
     final h = size.y;
-    final wingFlap = math.sin(_time * 14) * 7;
+    final wingFlap = math.sin(_time * 16) * 7;
 
-    // Halo oscuro-violeta
-    canvas.drawCircle(
-      Offset(w / 2, h / 2),
-      20,
-      Paint()..color = accentColor.withValues(alpha: 0.18),
-    );
-
-    // Alas translúcidas de polilla
+    // Alitas celestes brillantes
     final wingPaint = Paint()
-      ..color = flash ? Colors.white : accentColor.withValues(alpha: 0.55);
+      ..color = flash ? Colors.white : const Color(0xFFE0F2FE).withValues(alpha: 0.90);
+    final wingRim = Paint()
+      ..color = const Color(0xFF38BDF8)
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 1.4;
+    final leftWing = Rect.fromCenter(center: Offset(w * 0.30, h * 0.28 + wingFlap * 0.4), width: 15, height: 10);
+    final rightWing = Rect.fromCenter(center: Offset(w * 0.58, h * 0.24 - wingFlap * 0.4), width: 15, height: 10);
+    canvas.drawOval(leftWing, wingPaint);
+    canvas.drawOval(leftWing, wingRim);
+    canvas.drawOval(rightWing, wingPaint);
+    canvas.drawOval(rightWing, wingRim);
+
+    // Cuerpo gordito de abejita traviesa (amarillo y morado)
+    final bodyRect = Rect.fromCenter(center: Offset(w * 0.52, h * 0.58), width: 22, height: 18);
+    canvas.drawOval(bodyRect, Paint()..color = flash ? Colors.white : const Color(0xFFFACC15));
+    if (!flash) {
+      // Franjas moradas divertidas
+      final stripePaint = Paint()
+        ..color = const Color(0xFF6D28D9)
+        ..strokeWidth = 3.2
+        ..strokeCap = StrokeCap.round;
+      canvas.drawLine(Offset(w * 0.38, h * 0.36), Offset(w * 0.38, h * 0.80), stripePaint);
+      canvas.drawLine(Offset(w * 0.54, h * 0.32), Offset(w * 0.54, h * 0.84), stripePaint);
+    }
     canvas.drawOval(
-      Rect.fromCenter(center: Offset(w * 0.28, h * 0.35 + wingFlap * 0.4), width: 18, height: 11),
-      wingPaint,
-    );
-    canvas.drawOval(
-      Rect.fromCenter(center: Offset(w * 0.72, h * 0.35 - wingFlap * 0.4), width: 18, height: 11),
-      wingPaint,
+      bodyRect,
+      Paint()
+        ..color = const Color(0xFFB45309)
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = 1.4,
     );
 
-    // Cuerpo oscuro
-    canvas.drawOval(
-      Rect.fromCenter(center: Offset(w / 2, h * 0.55), width: 18, height: 22),
-      Paint()..color = flash ? Colors.white : const Color(0xFF17132B),
+    // Ojos expresivos + mejilla rosada
+    canvas.drawCircle(Offset(w * 0.72, h * 0.52), 3.4, Paint()..color = Colors.white);
+    canvas.drawCircle(Offset(w * 0.74, h * 0.52), 1.8, Paint()..color = const Color(0xFF1E293B));
+    canvas.drawCircle(Offset(w * 0.71, h * 0.48), 0.8, Paint()..color = Colors.white);
+    canvas.drawCircle(
+      Offset(w * 0.68, h * 0.66),
+      2.2,
+      Paint()..color = const Color(0xFFFB7185).withValues(alpha: 0.65),
     );
-
-    // Ojos luminosos
-    final eyeP = Paint()..color = const Color(0xFFFDE047);
-    canvas.drawCircle(Offset(w * 0.58, h * 0.48), 2.5, eyeP);
-    canvas.drawCircle(Offset(w * 0.44, h * 0.48), 2.5, eyeP);
   }
 
   void _drawSentinel(Canvas canvas, bool flash) {
     final w = size.x;
     final h = size.y;
-    final bodyColor = flash ? Colors.white : const Color(0xFF181428);
+    final bodyColor = flash ? Colors.white : const Color(0xFF8B5CF6);
 
-    // Capa oscura rasgada
-    final cloak = Path()
-      ..moveTo(w * 0.5, 16)
-      ..lineTo(4, h)
-      ..lineTo(w * 0.3, h - 6)
-      ..lineTo(w * 0.5, h)
-      ..lineTo(w * 0.72, h - 6)
-      ..lineTo(w - 4, h)
-      ..close();
-    canvas.drawPath(cloak, Paint()..color = bodyColor);
-    canvas.drawPath(
-      cloak,
+    // Patitas redondas
+    canvas.drawOval(
+      Rect.fromCenter(center: Offset(w * 0.32, h - 4), width: 12, height: 8),
+      Paint()..color = const Color(0xFF5B21B6),
+    );
+    canvas.drawOval(
+      Rect.fromCenter(center: Offset(w * 0.68, h - 4), width: 12, height: 8),
+      Paint()..color = const Color(0xFF5B21B6),
+    );
+
+    // Cuerpo redondo saltarín de monstruito morado
+    final bodyRect = RRect.fromRectAndRadius(
+      Rect.fromLTWH(4, 12, w - 8, h - 18),
+      const Radius.circular(16),
+    );
+    canvas.drawRRect(bodyRect, Paint()..color = bodyColor);
+    canvas.drawRRect(
+      bodyRect,
       Paint()
-        ..color = const Color(0xFFA855F7).withValues(alpha: 0.6)
+        ..color = const Color(0xFF4C1D95)
         ..style = PaintingStyle.stroke
         ..strokeWidth = 1.8,
     );
 
-    // Máscara pálida con cuernos
-    canvas.drawOval(
-      Rect.fromCenter(center: Offset(w * 0.52, 16), width: 22, height: 20),
-      Paint()..color = flash ? Colors.white : const Color(0xFFE2E8F0),
-    );
-    final hornPaint = Paint()
-      ..color = flash ? Colors.white : const Color(0xFFE2E8F0)
-      ..strokeWidth = 3.5
-      ..strokeCap = StrokeCap.round;
-    canvas.drawLine(Offset(w * 0.38, 8), Offset(w * 0.25, -2), hornPaint);
-    canvas.drawLine(Offset(w * 0.66, 8), Offset(w * 0.78, -2), hornPaint);
+    // Pancita lila clara
+    if (!flash) {
+      canvas.drawOval(
+        Rect.fromCenter(center: Offset(w * 0.55, h * 0.66), width: 18, height: 16),
+        Paint()..color = const Color(0xFFEDE9FE),
+      );
+    }
 
-    // Ojos vacíos brillantes
-    canvas.drawOval(
-      Rect.fromCenter(center: Offset(w * 0.62, 16), width: 5, height: 7),
-      Paint()..color = const Color(0xFFF43F5E),
+    // Hojita traviesa en la cabeza
+    final leaf = Path()
+      ..moveTo(w * 0.50, 12)
+      ..quadraticBezierTo(w * 0.42, 0, w * 0.62, 2)
+      ..quadraticBezierTo(w * 0.58, 10, w * 0.50, 12)
+      ..close();
+    canvas.drawPath(leaf, Paint()..color = const Color(0xFF4ADE80));
+
+    // Ojos grandes y sonrisa chistosa
+    canvas.drawCircle(Offset(w * 0.44, 24), 4.6, Paint()..color = Colors.white);
+    canvas.drawCircle(Offset(w * 0.68, 24), 4.6, Paint()..color = Colors.white);
+    canvas.drawCircle(Offset(w * 0.46, 24), 2.3, Paint()..color = const Color(0xFF1E1B4B));
+    canvas.drawCircle(Offset(w * 0.70, 24), 2.3, Paint()..color = const Color(0xFF1E1B4B));
+    canvas.drawCircle(Offset(w * 0.44, 22.5), 0.9, Paint()..color = Colors.white);
+    canvas.drawCircle(Offset(w * 0.68, 22.5), 0.9, Paint()..color = Colors.white);
+
+    // Dientecito pícaro
+    canvas.drawArc(
+      Rect.fromCenter(center: Offset(w * 0.58, 33), width: 12, height: 7),
+      0.1,
+      math.pi - 0.2,
+      false,
+      Paint()
+        ..color = const Color(0xFF3B0764)
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = 2.0
+        ..strokeCap = StrokeCap.round,
     );
   }
 
@@ -350,82 +412,92 @@ class EnemyComponent extends PositionComponent {
     final w = size.x;
     final h = size.y;
 
-    // Aura real de sombra y oro
+    // Aura mágica arcoíris-dorada
     canvas.drawCircle(
-      Offset(w / 2, h * 0.48),
-      52 + math.sin(_time * 4) * 5,
+      Offset(w / 2, h * 0.52),
+      48 + math.sin(_time * 4) * 5,
       Paint()
         ..shader = RadialGradient(
           colors: [
-            const Color(0xFFF472B6).withValues(alpha: 0.30),
+            const Color(0xFFFDE047).withValues(alpha: 0.35),
+            const Color(0xFFF472B6).withValues(alpha: 0.20),
             Colors.transparent,
           ],
-        ).createShader(Rect.fromCircle(center: Offset(w / 2, h * 0.48), radius: 56)),
+        ).createShader(Rect.fromCircle(center: Offset(w / 2, h * 0.52), radius: 52)),
     );
 
-    // Manto real flotante
-    final cloak = Path()
+    // Capa festiva magenta-rosa
+    final cape = Path()
       ..moveTo(w * 0.5, 22)
-      ..lineTo(2, h)
-      ..lineTo(w * 0.25, h - 9)
-      ..lineTo(w * 0.5, h)
-      ..lineTo(w * 0.75, h - 9)
-      ..lineTo(w - 2, h)
+      ..lineTo(4, h - 4)
+      ..quadraticBezierTo(w * 0.5, h + 4, w - 4, h - 4)
       ..close();
-    canvas.drawPath(cloak, Paint()..color = flash ? Colors.white : const Color(0xFF230B2E));
-    canvas.drawPath(
-      cloak,
+    canvas.drawPath(cape, Paint()..color = flash ? Colors.white : const Color(0xFFEC4899));
+
+    // Cuerpo redondo real púrpura
+    final body = RRect.fromRectAndRadius(
+      Rect.fromLTWH(10, 18, w - 20, h - 22),
+      const Radius.circular(22),
+    );
+    canvas.drawRRect(body, Paint()..color = flash ? Colors.white : const Color(0xFF9333EA));
+    canvas.drawRRect(
+      body,
       Paint()
-        ..color = const Color(0xFFF472B6)
+        ..color = const Color(0xFFFDE047)
         ..style = PaintingStyle.stroke
-        ..strokeWidth = 2.2,
+        ..strokeWidth = 2.4,
     );
 
-    // Máscara de la Reina Sombra
-    canvas.drawOval(
-      Rect.fromCenter(center: Offset(w * 0.5, 22), width: 30, height: 28),
-      Paint()..color = flash ? Colors.white : const Color(0xFFF8FAFC),
-    );
-
-    // Corona de espinas dorada
+    // Corona dorada brillante
     final crown = Path()
-      ..moveTo(w * 0.26, 12)
-      ..lineTo(w * 0.32, -4)
-      ..lineTo(w * 0.44, 7)
-      ..lineTo(w * 0.50, -8)
-      ..lineTo(w * 0.56, 7)
-      ..lineTo(w * 0.68, -4)
-      ..lineTo(w * 0.74, 12)
+      ..moveTo(w * 0.26, 20)
+      ..lineTo(w * 0.30, 4)
+      ..lineTo(w * 0.42, 13)
+      ..lineTo(w * 0.50, 0)
+      ..lineTo(w * 0.58, 13)
+      ..lineTo(w * 0.70, 4)
+      ..lineTo(w * 0.74, 20)
       ..close();
     canvas.drawPath(crown, Paint()..color = const Color(0xFFFDE047));
+    canvas.drawPath(
+      crown,
+      Paint()
+        ..color = const Color(0xFFB45309)
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = 1.6,
+    );
 
-    // Ojos carmesí luminosos
-    canvas.drawOval(
-      Rect.fromCenter(center: Offset(w * 0.60, 22), width: 6, height: 8),
-      Paint()..color = const Color(0xFFE11D48),
-    );
-    canvas.drawOval(
-      Rect.fromCenter(center: Offset(w * 0.42, 22), width: 5, height: 7),
-      Paint()..color = const Color(0xFFE11D48),
-    );
+    // Ojos grandes caricaturescos + sonrisa traviesa
+    canvas.drawCircle(Offset(w * 0.42, 36), 6.2, Paint()..color = Colors.white);
+    canvas.drawCircle(Offset(w * 0.64, 36), 6.2, Paint()..color = Colors.white);
+    canvas.drawCircle(Offset(w * 0.44, 36), 3.2, Paint()..color = const Color(0xFF1E1B4B));
+    canvas.drawCircle(Offset(w * 0.66, 36), 3.2, Paint()..color = const Color(0xFF1E1B4B));
+    canvas.drawCircle(Offset(w * 0.42, 34), 1.3, Paint()..color = Colors.white);
+    canvas.drawCircle(Offset(w * 0.64, 34), 1.3, Paint()..color = Colors.white);
+
+    // Estrellita dorada en el pecho
+    canvas.drawCircle(Offset(w * 0.52, 56), 6.5, Paint()..color = const Color(0xFFFDE047));
   }
 
   void _drawHpBar(Canvas canvas) {
-    final barW = kind == EnemyKind.boss ? 56.0 : 32.0;
-    const barH = 5.0;
+    final barW = kind == EnemyKind.boss ? 58.0 : 34.0;
+    const barH = 6.0;
     final startX = (size.x - barW) / 2;
-    const y = -12.0;
+    const y = -13.0;
 
     canvas.drawRRect(
-      RRect.fromRectAndRadius(Rect.fromLTWH(startX, y, barW, barH), const Radius.circular(3)),
-      Paint()..color = Colors.black.withValues(alpha: 0.65),
+      RRect.fromRectAndRadius(Rect.fromLTWH(startX, y, barW, barH), const Radius.circular(4)),
+      Paint()..color = Colors.white.withValues(alpha: 0.85),
     );
-    final fillW = barW * (hp / maxHp).clamp(0.0, 1.0);
+    final fillW = (barW - 2) * (hp / maxHp).clamp(0.0, 1.0);
     canvas.drawRRect(
-      RRect.fromRectAndRadius(Rect.fromLTWH(startX, y, fillW, barH), const Radius.circular(3)),
+      RRect.fromRectAndRadius(
+        Rect.fromLTWH(startX + 1, y + 1, fillW, barH - 2),
+        const Radius.circular(3),
+      ),
       Paint()
         ..color = kind == EnemyKind.boss
-            ? const Color(0xFFF472B6)
+            ? const Color(0xFFEC4899)
             : const Color(0xFFFB7185),
     );
   }

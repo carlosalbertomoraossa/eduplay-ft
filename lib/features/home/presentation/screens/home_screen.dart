@@ -1,4 +1,4 @@
-// Home del niño — selección de grado
+// Home del niño — centro de aventuras Generación Alfa + Calendario MEN Colombia
 // UX Spec: ../.sdd/implemented/features/ux-children/technical-specs.md
 // Currículo: ../.sdd/implemented/features/domain-learning/curriculum-men.md
 
@@ -7,25 +7,17 @@ import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../../../core/providers/child_progress_provider.dart';
+import '../../../../../core/providers/colombia_calendar_provider.dart';
+import '../../../../../core/providers/daily_quests_provider.dart';
 import '../../../../../core/providers/lesson_progress_provider.dart';
+import '../../../../../core/providers/lumi_customization_provider.dart';
 import '../../../../../core/providers/selected_grade_provider.dart';
 import '../../../../../core/theme/app_theme.dart';
 import '../../../../../shared/widgets/lumi_lion_mascot.dart';
 import '../../../../../shared/widgets/playful_world_background.dart';
 import '../../../../../shared/widgets/xp_bar.dart';
 import '../../../lesson/data/curriculum_data.dart';
-
-// Mock data — reemplazar con providers reales en bloque 11
-class _MockChildData {
-  static const name = 'Sofía';
-  static const level = 3;
-  static const currentXp = 240;
-  static const xpToNext = 450;
-  static const coins = 85;
-  static const stars = 12;
-  static const streak = 5;
-  static const activityToday = false;
-}
 
 class _GradeConfig {
   final int grade;
@@ -50,7 +42,7 @@ const _grades = [
     grade: 1,
     label: 'Primer grado',
     emoji: '🌱',
-    subtitle: '4 períodos · Números hasta 99, figuras y pictogramas',
+    subtitle: '4 períodos · Números hasta 100, figuras y pictogramas',
     color: Color(0xFF3B82F6),
     totalLessons: 40,
   ),
@@ -58,7 +50,7 @@ const _grades = [
     grade: 2,
     label: 'Segundo grado',
     emoji: '⭐',
-    subtitle: '4 períodos · Números hasta 999, tablas, reloj y gráficas',
+    subtitle: '4 períodos · Números hasta 1.000, tablas, regla y gráficas',
     color: Color(0xFF8B5CF6),
     totalLessons: 35,
   ),
@@ -74,7 +66,7 @@ const _grades = [
     grade: 4,
     label: 'Cuarto grado',
     emoji: '🏆',
-    subtitle: '4 períodos · Fracciones, decimales, ángulos, áreas y moda',
+    subtitle: '4 períodos · Fracciones, decimales, ángulos, áreas y probabilidad',
     color: Color(0xFFF59E0B),
     totalLessons: 40,
   ),
@@ -82,7 +74,7 @@ const _grades = [
     grade: 5,
     label: 'Quinto grado',
     emoji: '🎓',
-    subtitle: '4 períodos · Porcentajes, volumen, plano cartesiano y álgebra',
+    subtitle: '4 períodos · Enteros, porcentajes, volumen y álgebra inicial',
     color: Color(0xFFEF4444),
     totalLessons: 40,
   ),
@@ -94,6 +86,15 @@ class HomeScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final completedLessons = ref.watch(lessonProgressProvider);
+    final childProgress = ref.watch(childProgressProvider);
+    final calendar = ref.watch(colombiaCalendarProvider);
+    final dailyQuests = ref.watch(dailyQuestsProvider);
+    final outfit = ref.watch(lumiCustomizationProvider).equipped;
+    int activeGrade = 4;
+    try {
+      activeGrade = ref.watch(selectedGradeProvider);
+    } catch (_) {}
+    final activePeriod = calendar.activePeriod();
 
     return Scaffold(
       backgroundColor: EduPlayColors.backgroundLight,
@@ -104,20 +105,70 @@ class HomeScreen extends ConsumerWidget {
             slivers: [
               SliverToBoxAdapter(
                 child: _Header(
+                  childName: 'Sofía',
+                  progress: childProgress,
+                  activeGrade: activeGrade,
+                  outfit: outfit,
+                  onLumiTap: () => context.push('/lumi-wardrobe'),
                   onSettingsTap: () => context.push('/settings'),
                 ),
               ),
 
-              SliverToBoxAdapter(child: _StreakBanner()),
+              // Meta Semanal Saludable + Calendario Escolar Colombia
+              SliverToBoxAdapter(
+                child: _HealthyHabitBanner(
+                  progress: childProgress,
+                  calendar: calendar,
+                  activePeriod: activePeriod,
+                ),
+              ),
+
+              // Misiones de Hoy (3–5 min)
+              SliverToBoxAdapter(
+                child: _DailyQuestsCard(
+                  questsState: dailyQuests,
+                  onClaim: (quest) {
+                    final claimed = ref
+                        .read(dailyQuestsProvider.notifier)
+                        .claimQuest(quest.id);
+                    if (claimed != null) {
+                      ref.read(childProgressProvider.notifier).addReward(
+                            xp: claimed.xpReward,
+                            coins: claimed.coinReward,
+                            stars: 1,
+                          );
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          behavior: SnackBarBehavior.floating,
+                          backgroundColor: const Color(0xFF10B981),
+                          content: Text(
+                            '¡Misión reclamada! +${claimed.coinReward} monedas y +${claimed.xpReward} XP',
+                            style: const TextStyle(
+                              fontFamily: 'Nunito',
+                              fontWeight: FontWeight.w800,
+                            ),
+                          ),
+                        ),
+                      );
+                    }
+                  },
+                ),
+              ),
 
               const SliverToBoxAdapter(child: _GamificationLinksRow()),
 
-              // Juegos — visible solo para Grado 4
-              const SliverToBoxAdapter(child: _GamesBanner()),
+              // Juego Cuaderno Mágico — ahora multi-grado 1°–5° alineado al período
+              SliverToBoxAdapter(
+                child: _GamesBanner(
+                  grade: activeGrade,
+                  activePeriod: activePeriod,
+                  outfit: outfit,
+                ),
+              ),
 
               const SliverToBoxAdapter(
                 child: Padding(
-                  padding: EdgeInsets.fromLTRB(24, 24, 24, 12),
+                  padding: EdgeInsets.fromLTRB(24, 22, 24, 12),
                   child: Text(
                     '🌈 ¿En qué grado estás?',
                     style: TextStyle(
@@ -142,10 +193,13 @@ class HomeScreen extends ConsumerWidget {
                           .length;
                       return _GradeCard(
                         config: cfg,
+                        isSelected: cfg.grade == activeGrade,
                         completedLessons: completed,
                         delay: i * 80,
                         onTap: () {
-                          ref.read(selectedGradeProvider.notifier).setGrade(cfg.grade);
+                          ref
+                              .read(selectedGradeProvider.notifier)
+                              .setGrade(cfg.grade);
                           context.push('/subjects/math/units');
                         },
                       );
@@ -164,14 +218,26 @@ class HomeScreen extends ConsumerWidget {
 
 // ─── Header ────────────────────────────────────────────────────────
 class _Header extends StatelessWidget {
+  final String childName;
+  final ChildProgressState progress;
+  final int activeGrade;
+  final LumiOutfit outfit;
+  final VoidCallback onLumiTap;
   final VoidCallback onSettingsTap;
 
-  const _Header({required this.onSettingsTap});
+  const _Header({
+    required this.childName,
+    required this.progress,
+    required this.activeGrade,
+    required this.outfit,
+    required this.onLumiTap,
+    required this.onSettingsTap,
+  });
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.fromLTRB(24, 16, 12, 20),
+      padding: const EdgeInsets.fromLTRB(20, 14, 12, 18),
       decoration: const BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.only(
@@ -184,48 +250,58 @@ class _Header extends StatelessWidget {
         children: [
           Row(
             children: [
-              const LumiLionMascot(
-                size: 54,
-                grade: 3,
-                expressionVariant: 1,
+              Tooltip(
+                message: 'Personalizar a Lumi',
+                child: LumiLionMascot(
+                  size: 56,
+                  grade: activeGrade,
+                  expressionVariant: 1,
+                  outfit: outfit,
+                  interactive: true,
+                  onTap: onLumiTap,
+                ),
               ),
-              const SizedBox(width: 12),
-              const Expanded(
+              const SizedBox(width: 10),
+              Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      '¡Hola, ${_MockChildData.name}! 👋',
-                      style: TextStyle(
-                        fontSize: 20,
-                        fontWeight: FontWeight.w700,
+                      '¡Hola, $childName! 👋',
+                      style: const TextStyle(
+                        fontSize: 19,
+                        fontWeight: FontWeight.w800,
                         color: EduPlayColors.textDark,
                         fontFamily: 'Nunito',
                       ),
                     ),
                     Text(
-                      'Nivel 3 · Aventurero del Saber',
-                      style: TextStyle(
-                        fontSize: 13,
+                      'Nivel ${progress.level} · ${progress.levelTitle}',
+                      style: const TextStyle(
+                        fontSize: 12.5,
                         color: EduPlayColors.textMedium,
                         fontFamily: 'Nunito',
+                        fontWeight: FontWeight.w700,
                       ),
                     ),
                   ],
                 ),
               ),
-              const _StatBadge(
+              _StatBadge(
                 icon: '⭐',
-                value: '${_MockChildData.stars}',
-                bgColor: Color(0xFFFEF9C3),
-                textColor: Color(0xFFB45309),
+                value: '${progress.stars}',
+                bgColor: const Color(0xFFFEF9C3),
+                textColor: const Color(0xFFB45309),
               ),
               const SizedBox(width: 6),
-              const _StatBadge(
-                icon: '💰',
-                value: '${_MockChildData.coins}',
-                bgColor: Color(0xFFFEF3C7),
-                textColor: Color(0xFF92400E),
+              GestureDetector(
+                onTap: onLumiTap,
+                child: _StatBadge(
+                  icon: '🪙',
+                  value: '${progress.coins}',
+                  bgColor: const Color(0xFFFEF3C7),
+                  textColor: const Color(0xFF92400E),
+                ),
               ),
               IconButton(
                 icon: const Icon(
@@ -237,15 +313,15 @@ class _Header extends StatelessWidget {
               ),
             ],
           ),
-          const SizedBox(height: 14),
-          const XpBar(
-            currentXp: _MockChildData.currentXp,
-            xpToNextLevel: _MockChildData.xpToNext,
-            level: _MockChildData.level,
+          const SizedBox(height: 12),
+          XpBar(
+            currentXp: progress.xpIntoCurrentLevel,
+            xpToNextLevel: progress.xpToNextLevel,
+            level: progress.level,
           ),
         ],
       ),
-    ).animate().fadeIn(duration: 400.ms);
+    ).animate().fadeIn(duration: 380.ms);
   }
 }
 
@@ -278,7 +354,7 @@ class _StatBadge extends StatelessWidget {
           Text(
             value,
             style: TextStyle(
-              fontSize: 14,
+              fontSize: 13.5,
               fontWeight: FontWeight.w800,
               color: textColor,
               fontFamily: 'Nunito',
@@ -290,67 +366,291 @@ class _StatBadge extends StatelessWidget {
   }
 }
 
-// ─── Streak Banner ─────────────────────────────────────────────────
-class _StreakBanner extends StatelessWidget {
+// ─── Hábito Saludable (Meta Semanal + Escudo + Período Colombia) ───
+class _HealthyHabitBanner extends StatelessWidget {
+  final ChildProgressState progress;
+  final ColombiaCalendarState calendar;
+  final int activePeriod;
+
+  const _HealthyHabitBanner({
+    required this.progress,
+    required this.calendar,
+    required this.activePeriod,
+  });
+
+  static const _dayLabels = ['L', 'M', 'X', 'J', 'V', 'S', 'D'];
+
   @override
   Widget build(BuildContext context) {
+    final weekPattern = progress.weekActivityPattern();
+    final activeThisWeek = progress.activeDaysInWeek();
+
     return Container(
-      margin: const EdgeInsets.fromLTRB(16, 16, 16, 0),
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      margin: const EdgeInsets.fromLTRB(16, 14, 16, 0),
+      padding: const EdgeInsets.all(15),
       decoration: BoxDecoration(
         gradient: const LinearGradient(
-          colors: [Color(0xFFFF6B35), Color(0xFFFF8C42)],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [Color(0xFFFF6B35), Color(0xFFF59E0B)],
         ),
-        borderRadius: BorderRadius.circular(18),
+        borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(
-            color: const Color(0xFFFF6B35).withValues(alpha: 0.3),
+            color: const Color(0xFFFF6B35).withValues(alpha: 0.28),
             blurRadius: 10,
             offset: const Offset(0, 4),
           ),
         ],
       ),
-      child: Row(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text('🔥', style: TextStyle(fontSize: 32)),
-          const SizedBox(width: 10),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const Text(
-                  '${_MockChildData.streak} días seguidos',
-                  style: TextStyle(
-                    fontSize: 17,
-                    fontWeight: FontWeight.w800,
+          Row(
+            children: [
+              const Text('🔥', style: TextStyle(fontSize: 26)),
+              const SizedBox(width: 8),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Meta semanal: $activeThisWeek/${progress.weeklyGoalDays} días activos',
+                      style: const TextStyle(
+                        fontSize: 15,
+                        fontWeight: FontWeight.w900,
+                        color: Colors.white,
+                        fontFamily: 'Nunito',
+                      ),
+                    ),
+                    Text(
+                      '🇨🇴 ${calendar.summaryLabel()}',
+                      style: TextStyle(
+                        fontSize: 11.5,
+                        fontWeight: FontWeight.w700,
+                        color: Colors.white.withValues(alpha: 0.92),
+                        fontFamily: 'Nunito',
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 4),
+                decoration: BoxDecoration(
+                  color: Colors.white.withValues(alpha: 0.22),
+                  borderRadius: BorderRadius.circular(14),
+                ),
+                child: Text(
+                  '🛡️ ${progress.streakShields}',
+                  style: const TextStyle(
                     color: Colors.white,
-                    fontFamily: 'Nunito',
-                  ),
-                ),
-                Text(
-                  _MockChildData.activityToday
-                      ? '¡Ya completaste tu lección de hoy!'
-                      : '¡Completa una lección para mantener tu racha!',
-                  style: TextStyle(
+                    fontWeight: FontWeight.w900,
                     fontSize: 12.5,
-                    fontWeight: FontWeight.w700,
-                    color: Colors.white.withValues(alpha: 0.95),
                     fontFamily: 'Nunito',
                   ),
                 ),
-              ],
-            ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 10),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: List.generate(7, (i) {
+              final done = weekPattern[i];
+              return Container(
+                width: 34,
+                height: 28,
+                decoration: BoxDecoration(
+                  color: done
+                      ? Colors.white
+                      : Colors.white.withValues(alpha: 0.20),
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                alignment: Alignment.center,
+                child: Text(
+                  done ? '✓' : _dayLabels[i],
+                  style: TextStyle(
+                    fontFamily: 'Nunito',
+                    fontWeight: FontWeight.w900,
+                    fontSize: 12,
+                    color: done ? const Color(0xFFEA580C) : Colors.white,
+                  ),
+                ),
+              );
+            }),
           ),
         ],
       ),
     )
-        .animate(delay: 150.ms)
+        .animate(delay: 120.ms)
         .fadeIn(duration: 350.ms)
-        .slideX(begin: -0.08, end: 0);
+        .slideX(begin: -0.05, end: 0);
   }
 }
 
-// ─── Accesos a Logros y Ranking ────────────────────────────────────
+// ─── Misiones Diarias (3–5 minutos) ────────────────────────────────
+class _DailyQuestsCard extends StatelessWidget {
+  final DailyQuestsState questsState;
+  final void Function(DailyQuest quest) onClaim;
+
+  const _DailyQuestsCard({
+    required this.questsState,
+    required this.onClaim,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      margin: const EdgeInsets.fromLTRB(16, 14, 16, 0),
+      padding: const EdgeInsets.all(15),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(22),
+        border: Border.all(
+          color: const Color(0xFF38BDF8).withValues(alpha: 0.35),
+          width: 1.8,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: const Color(0xFF0284C7).withValues(alpha: 0.08),
+            blurRadius: 12,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              const Text('🎯', style: TextStyle(fontSize: 19)),
+              const SizedBox(width: 7),
+              const Expanded(
+                child: Text(
+                  'Misiones de Hoy (3–5 min)',
+                  style: TextStyle(
+                    fontFamily: 'Nunito',
+                    fontWeight: FontWeight.w900,
+                    fontSize: 15,
+                    color: EduPlayColors.textDark,
+                  ),
+                ),
+              ),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                decoration: BoxDecoration(
+                  color: const Color(0xFFE0F2FE),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Text(
+                  '${questsState.completedCount}/${questsState.quests.length}',
+                  style: const TextStyle(
+                    fontFamily: 'Nunito',
+                    fontWeight: FontWeight.w900,
+                    fontSize: 12,
+                    color: Color(0xFF0369A1),
+                  ),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 10),
+          ...questsState.quests.map((q) {
+            return Padding(
+              padding: const EdgeInsets.only(bottom: 8),
+              child: Row(
+                children: [
+                  Text(q.emoji, style: const TextStyle(fontSize: 22)),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          q.title,
+                          style: const TextStyle(
+                            fontFamily: 'Nunito',
+                            fontWeight: FontWeight.w800,
+                            fontSize: 13,
+                            color: EduPlayColors.textDark,
+                          ),
+                        ),
+                        Text(
+                          q.subtitle,
+                          style: const TextStyle(
+                            fontFamily: 'Nunito',
+                            fontSize: 11,
+                            color: EduPlayColors.textMedium,
+                          ),
+                        ),
+                        const SizedBox(height: 4),
+                        ClipRRect(
+                          borderRadius: BorderRadius.circular(6),
+                          child: LinearProgressIndicator(
+                            value: q.ratio,
+                            minHeight: 6,
+                            backgroundColor: const Color(0xFFF1F5F9),
+                            valueColor: AlwaysStoppedAnimation<Color>(
+                              q.isCompleted
+                                  ? const Color(0xFF10B981)
+                                  : const Color(0xFF38BDF8),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(width: 10),
+                  if (q.canClaim)
+                    GestureDetector(
+                      onTap: () => onClaim(q),
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 10,
+                          vertical: 6,
+                        ),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFF10B981),
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: Text(
+                          '+🪙${q.coinReward}',
+                          style: const TextStyle(
+                            fontFamily: 'Nunito',
+                            fontWeight: FontWeight.w900,
+                            fontSize: 11.5,
+                            color: Colors.white,
+                          ),
+                        ),
+                      ),
+                    )
+                  else if (q.claimed)
+                    const Text(
+                      '✅',
+                      style: TextStyle(fontSize: 18),
+                    )
+                  else
+                    Text(
+                      '${q.progress}/${q.target}',
+                      style: const TextStyle(
+                        fontFamily: 'Nunito',
+                        fontWeight: FontWeight.w800,
+                        fontSize: 12,
+                        color: EduPlayColors.textMedium,
+                      ),
+                    ),
+                ],
+              ),
+            );
+          }),
+        ],
+      ),
+    ).animate(delay: 150.ms).fadeIn(duration: 350.ms);
+  }
+}
+
+// ─── Accesos a Armario de Lumi, Logros y Ranking ───────────────────
 class _GamificationLinksRow extends StatelessWidget {
   const _GamificationLinksRow();
 
@@ -362,13 +662,22 @@ class _GamificationLinksRow extends StatelessWidget {
         children: [
           Expanded(
             child: _GamificationLinkCard(
+              emoji: '👕',
+              label: 'Armario',
+              color: const Color(0xFFEC4899),
+              onTap: () => context.push('/lumi-wardrobe'),
+            ),
+          ),
+          const SizedBox(width: 10),
+          Expanded(
+            child: _GamificationLinkCard(
               emoji: '🏆',
               label: 'Logros',
               color: EduPlayColors.adventurePurple,
               onTap: () => context.push('/achievements'),
             ),
           ),
-          const SizedBox(width: 12),
+          const SizedBox(width: 10),
           Expanded(
             child: _GamificationLinkCard(
               emoji: '🥇',
@@ -407,28 +716,28 @@ class _GamificationLinkCard extends StatelessWidget {
       child: GestureDetector(
         onTap: onTap,
         child: Container(
-          padding: const EdgeInsets.symmetric(vertical: 14),
+          padding: const EdgeInsets.symmetric(vertical: 12),
           decoration: BoxDecoration(
             color: Colors.white,
             borderRadius: BorderRadius.circular(16),
-            border: Border.all(color: color.withValues(alpha: 0.25), width: 1.5),
+            border: Border.all(color: color.withValues(alpha: 0.28), width: 1.5),
             boxShadow: [
               BoxShadow(
-                color: color.withValues(alpha: 0.1),
+                color: color.withValues(alpha: 0.10),
                 blurRadius: 10,
                 offset: const Offset(0, 3),
               ),
             ],
           ),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.center,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
             children: [
               Text(emoji, style: const TextStyle(fontSize: 22)),
-              const SizedBox(width: 8),
+              const SizedBox(height: 3),
               Text(
                 label,
                 style: TextStyle(
-                  fontSize: 14,
+                  fontSize: 12.5,
                   fontWeight: FontWeight.w800,
                   fontFamily: 'Nunito',
                   color: color,
@@ -445,12 +754,14 @@ class _GamificationLinkCard extends StatelessWidget {
 // ─── Grade Card ────────────────────────────────────────────────────
 class _GradeCard extends StatelessWidget {
   final _GradeConfig config;
+  final bool isSelected;
   final int completedLessons;
   final int delay;
   final VoidCallback onTap;
 
   const _GradeCard({
     required this.config,
+    required this.isSelected,
     required this.completedLessons,
     required this.delay,
     required this.onTap,
@@ -471,7 +782,7 @@ class _GradeCard extends StatelessWidget {
           borderRadius: BorderRadius.circular(24),
           boxShadow: [
             BoxShadow(
-              color: config.color.withValues(alpha: 0.22),
+              color: config.color.withValues(alpha: isSelected ? 0.34 : 0.20),
               blurRadius: 14,
               offset: const Offset(0, 6),
             ),
@@ -482,13 +793,12 @@ class _GradeCard extends StatelessWidget {
             color: Colors.white,
             borderRadius: BorderRadius.circular(22),
             border: Border.all(
-              color: config.color.withValues(alpha: 0.55),
-              width: 2.2,
+              color: config.color.withValues(alpha: isSelected ? 0.90 : 0.55),
+              width: isSelected ? 2.8 : 2.0,
             ),
           ),
           child: Row(
             children: [
-              // Barra de color lateral
               Container(
                 width: 8,
                 height: 88,
@@ -500,120 +810,134 @@ class _GradeCard extends StatelessWidget {
                   ),
                 ),
               ),
-
-            // Emoji del grado
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16),
-              child: Text(config.emoji, style: const TextStyle(fontSize: 40)),
-            ),
-
-            // Texto + progreso
-            Expanded(
-              child: Padding(
-                padding: const EdgeInsets.symmetric(vertical: 16),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      children: [
-                        Container(
-                          padding: const EdgeInsets.symmetric(
-                              horizontal: 8, vertical: 2),
-                          decoration: BoxDecoration(
-                            color: config.color.withValues(alpha: 0.12),
-                            borderRadius: BorderRadius.circular(8),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                child: Text(config.emoji, style: const TextStyle(fontSize: 40)),
+              ),
+              Expanded(
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 16),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        children: [
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 8, vertical: 2),
+                            decoration: BoxDecoration(
+                              color: config.color.withValues(alpha: 0.12),
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                            child: Text(
+                              '${config.grade}°',
+                              style: TextStyle(
+                                fontSize: 13,
+                                fontWeight: FontWeight.w900,
+                                color: config.color,
+                                fontFamily: 'Nunito',
+                              ),
+                            ),
                           ),
-                          child: Text(
-                            '${config.grade}°',
-                            style: TextStyle(
-                              fontSize: 13,
-                              fontWeight: FontWeight.w900,
-                              color: config.color,
+                          const SizedBox(width: 8),
+                          Text(
+                            config.label,
+                            style: const TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.w800,
+                              color: EduPlayColors.textDark,
                               fontFamily: 'Nunito',
                             ),
                           ),
-                        ),
-                        const SizedBox(width: 8),
-                        Text(
-                          config.label,
-                          style: const TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.w800,
-                            color: EduPlayColors.textDark,
-                            fontFamily: 'Nunito',
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      config.subtitle,
-                      style: const TextStyle(
-                        fontSize: 12,
-                        color: EduPlayColors.textMedium,
-                        fontFamily: 'Nunito',
-                        fontWeight: FontWeight.w600,
+                          if (isSelected) ...[
+                            const SizedBox(width: 6),
+                            Container(
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 6, vertical: 2),
+                              decoration: BoxDecoration(
+                                color: config.color,
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                              child: const Text(
+                                'Activo',
+                                style: TextStyle(
+                                  fontSize: 10,
+                                  fontWeight: FontWeight.w900,
+                                  color: Colors.white,
+                                  fontFamily: 'Nunito',
+                                ),
+                              ),
+                            ),
+                          ],
+                        ],
                       ),
-                    ),
-                    const SizedBox(height: 8),
-                    if (hasProgress) ...[
-                      ClipRRect(
-                        borderRadius: BorderRadius.circular(4),
-                        child: LinearProgressIndicator(
-                          value: progress,
-                          minHeight: 5,
-                          backgroundColor:
-                              config.color.withValues(alpha: 0.12),
-                          valueColor:
-                              AlwaysStoppedAnimation<Color>(config.color),
-                        ),
-                      ),
-                      const SizedBox(height: 3),
+                      const SizedBox(height: 4),
                       Text(
-                        '$completedLessons/${config.totalLessons} lecciones',
-                        style: TextStyle(
-                          fontSize: 11,
-                          color: config.color,
-                          fontFamily: 'Nunito',
-                          fontWeight: FontWeight.w700,
-                        ),
-                      ),
-                    ] else
-                      Text(
-                        '${config.totalLessons} lecciones · ¡Empieza aquí!',
+                        config.subtitle,
                         style: const TextStyle(
-                          fontSize: 11,
+                          fontSize: 12,
                           color: EduPlayColors.textMedium,
                           fontFamily: 'Nunito',
                           fontWeight: FontWeight.w600,
                         ),
                       ),
-                  ],
+                      const SizedBox(height: 8),
+                      if (hasProgress) ...[
+                        ClipRRect(
+                          borderRadius: BorderRadius.circular(4),
+                          child: LinearProgressIndicator(
+                            value: progress,
+                            minHeight: 5,
+                            backgroundColor:
+                                config.color.withValues(alpha: 0.12),
+                            valueColor:
+                                AlwaysStoppedAnimation<Color>(config.color),
+                          ),
+                        ),
+                        const SizedBox(height: 3),
+                        Text(
+                          '$completedLessons/${config.totalLessons} lecciones',
+                          style: TextStyle(
+                            fontSize: 11,
+                            color: config.color,
+                            fontFamily: 'Nunito',
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
+                      ] else
+                        Text(
+                          '${config.totalLessons} lecciones · ¡Empieza aquí!',
+                          style: const TextStyle(
+                            fontSize: 11,
+                            color: EduPlayColors.textMedium,
+                            fontFamily: 'Nunito',
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                    ],
+                  ),
                 ),
               ),
-            ),
-
-            // Arrow
-            Padding(
-              padding: const EdgeInsets.only(right: 16),
-              child: Container(
-                width: 34,
-                height: 34,
-                decoration: BoxDecoration(
-                  color: config.color.withValues(alpha: 0.1),
-                  shape: BoxShape.circle,
-                ),
-                child: Icon(
-                  Icons.arrow_forward_ios_rounded,
-                  size: 16,
-                  color: config.color,
+              Padding(
+                padding: const EdgeInsets.only(right: 16),
+                child: Container(
+                  width: 34,
+                  height: 34,
+                  decoration: BoxDecoration(
+                    color: config.color.withValues(alpha: 0.1),
+                    shape: BoxShape.circle,
+                  ),
+                  child: Icon(
+                    Icons.arrow_forward_ios_rounded,
+                    size: 16,
+                    color: config.color,
+                  ),
                 ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
-    ),
     )
         .animate(delay: Duration(milliseconds: delay + 200))
         .fadeIn(duration: 400.ms)
@@ -621,14 +945,22 @@ class _GradeCard extends StatelessWidget {
   }
 }
 
-// ─── Games Banner — Grado 4 ────────────────────────────────────────
+// ─── Banner Juego Multi-Grado: El Cuaderno Mágico de Lumi ──────────
 class _GamesBanner extends StatelessWidget {
-  const _GamesBanner();
+  final int grade;
+  final int activePeriod;
+  final LumiOutfit outfit;
+
+  const _GamesBanner({
+    required this.grade,
+    required this.activePeriod,
+    required this.outfit,
+  });
 
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.fromLTRB(16, 20, 16, 0),
+      padding: const EdgeInsets.fromLTRB(16, 16, 16, 0),
       child: GestureDetector(
         onTap: () => context.push('/games/g4-adventure'),
         child: Container(
@@ -637,12 +969,12 @@ class _GamesBanner extends StatelessWidget {
             gradient: const LinearGradient(
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
-              colors: [Color(0xFF7B1FA2), Color(0xFF1565C0)],
+              colors: [Color(0xFF0F766E), Color(0xFF2563EB)],
             ),
-            borderRadius: BorderRadius.circular(20),
+            borderRadius: BorderRadius.circular(22),
             boxShadow: [
               BoxShadow(
-                color: const Color(0xFF7B1FA2).withValues(alpha: 0.35),
+                color: const Color(0xFF2563EB).withValues(alpha: 0.30),
                 blurRadius: 12,
                 offset: const Offset(0, 4),
               ),
@@ -650,10 +982,10 @@ class _GamesBanner extends StatelessWidget {
           ),
           child: Row(
             children: [
-              const LumiLionMascot(
-                size: 52,
-                grade: 4,
-                accentColor: Color(0xFFF59E0B),
+              LumiLionMascot(
+                size: 56,
+                grade: grade,
+                outfit: outfit,
                 expressionVariant: 1,
               ),
               const SizedBox(width: 14),
@@ -670,9 +1002,9 @@ class _GamesBanner extends StatelessWidget {
                         color: EduPlayColors.energyYellow,
                         borderRadius: BorderRadius.circular(8),
                       ),
-                      child: const Text(
-                        '¡NUEVO! Grado 4°',
-                        style: TextStyle(
+                      child: Text(
+                        'JUEGO · Grado $grade° · Período $activePeriod',
+                        style: const TextStyle(
                           color: Color(0xFF78350F),
                           fontSize: 10,
                           fontWeight: FontWeight.w900,
@@ -680,23 +1012,24 @@ class _GamesBanner extends StatelessWidget {
                         ),
                       ),
                     ),
-                    const SizedBox(height: 4),
+                    const SizedBox(height: 5),
                     const Text(
-                      'La Aventura del\nCuarto Grado',
+                      'El Cuaderno Mágico de Lumi',
                       style: TextStyle(
                         color: Colors.white,
-                        fontSize: 16,
-                        fontWeight: FontWeight.w800,
+                        fontSize: 16.5,
+                        fontWeight: FontWeight.w900,
                         fontFamily: 'Nunito',
                         height: 1.2,
                       ),
                     ),
                     const SizedBox(height: 2),
                     Text(
-                      'Juega y aprende fracciones, decimales y más',
+                      'Salta, recoge estrellas y domina los DBA de tu grado',
                       style: TextStyle(
-                        color: Colors.white.withValues(alpha: 0.8),
-                        fontSize: 11,
+                        color: Colors.white.withValues(alpha: 0.88),
+                        fontSize: 11.5,
+                        fontWeight: FontWeight.w600,
                         fontFamily: 'Nunito',
                       ),
                     ),
@@ -705,7 +1038,7 @@ class _GamesBanner extends StatelessWidget {
               ),
               const Icon(
                 Icons.chevron_right_rounded,
-                color: Colors.white70,
+                color: Colors.white,
                 size: 28,
               ),
             ],

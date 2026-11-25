@@ -5,9 +5,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../../core/l10n/app_strings.dart';
+import '../../../../core/providers/colombia_calendar_provider.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../auth/presentation/bloc/auth_cubit.dart';
 import '../../../../shared/widgets/ep_button.dart';
@@ -64,8 +66,18 @@ class _SettingsScreenState extends State<SettingsScreen> {
     if (mounted) context.go('/onboarding');
   }
 
+  ProviderContainer? _maybeContainer(BuildContext context) {
+    try {
+      return ProviderScope.containerOf(context, listen: false);
+    } catch (_) {
+      return null;
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
+    final container = _maybeContainer(context);
+    final calendarState = container?.read(colombiaCalendarProvider);
     return Scaffold(
       backgroundColor: EduPlayColors.backgroundLight,
       appBar: AppBar(
@@ -134,6 +146,74 @@ class _SettingsScreenState extends State<SettingsScreen> {
           ).animate().fadeIn(duration: 300.ms),
 
           const SizedBox(height: 16),
+
+          if (container != null && calendarState != null) ...[
+            _SectionCard(
+              title: 'Calendario Escolar Colombia 🇨🇴',
+              icon: Icons.calendar_month_rounded,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Período activo: ${calendarState.summaryLabel()}',
+                    style: const TextStyle(
+                      fontFamily: 'Nunito',
+                      fontSize: 13,
+                      fontWeight: FontWeight.w700,
+                      color: EduPlayColors.textMedium,
+                    ),
+                  ),
+                  const SizedBox(height: 10),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: ChoiceChip(
+                          label: const Text(
+                            'Calendario A (Ene–Nov)',
+                            style: TextStyle(
+                              fontFamily: 'Nunito',
+                              fontWeight: FontWeight.w800,
+                              fontSize: 12,
+                            ),
+                          ),
+                          selected: calendarState.calendarType ==
+                              SchoolCalendarType.calendarA,
+                          onSelected: (_) {
+                            container
+                                .read(colombiaCalendarProvider.notifier)
+                                .setCalendarType(SchoolCalendarType.calendarA);
+                            setState(() {});
+                          },
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: ChoiceChip(
+                          label: const Text(
+                            'Calendario B (Sep–Jun)',
+                            style: TextStyle(
+                              fontFamily: 'Nunito',
+                              fontWeight: FontWeight.w800,
+                              fontSize: 12,
+                            ),
+                          ),
+                          selected: calendarState.calendarType ==
+                              SchoolCalendarType.calendarB,
+                          onSelected: (_) {
+                            container
+                                .read(colombiaCalendarProvider.notifier)
+                                .setCalendarType(SchoolCalendarType.calendarB);
+                            setState(() {});
+                          },
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ).animate(delay: 60.ms).fadeIn(duration: 300.ms),
+            const SizedBox(height: 16),
+          ],
 
           _SectionCard(
             title: 'Ayuda',
